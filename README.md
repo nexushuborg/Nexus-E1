@@ -12,7 +12,7 @@ No more forgotten logic. No more scattered notes. No more guessing _"Where did I
 
 ---
 
-## 🎯 Why Nexus-03?
+## 🎯 Why Nexus-E1?
 
 Every DSA warrior knows this pain:
 - ❌ Forgetting logic after solving a problem
