@@ -1,4 +1,4 @@
-# 🚀 Nexus-03
+# 🚀 Nexus-E1
 
 > _“Track. Understand. Retain. Your entire DSA journey, automated.”_
 
@@ -6,7 +6,7 @@
 
 ## 🔍 Overview
 
-**Nexus-03** is a student-first, browser-based productivity tool built to **transform how you document, retain, and revise your coding journey** — from DSA to interview prep. Developed under the **Nexus-Hub** initiative at **CNxITER**, this platform is your personalized, auto-updating coding companion.
+**Nexus-E1** is a student-first, browser-based productivity tool built to **transform how you document, retain, and revise your coding journey** — from DSA to interview prep. Developed under the **Nexus-Hub** initiative at **CNxITER**, this platform is your personalized, auto-updating coding companion.
 
 No more forgotten logic. No more scattered notes. No more guessing _"Where did I solve that problem?"_
 
