@@ -1,21 +1,52 @@
-import passport from "passport";
-import GitHubStrategy from "passport-github2";
-import dotenv from "dotenv";
+import passport from 'passport';
+import { Strategy as GitHubStrategy } from 'passport-github2';
+import dotenv from 'dotenv';
+import User from '../models/userSchema.js';
 
 dotenv.config();
 
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/api/auth/github/callback",
-}, function (accessToken, refreshToken, profile, done) {
-    return done(null, profile);
-}));
+export default function (passport) {
+  passport.use(
+    new GitHubStrategy(
+      {
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: "http://localhost:3000/api/auth/github/callback", 
+      },
+      async (accessToken, refreshToken, profile, done) => {
+        const githubProfile = {
+          githubId: profile.id,
+          name: profile.displayName,
+          username: profile.username,
+        };
 
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
+        try {
+          let user = await User.findOne({ githubId: profile.id });
 
-passport.deserializeUser((obj, done) => {
-    done(null, obj);
-});
+          if (user) {
+            return done(null, user);
+          }
+
+          user = await User.create(githubProfile);
+          return done(null, user);
+        } catch (err) {
+          console.error('GitHub OAuth error:', err);
+          return done(err, null);
+        }
+      }
+    )
+  );
+
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await User.findById(id);
+      done(null, user);
+    } catch (err) {
+      done(err, null);
+    }
+  });
+}
