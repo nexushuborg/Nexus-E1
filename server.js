@@ -8,7 +8,8 @@ import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/connect.js';
 import authRoutes from './routes/auth.routes.js';
-import passportConfig from './config/passport.js';
+// import passportConfig from './config/passport.js';
+import "./config/gitPassport.js"
 
 
 dotenv.config();
@@ -17,10 +18,10 @@ const app = express();
 
 // Connect to DB
 // Database connection
-// connectDB();
+connectDB();
 
 // Passport config
-passportConfig(passport);
+// passportConfig(passport);
 
 // Middlewares
 app.use(cors());
