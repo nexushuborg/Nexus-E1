@@ -5,7 +5,7 @@ import session from 'express-session';
 import passport from 'passport';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
-import passportConfig from './config/passport.js';
+import passportConfig from './config/gitPassport.js';
 
 dotenv.config();
 const app = express();
