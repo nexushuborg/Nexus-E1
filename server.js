@@ -1,35 +1,51 @@
 import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import connectDB from './config/connect.js';
-import authRouter from "./routes/authRoute.js"
+import connectDB from './config/db.js';
 import session from 'express-session';
 import passport from 'passport';
-import "./config/passport.js";
+import cors from 'cors';
+import authRoutes from './routes/authRoutes.js';
+import passportConfig from './config/passport.js';
 
 dotenv.config();
 const app = express();
-app.use(cors());
-app.use(express.json());
-// connectDB();
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true
-}));
+// DB connection
+connectDB();
+
+// Passport config
+passportConfig(passport);
+
+// CORS
+app.use(cors());
+
+// Express body parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Express session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-const PORT = process.env.PORT || 3000;
+// Routes
+app.use('/api/auth', authRoutes);
 
+// Default route (optional)
 app.get('/', (req, res) => {
   res.send('Hello from Express!');
 });
 
-app.use("/api/auth", authRouter);
-
+// Server start
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
