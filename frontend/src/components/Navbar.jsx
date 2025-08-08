@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { MdDarkMode } from "react-icons/md";
 
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-4 relative">
           <div className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center cursor-pointer hover:bg-gray-200">
-            <span>🌓</span>
+            <span><MdDarkMode/></span>
           </div>
           <Link
             to="/login"
