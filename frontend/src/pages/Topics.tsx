@@ -11,6 +11,11 @@ export default function Topics() {
 
   const filteredTopics = useMemo(() => topics.filter(t => t.toLowerCase().includes(query.toLowerCase())), [query]);
 
+  const onOpen = (topic: string) => {
+    setActive(topic);
+    setOpen(true);
+  };
+
   return (
     <main className="container py-8">
       <Helmet>
