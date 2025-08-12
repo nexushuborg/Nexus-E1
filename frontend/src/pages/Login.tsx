@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Github } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import ConstellationAnimation from "@/components/ui/ConstellationAnimation";
 
-// A simple placeholder for the Footer
 const Footer = () => (
   <footer className="w-full text-center p-4 text-gray-500 text-sm">
     © 2025 Nexus-Hub. All Rights Reserved.
@@ -18,10 +18,9 @@ export default function Login() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      // We call the new function from our context
       signInWithEmail(email);
     } else {
-      alert("Please enter an email address.");
+      console.error("Please enter an email address.");
     }
   };
 
@@ -69,14 +68,26 @@ export default function Login() {
               Or <a href="#" className="text-[#F000FF] hover:underline">create a new account</a>
             </p>
 
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleFormSubmit}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">Email address</label>
-                <input type="email" id="email" name="email" placeholder="you@example.com" className="form-input w-full px-4 py-3 rounded-lg" />
+                <input
+                  type="email" id="email" name="email"
+                  placeholder="you@example.com"
+                  className="form-input w-full px-4 py-3 rounded-lg"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                <input type="password" id="password" name="password" placeholder="••••••••" className="form-input w-full px-4 py-3 rounded-lg" />
+                <input
+                  type="password" id="password" name="password"
+                  placeholder="••••••••"
+                  className="form-input w-full px-4 py-3 rounded-lg"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
 
               <div className="flex items-center justify-between text-sm">
@@ -97,7 +108,6 @@ export default function Login() {
               </div>
             </form>
 
-
             <div className="mt-8 relative">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-600/50"></div></div>
               <div className="relative flex justify-center text-sm">
@@ -113,13 +123,8 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center justify-center p-12">
-            <div className="text-center">
-              <h3 className="text-3xl font-bold text-gray-300">Unlock Your Potential</h3>
-              <p className="mt-4 text-gray-400 max-w-sm mx-auto">
-                This area will feature our dynamic "Wow Factor" animation.
-              </p>
-            </div>
+          <div className="hidden md:flex items-center justify-center p-0 overflow-hidden">
+            <ConstellationAnimation />
           </div>
         </div>
       </main>
