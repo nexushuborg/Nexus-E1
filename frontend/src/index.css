@@ -1,3 +1,6 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -135,10 +138,6 @@
   }
   .story-link:hover::after { transform: scaleX(1); transform-origin: bottom left; }
 }
-
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
 
 body {
   font-family: 'Inter', sans-serif;
