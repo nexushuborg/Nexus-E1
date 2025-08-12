@@ -1,16 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-// Placeholder types while backend integration is wired
 export interface MockUser {
   id: string;
   email?: string;
   user_metadata?: { avatar_url?: string; user_name?: string; name?: string };
 }
 
+// We add our new signInWithEmail function to the context type
 interface AuthContextType {
   user: MockUser | null;
   loading: boolean;
   signInWithGitHub: () => Promise<void>;
+  signInWithEmail: (email: string) => Promise<void>; 
   signOut: () => Promise<void>;
 }
 
@@ -29,7 +30,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithGitHub = async () => {
-    // Placeholder: Simulate GitHub OAuth success
     const mock: MockUser = {
       id: crypto.randomUUID(),
       email: "octocat@example.com",
@@ -44,6 +44,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = "/dashboard";
   };
 
+  // This function simulates logging in with an email and password.
+  // For now, it ignores the password and creates a user based on the email.
+  const signInWithEmail = async (email: string) => {
+    const mock: MockUser = {
+        id: crypto.randomUUID(),
+        email: email,
+        user_metadata: {
+            avatar_url: `https://ui-avatars.com/api/?name=${email.charAt(0)}&background=random`,
+            user_name: email.split('@')[0],
+            name: email.split('@')[0],
+        }
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mock));
+    setUser(mock);
+    window.location.href = "/dashboard";
+  };
+
+
   const signOut = async () => {
     localStorage.removeItem(STORAGE_KEY);
     setUser(null);
@@ -51,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGitHub, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGitHub, signInWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );
