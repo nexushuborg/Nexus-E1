@@ -1,29 +1,19 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 
-// --- data structures ---
+// Data structures and initial data remain the same
 interface Node {
-  id: number;
-  x: number;
-  y: number;
-  opacity: number; // for fade-in effect
+  id: number; x: number; y: number; opacity: number;
 }
 interface Edge {
-  from: number;
-  to: number;
-  progress: number; // for line-drawing animation
+  from: number; to: number; progress: number;
 }
-interface Constellation {
-  nodes: Node[];
-  edges: Edge[];
+interface ConstellationData {
+  nodes: Omit<Node, 'opacity'>[];
+  edges: Omit<Edge, 'progress'>[];
 }
 
-// function to create the initial state for a constellation
-const createInitialConstellation = (data: { nodes: Omit<Node, 'opacity'>[], edges: Omit<Edge, 'progress'>[] }): Constellation => ({
-  nodes: data.nodes.map(n => ({ ...n, opacity: 0 })),
-  edges: data.edges.map(e => ({ ...e, progress: 0 })),
-});
-
-const constellationData = [
+const constellationData: ConstellationData[] = [
   {
     nodes: [
       { id: 1, x: 0.5, y: 0.15 }, { id: 2, x: 0.3, y: 0.35 },
@@ -54,9 +44,8 @@ const constellationData = [
 
 const ConstellationAnimation = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [constellations, setConstellations] = useState<Constellation[]>(() => constellationData.map(createInitialConstellation));
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const animationStateRef = useRef({ phase: 'FADING_IN', phaseStart: 0, currentEdge: 0 });
+  const { theme } = useTheme();
+  const animationControllerRef = useRef<any>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -64,140 +53,143 @@ const ConstellationAnimation = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
+    if (!animationControllerRef.current) {
+      animationControllerRef.current = {
+        currentIndex: 0,
+        state: { phase: 'FADING_IN', phaseStart: 0 },
+        constellation: {
+          nodes: constellationData[0].nodes.map(n => ({ ...n, opacity: 0 })),
+          edges: constellationData[0].edges.map(e => ({ ...e, progress: 0 })),
+        },
+        animationFrameId: 0,
+        colors: { primary: '', card: '', line: '' },
 
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement;
-      if (parent) {
-        canvas.width = parent.clientWidth;
-        canvas.height = parent.clientHeight;
-      }
-    };
-
-    const render = (timestamp: number) => {
-      if (!ctx) return;
-      
-      // initialize phase start time
-      if (animationStateRef.current.phaseStart === 0) {
-        animationStateRef.current.phaseStart = timestamp;
-      }
-      const elapsedTime = timestamp - animationStateRef.current.phaseStart;
-
-      // --- animation Logic ---
-      const state = animationStateRef.current;
-      const currentConstellation = constellations[currentIndex];
-      
-      // 1. FADE IN NODES
-      if (state.phase === 'FADING_IN') {
-        const duration = 1000; // 1 second to fade in
-        const progress = Math.min(elapsedTime / duration, 1);
-        currentConstellation.nodes.forEach(node => node.opacity = progress);
-        if (progress >= 1) {
-          state.phase = 'DRAWING_EDGES';
-          state.phaseStart = timestamp;
-          state.currentEdge = 0;
-        }
-      }
-      
-      // 2. DRAW EDGES
-      else if (state.phase === 'DRAWING_EDGES') {
-        const durationPerEdge = 300; // 0.3 seconds per edge
-        const edgeIndex = Math.floor(elapsedTime / durationPerEdge);
-        
-        if (edgeIndex < currentConstellation.edges.length) {
-            const edgeProgress = (elapsedTime % durationPerEdge) / durationPerEdge;
-            currentConstellation.edges[edgeIndex].progress = edgeProgress;
-            // Ensure previous edges are fully drawn
-            for(let i=0; i<edgeIndex; i++) currentConstellation.edges[i].progress = 1;
-
-        } else {
-            currentConstellation.edges.forEach(edge => edge.progress = 1);
-            state.phase = 'PAUSED';
-            state.phaseStart = timestamp;
-        }
-      }
-
-      // 3. PAUSE
-      else if (state.phase === 'PAUSED') {
-        const duration = 2000; // 2 second pause
-        if (elapsedTime >= duration) {
-          state.phase = 'FADING_OUT';
-          state.phaseStart = timestamp;
-        }
-      }
-      
-      // 4. FADE OUT
-      else if (state.phase === 'FADING_OUT') {
-        const duration = 1000; // 1 second to fade out
-        const progress = Math.min(elapsedTime / duration, 1);
-        currentConstellation.nodes.forEach(node => node.opacity = 1 - progress);
-        if (progress >= 1) {
-          // Reset and move to next constellation
-          const nextIndex = (currentIndex + 1) % constellations.length;
-          setConstellations(prev => {
-              const newConsts = [...prev];
-              newConsts[currentIndex] = createInitialConstellation(constellationData[currentIndex]);
-              return newConsts;
-          });
-          setCurrentIndex(nextIndex);
-          state.phase = 'FADING_IN';
-          state.phaseStart = timestamp;
-        }
-      }
-
-      // --- Drawing Logic ---
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#0D1117';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const nodesMap = new Map(currentConstellation.nodes.map(n => [n.id, n]));
-
-      // Draw nodes with current opacity
-      currentConstellation.nodes.forEach(node => {
-        ctx.fillStyle = `rgba(240, 0, 255, ${node.opacity})`;
-        ctx.shadowColor = `rgba(240, 0, 255, ${node.opacity})`;
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(node.x * canvas.width, node.y * canvas.height, 4, 0, 2 * Math.PI);
-        ctx.fill();
-      });
-
-      // Draw lines with current progress
-      currentConstellation.edges.forEach(edge => {
-        if (edge.progress > 0) {
-          const fromNode = nodesMap.get(edge.from);
-          const toNode = nodesMap.get(edge.to);
-          if (fromNode && toNode) {
-            const fromX = fromNode.x * canvas.width;
-            const fromY = fromNode.y * canvas.height;
-            const toX = toNode.x * canvas.width;
-            const toY = toNode.y * canvas.height;
-
-            ctx.strokeStyle = `rgba(240, 0, 255, ${fromNode.opacity * 0.7})`;
-            ctx.lineWidth = 2;
-            ctx.shadowBlur = 5;
-            ctx.beginPath();
-            ctx.moveTo(fromX, fromY);
-            // Calculate the end point based on progress
-            ctx.lineTo(fromX + (toX - fromX) * edge.progress, fromY + (toY - fromY) * edge.progress);
-            ctx.stroke();
+        updateTheme(newTheme: string | undefined) {
+          const isDark = newTheme === 'dark';
+          if (isDark) {
+            this.colors = { primary: '#F000FF', card: '#161B22', line: '#F000FF' };
+          } else {
+            // *** THE FIX *** Use magenta for nodes and lines in light mode
+            this.colors = {
+              primary: '#F000FF',
+              card: '#FFFFFF', // White background
+              line: '#F000FF', // Magenta lines
+            };
           }
+        },
+        
+        // *** THE FIX *** Bind 'this' to the render method here.
+        start() {
+          this.render = this.render.bind(this);
+          this.animationFrameId = window.requestAnimationFrame(this.render);
+        },
+
+        stop() {
+          window.cancelAnimationFrame(this.animationFrameId);
+        },
+
+        render(timestamp: number) {
+          if (this.state.phaseStart === 0) this.state.phaseStart = timestamp;
+          const elapsedTime = timestamp - this.state.phaseStart;
+
+          // State machine logic
+          if (this.state.phase === 'FADING_IN') {
+            const progress = Math.min(elapsedTime / 1000, 1);
+            this.constellation.nodes.forEach((node: Node) => node.opacity = progress);
+            if (progress >= 1) { this.state = { phase: 'DRAWING_EDGES', phaseStart: timestamp }; }
+          } else if (this.state.phase === 'DRAWING_EDGES') {
+            const edgeIndex = Math.floor(elapsedTime / 300);
+            if (edgeIndex < this.constellation.edges.length) {
+                this.constellation.edges[edgeIndex].progress = (elapsedTime % 300) / 300;
+                for(let i=0; i<edgeIndex; i++) this.constellation.edges[i].progress = 1;
+            } else {
+                this.constellation.edges.forEach((edge: Edge) => edge.progress = 1);
+                this.state = { phase: 'PAUSED', phaseStart: timestamp };
+            }
+          } else if (this.state.phase === 'PAUSED') {
+            if (elapsedTime >= 2000) { this.state = { phase: 'FADING_OUT', phaseStart: timestamp }; }
+          } else if (this.state.phase === 'FADING_OUT') {
+            const progress = Math.min(elapsedTime / 1000, 1);
+            this.constellation.nodes.forEach((node: Node) => node.opacity = 1 - progress);
+            if (progress >= 1) {
+              this.currentIndex = (this.currentIndex + 1) % constellationData.length;
+              this.constellation = {
+                  nodes: constellationData[this.currentIndex].nodes.map(n => ({ ...n, opacity: 0 })),
+                  edges: constellationData[this.currentIndex].edges.map(e => ({ ...e, progress: 0 })),
+              };
+              this.state = { phase: 'FADING_IN', phaseStart: timestamp };
+            }
+          }
+
+          // Drawing logic
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = this.colors.card;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const nodesMap = new Map(this.constellation.nodes.map((n: Node) => [n.id, n]));
+          this.constellation.nodes.forEach((node: Node) => {
+              const color = `rgba(240, 0, 255, ${node.opacity})`;
+              ctx.fillStyle = color;
+              ctx.shadowColor = color;
+              ctx.shadowBlur = 10;
+              ctx.beginPath();
+              ctx.arc(node.x * canvas.width, node.y * canvas.height, 4, 0, 2 * Math.PI);
+              ctx.fill();
+          });
+
+          this.constellation.edges.forEach((edge: Edge) => {
+              if (edge.progress > 0) {
+                  const fromNode = nodesMap.get(edge.from) as Node | undefined;
+                  const toNode = nodesMap.get(edge.to) as Node | undefined;
+                  if (fromNode && toNode) {
+                      const fromX = fromNode.x * canvas.width, fromY = fromNode.y * canvas.height;
+                      const toX = toNode.x * canvas.width, toY = toNode.y * canvas.height;
+                      const lineColor = `rgba(240, 0, 255, ${fromNode.opacity * 0.7})`;
+                      ctx.strokeStyle = lineColor;
+                      ctx.lineWidth = 2;
+                      ctx.shadowColor = lineColor;
+                      ctx.shadowBlur = 5;
+                      ctx.beginPath();
+                      ctx.moveTo(fromX, fromY);
+                      ctx.lineTo(fromX + (toX - fromX) * edge.progress, fromY + (toY - fromY) * edge.progress);
+                      ctx.stroke();
+                  }
+              }
+          });
+          this.animationFrameId = window.requestAnimationFrame(this.render);
         }
-      });
+      };
+      
+      animationControllerRef.current.start();
+    }
 
-      animationFrameId = window.requestAnimationFrame(render);
+    const controller = animationControllerRef.current;
+    
+    controller.updateTheme(theme);
+    
+    const resizeCanvas = () => {
+      if (canvas.parentElement) {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+      }
     };
-
     resizeCanvas();
-    animationFrameId = window.requestAnimationFrame(render);
+    window.addEventListener('resize', resizeCanvas);
 
     return () => {
-      window.cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', resizeCanvas);
     };
-  }, [constellations, currentIndex]);
+  }, [theme]);
+
+  useEffect(() => {
+    const controller = animationControllerRef.current;
+    return () => {
+      controller?.stop();
+    }
+  }, []);
 
   return (
-    <div className="w-full h-full bg-[#0D1117]">
+    <div className="w-full h-full bg-card">
       <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );
