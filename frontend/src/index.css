@@ -135,3 +135,7 @@
   }
   .story-link:hover::after { transform: scaleX(1); transform-origin: bottom left; }
 }
+/* Flashcard flip helper */
+.backface-hidden {
+  backface-visibility: hidden;
+}
