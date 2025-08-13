@@ -5,22 +5,19 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, LogOut, LogIn, Menu } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 
-const NavLinks = ({ activeStyle, baseStyle }: { activeStyle: string, baseStyle: string }) => (
-    <div className="hidden md:flex items-center gap-4 text-sm">
-      <NavLink to="/dashboard" className={({isActive}) => isActive ? activeStyle : baseStyle}>Dashboard</NavLink>
-      <NavLink to="/submissions" className={({isActive}) => isActive ? activeStyle : baseStyle}>All Submissions</NavLink>
-      <NavLink to="/topics" className={({isActive}) => isActive ? activeStyle : baseStyle}>Topics for Revision</NavLink>
-      <NavLink to="/profile" className={({isActive}) => isActive ? activeStyle : baseStyle}>Profile</NavLink>
-    </div>
-);
-
 export function Navbar() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
 
-  const navLinkBaseStyle = "text-muted-foreground hover:text-foreground/80";
-  const navLinkActiveStyle = isDark ? "text-[#F000FF]" : "text-[#F000FF]";
+  const NavLinks = () => (
+    <div className="hidden md:flex items-center gap-4 text-sm">
+      <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Dashboard</NavLink>
+      <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>All Submissions</NavLink>
+      <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Topics for Revision</NavLink>
+      <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Profile</NavLink>
+    </div>
+  );
 
   return (
     <header className={`
@@ -29,9 +26,9 @@ export function Navbar() {
     `}>
       <nav className="container flex h-14 items-center justify-between">
         <div className="flex items-center gap-6">
-          <NavLink to="/" className="font-semibold story-link text-foreground">DSA Tracker</NavLink>
-          {/* We now pass the styles as props */}
-          {user && <NavLinks activeStyle={navLinkActiveStyle} baseStyle={navLinkBaseStyle} />}
+          {/* *** THE FIX *** Changed brand name */}
+          <NavLink to="/" className="font-semibold story-link text-foreground">Algolog</NavLink>
+          {user && <NavLinks />}
         </div>
 
         <div className="flex items-center gap-2">
@@ -44,13 +41,13 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="left" className="w-72">
               <nav className="mt-6 grid gap-4 text-sm">
-                <NavLink to="/" className={({isActive}) => isActive ? navLinkActiveStyle : navLinkBaseStyle}>Home</NavLink>
+                <NavLink to="/" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Home</NavLink>
                 {user && (
                   <>
-                    <NavLink to="/dashboard" className={({isActive}) => isActive ? navLinkActiveStyle : navLinkBaseStyle}>Dashboard</NavLink>
-                    <NavLink to="/submissions" className={({isActive}) => isActive ? navLinkActiveStyle : navLinkBaseStyle}>All Submissions</NavLink>
-                    <NavLink to="/topics" className={({isActive}) => isActive ? navLinkActiveStyle : navLinkBaseStyle}>Topics for Revision</NavLink>
-                    <NavLink to="/profile" className={({isActive}) => isActive ? navLinkActiveStyle : navLinkBaseStyle}>Profile</NavLink>
+                    <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Dashboard</NavLink>
+                    <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>All Submissions</NavLink>
+                    <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Topics for Revision</NavLink>
+                    <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Profile</NavLink>
                   </>
                 )}
                 <div className="pt-2">
