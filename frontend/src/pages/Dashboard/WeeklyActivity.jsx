@@ -17,7 +17,7 @@ export function WeeklyActivity() {
     setDays(generatedDays);
   }, []);
   return (
-    <Card className="rounded-2xl shadow-lg h-full card">
+    <Card className="rounded-2xl h-full card">
       <CardHeader>
         <CardTitle className="text-base">Weekly Activity</CardTitle>
       </CardHeader>

@@ -2,7 +2,7 @@ import User from '../models/userSchema.js';
 import jwt from 'jsonwebtoken';
 import { JWT_EXPIRATION, COOKIE_EXPIRATION } from '../config/constants.js';
 
-const generateToken = (res, userId) => {
+export const generateToken = (res, userId) => {
   const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
     expiresIn: JWT_EXPIRATION,
   });

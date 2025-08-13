@@ -9,7 +9,7 @@ import { Star, FolderClock } from "lucide-react";
 
 export function SavedCollections() {
   return (
-    <Card className="rounded-2xl shadow-lg card">
+    <Card className="rounded-2xl card">
       <CardHeader className="py-5">
         <CardTitle className="text-base">Saved Collections</CardTitle>
       </CardHeader>

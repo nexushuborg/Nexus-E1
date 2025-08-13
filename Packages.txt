@@ -1,3 +1,0 @@
-cd frontend
-npm install
-npm install react react-router-dom lucide-react date-fns radix-ui path clx clsx tailwind-merge class-variance-authority react-day-picker

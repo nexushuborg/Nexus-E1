@@ -1,6 +1,4 @@
-/* Pre Defined CSS *\
-
-/* #root {
+#root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -41,4 +39,12 @@
 
 .read-the-docs {
   color: #888;
-} */
+}
+
+/* Hide scrollbar for right section */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar{display:none;}
+.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}

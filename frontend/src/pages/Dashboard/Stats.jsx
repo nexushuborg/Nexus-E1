@@ -10,7 +10,7 @@ import { Check } from "lucide-react";
 export function Stats() {
   return (
     <div className="grid grid-cols-2 gap-6">
-      <Card className="rounded-2xl shadow-lg card">
+      <Card className="rounded-2xl card">
         <CardContent className="flex flex-col items-center justify-center h-full p-6">
           <div className="bg-green-500 rounded-full p-2">
             <Check className="h-6 w-6 text-white" />
@@ -23,7 +23,7 @@ export function Stats() {
           </div>
         </CardContent>
       </Card>
-      <Card className="rounded-2xl shadow-lg card">
+      <Card className="rounded-2xl card">
         <CardContent className="flex flex-col items-center justify-center h-full p-6">
           <CardTitle className="text-sm font-medium text-muted-foreground mb-2">
             Daily Goals

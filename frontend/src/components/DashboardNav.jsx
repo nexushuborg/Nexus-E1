@@ -21,17 +21,15 @@ export default function Navbar({ searchQuery, onSearchChange }) {
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
     setIsDarkMode(isDark);
+
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e) => {
       const newIsDarkMode = e.matches;
       setIsDarkMode(newIsDarkMode);
-      if (newIsDarkMode) {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
+      document.documentElement.classList.toggle("dark", newIsDarkMode);
     };
     mediaQuery.addEventListener("change", handleChange);
+
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
@@ -39,6 +37,7 @@ export default function Navbar({ searchQuery, onSearchChange }) {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       mediaQuery.removeEventListener("change", handleChange);
       window.removeEventListener("keydown", handleKeyDown);
@@ -48,68 +47,71 @@ export default function Navbar({ searchQuery, onSearchChange }) {
   const toggleDarkMode = () => {
     const newIsDarkMode = !isDarkMode;
     setIsDarkMode(newIsDarkMode);
-    if (newIsDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    document.documentElement.classList.toggle("dark", newIsDarkMode);
   };
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 h-18 border-b bg-background shadow-lg",
-        isDarkMode && "dark:shadow-md dark:shadow-blue-900"
+        "sticky top-0 z-30 h-14 border-b bg-background shadow-sm",
+        isDarkMode && "dark:shadow-sm dark:shadow-blue-900"
       )}
     >
-      <div className="flex h-full items-center justify-between px-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
+      <div className="flex h-full items-center justify-between px-4 max-w-7xl mx-auto">
+        {/* Logo */}
+        <div className="flex items-center gap-2">
           <img
             src="/images/Algolog Logo.jpg"
             alt="AlgoLog Logo"
-            className="w-10 h-10 object-contain rounded-full"
+            className="w-8 h-8 object-contain rounded-full"
           />
           <h1
-            className="text-xl md:text-2xl font-bold tracking-wider font-headline cursor-pointer"
+            className="text-lg md:text-xl font-bold tracking-wide font-headline cursor-pointer"
             onClick={() => (window.location.href = "/")}
           >
             AlgoLog
           </h1>
         </div>
-        <div className="hidden md:flex flex-1 justify-center px-8">
+
+        {/* Search */}
+        <div className="hidden md:flex flex-1 justify-center px-4">
           <SearchBar
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}
           />
         </div>
-        <div className="flex items-center gap-4">
+
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleDarkMode}
-            className="rounded-full h-10 w-10 background border-2"
+            className="rounded-full h-8 w-8 border"
           >
             {isDarkMode ? (
-              <Sun className="h-5 w-5" />
+              <Sun className="h-4 w-4" />
             ) : (
-              <Moon className="h-5 w-5" />
+              <Moon className="h-4 w-4" />
             )}
             <span className="sr-only">Toggle dark mode</span>
           </Button>
-          <div className="flex items-center gap-2 text-base font-medium">
-            <Flame className="h-6 w-6 text-orange-500" />
+
+          <div className="flex items-center gap-1 text-sm font-medium">
+            <Flame className="h-4 w-4 text-orange-500" />
             <span>25</span>
           </div>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full h-10 w-10"
+                className="rounded-full h-8 w-8"
               >
-                <Avatar className="h-10 w-10">
+                <Avatar className="h-8 w-8">
                   <AvatarImage
-                    src="https://placehold.co/100x100.png"
+                    src="https://placehold.co/80x80.png"
                     alt="User"
                   />
                   <AvatarFallback>U</AvatarFallback>
@@ -122,7 +124,7 @@ export default function Navbar({ searchQuery, onSearchChange }) {
                 backgroundColor: "hsl(var(--popover))",
                 color: "hsl(var(--popover-foreground))",
               }}
-              className="rounded-md border border-border shadow-lg"
+              className="rounded-md border border-border shadow-lg text-sm"
             >
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -133,7 +135,7 @@ export default function Navbar({ searchQuery, onSearchChange }) {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => alert("Logout clicked")}>
+              <DropdownMenuItem onClick={() => navigate("/")}>
                 Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
