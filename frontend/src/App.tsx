@@ -11,13 +11,26 @@ import Dashboard from "./pages/Dashboard";
 import Submissions from "./pages/Submissions";
 import SubmissionDetail from "./pages/SubmissionDetail";
 import Topics from "./pages/Topics";
+import TopicsPage from "./pages/TopicsPage";
+import TopicDetail from "./pages/TopicDetail";
 import Profile from "./pages/Profile";
+import CodeView from "./pages/CodeView";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: false,
+    },
+  },
+});
 
 const App = () => (
   <HelmetProvider>
@@ -38,7 +51,9 @@ const App = () => (
                     <Route path="/submissions" element={<ProtectedRoute><Submissions /></ProtectedRoute>} />
                     <Route path="/submissions/:id" element={<ProtectedRoute><SubmissionDetail /></ProtectedRoute>} />
                     <Route path="/topics" element={<ProtectedRoute><Topics /></ProtectedRoute>} />
+                    <Route path="/topics/:id" element={<ProtectedRoute><TopicDetail /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/code/:id" element={<ProtectedRoute><CodeView /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>

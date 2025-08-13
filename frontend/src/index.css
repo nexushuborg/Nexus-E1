@@ -8,6 +8,11 @@
 /* Design System — All colors use HSL variables */
 
 @layer base {
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+  
   :root {
     /* Surfaces */
     --background: 0 0% 96%; /* #F5F5F5 */
@@ -242,3 +247,8 @@ body::before {
   from { transform: rotateY(0deg); }
   to { transform: rotateY(180deg); }
 }
+/* Flashcard flip helper */
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
