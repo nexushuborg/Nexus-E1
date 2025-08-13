@@ -204,3 +204,8 @@ body::before {
   transform: scale(0.98); 
 }
 
+/* Flashcard flip helper */
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
