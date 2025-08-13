@@ -1,72 +1,114 @@
 @import "tailwindcss";
 
-/* Pre Defined CSS *\
+/* Utility to convert hex #F000FF to HSL:
+   #F000FF → hsl(292, 100%, 50%) approx */
 
-/* :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:root {
+  /* Light mode */
+  --background: 230 10% 96%;
+  /* approx #F5F5F5, light gray */
+  --foreground: 230 20% 15%;
+  /* dark gray text */
+  --card: 0 0% 100%;
+  /* white cards */
+  --card-foreground: 230 20% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 230 20% 15%;
+  --primary: 292 100% 50%;
+  /* electric magenta */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 230 10% 90%;
+  --secondary-foreground: 230 20% 15%;
+  --muted: 230 10% 85%;
+  --muted-foreground: 230 8% 40%;
+  --accent: 230 10% 90%;
+  --accent-foreground: 230 20% 15%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 230 10% 80%;
+  --input: 230 10% 92%;
+  --ring: 292 100% 50%;
+  /* electric magenta */
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+  --radius: 0.8rem;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+.dark {
+  /* Dark mode */
+  --background: 220 50% 7%;
+  /* #0D1117 approx in HSL */
+  --foreground: 0 0% 95%;
+  --card: 220 30% 12%;
+  --cardcol: 220 30% 12%;
+  --card-foreground: 0 0% 95%;
+  --popover: 220 50% 7%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 292 100% 50%;
+  /* electric magenta */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 20% 15%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 220 20% 20%;
+  --muted-foreground: 220 20% 60%;
+  --accent: 220 20% 15%;
+  --accent-foreground: 0 0% 95%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 95%;
+  --border: 220 20% 25%;
+  --input: 220 20% 15%;
+  --ring: 292 100% 50%;
+  /* electric magenta */
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
 }
-a:hover {
-  color: #535bf2;
+
+.card {
+  background-color: hsl(var(--cardcol));
+}
+
+/* Global border color */
+* {
+  border-color: hsl(var(--border));
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+::-webkit-scrollbar-track {
+  background-color: hsl(var(--background));
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground));
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
