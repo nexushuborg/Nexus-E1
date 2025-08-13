@@ -148,11 +148,11 @@ export const TagInput = ({
         ))}
       </div>
       
+
       {/* Visual separator */}
       {tags.length > 0 && tags.length < maxTags && (
         <div className="border-t border-border/50 my-2"></div>
       )}
-      
       {/* Show the input field only if the tag limit hasn't been reached */}
       {tags.length < maxTags && (
         <div className="flex gap-2">
