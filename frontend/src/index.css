@@ -8,6 +8,11 @@
 /* Design System — All colors use HSL variables */
 
 @layer base {
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+  
   :root {
     /* Surfaces */
     --background: 0 0% 96%; /* #F5F5F5 */

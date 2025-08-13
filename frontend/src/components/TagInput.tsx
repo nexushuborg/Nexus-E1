@@ -61,6 +61,12 @@ const tagCategories = {
   'Easy': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-700',
   'Medium': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
   'Hard': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-700',
+  
+  // Magenta-themed categories for consistency
+  'Algorithm': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
+  'Data Structure': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
+  'Pattern': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
+  'Technique': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
 };
 
 // Default color for uncategorized tags
@@ -142,6 +148,11 @@ export const TagInput = ({
         ))}
       </div>
       
+
+      {/* Visual separator */}
+      {tags.length > 0 && tags.length < maxTags && (
+        <div className="border-t border-border/50 my-2"></div>
+      )}
       {/* Show the input field only if the tag limit hasn't been reached */}
       {tags.length < maxTags && (
         <div className="flex gap-2">
@@ -150,13 +161,14 @@ export const TagInput = ({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className="flex-1 bg-background border-border focus:ring-primary"
+            className="flex-1 bg-background border-border focus:ring-[#F000FF] focus:border-[#F000FF]"
           />
           <Button
             type="button"
             size="icon"
             onClick={() => addTag(inputValue)}
             disabled={!inputValue.trim()}
+            className="bg-[#F000FF] hover:bg-[#F000FF]/80 text-white disabled:bg-muted disabled:text-muted-foreground"
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -164,6 +176,9 @@ export const TagInput = ({
       )}
       
       {/* Show a message when the tag limit is reached */}
+      {tags.length >= maxTags && (
+        <div className="border-t border-border/50 my-2"></div>
+      )}
       {tags.length >= maxTags && (
         <p className="text-xs text-muted-foreground">
           Maximum {maxTags} tags reached
