@@ -12,7 +12,7 @@ export function Footer() {
         
         {/* Copyright */}
         <div className="text-muted-foreground">
-          © {new Date().getFullYear()} Algologs
+          © {new Date().getFullYear()} Algolog
         </div>
 
         {/* Social and Contact Links */}
@@ -31,7 +31,7 @@ export function Footer() {
           </a>
           <a href="mailto:cn10xiter@gmail.com" className={linkStyle}>
             <Mail className="h-4 w-4" />
-            cn10xiter@gmail.com
+            cnxiter.7008@gmail.com
           </a>
         </div>
 

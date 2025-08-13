@@ -26,8 +26,8 @@ export function Navbar() {
     `}>
       <nav className="container flex h-14 items-center justify-between">
         <div className="flex items-center gap-6">
-          {/* *** THE FIX *** Changed brand name */}
-          <NavLink to="/" className="font-semibold story-link text-foreground">Algolog</NavLink>
+          {/* *** THE FIX *** Added the new font-brand class */}
+          <NavLink to="/" className="font-semibold story-link text-foreground font-brand text-xl">Algolog</NavLink>
           {user && <NavLinks />}
         </div>
 
