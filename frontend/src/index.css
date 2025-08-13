@@ -204,3 +204,14 @@ body::before {
   transform: scale(0.98); 
 }
 
+.dark .form-input-profile:focus-visible {
+  outline: none;
+  border-color: #F000FF !important;
+  box-shadow: 0 0 10px rgba(240, 0, 255, 0.6) !important;
+}
+
+.form-input-profile:focus-visible {
+  outline: none;
+  border-color: #F000FF !important;
+  box-shadow: 0 0 10px rgba(240, 0, 255, 0.6) !important;
+}
