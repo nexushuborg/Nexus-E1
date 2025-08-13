@@ -6,6 +6,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { Github, GitBranch, Sparkles, BookOpenCheck } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Footer } from "@/components/ui/Footer";
 
 function SpinningWire({ isDark }: { isDark: boolean }) {
   const ref = useRef<any>();
@@ -115,12 +116,7 @@ const Index = () => {
         </div>
       </section>
 
-      <footer className="border-t">
-        <div className="container py-8 text-center text-sm text-muted-foreground">
-          <div>© {new Date().getFullYear()} DSA Tracker</div>
-          <div className="mt-2">Contact: support@dsatracker.dev</div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 };

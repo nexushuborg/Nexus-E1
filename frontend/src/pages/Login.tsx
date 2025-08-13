@@ -4,14 +4,7 @@ import { Github } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import ConstellationAnimation from "@/components/ui/ConstellationAnimation";
 import { useTheme } from "next-themes";
-
-// A simple placeholder for the Footer
-const Footer = () => (
-    <footer className="w-full text-center p-4 text-muted-foreground text-sm">
-      © 2025 Nexus-Hub. All Rights Reserved.
-    </footer>
-);
-
+import { Footer } from "@/components/ui/Footer";
 
 export default function Login() {
   const { signInWithGitHub } = useAuth();
