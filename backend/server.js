@@ -1,6 +1,5 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import session from 'express-session';
 import cors from 'cors';
 import gitAuthRoutes from './routes/authRoutes.js';
 import path from 'path';
@@ -20,29 +19,15 @@ const app = express();
 // Database connection
 connectDB();
 
-// Passport config
-// passportConfig(passport);
-
 // Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// session setup
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
-  })
-);
-
 
 // Passport middleware
 app.use(passport.initialize());
-app.use(passport.session());
 
 // Routes
 app.use('/api/github', gitAuthRoutes);
