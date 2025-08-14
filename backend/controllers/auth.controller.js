@@ -28,5 +28,5 @@ export const logout = (req, res) => {
 // This is the callback function for GitHub OAuth
 export const githubCallback = (req, res) => {
     generateToken(res, req.user._id);
-    res.redirect(process.env.FRONTEND_URL || '/');   // Redirect to the frontend application after successful login
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);   // Redirect to the dashboard
 };

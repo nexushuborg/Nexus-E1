@@ -22,53 +22,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // This effect runs once when the app loads to check for a logged-in user
   useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      // Check if user was previously "logged in" (stored in localStorage)
-      const savedUser = localStorage.getItem('mockUser');
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (error) {
-          console.error('Error parsing saved user:', error);
+    const checkUserStatus = async () => {
+      try {
+        // fetching from the backend's profile endpoint. The proxy will handle the redirect
+        const res = await fetch("/api/auth/profile");
+        if (res.ok) {
+          const data = await res.json();
+          // backend should return the user object if they are logged in
+          setUser(data.user);
         }
+      } catch (error) {
+        console.error("User not authenticated:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    };
+    checkUserStatus();
   }, []);
 
+  // this function now simply redirects to the backend to start the GitHub login
   const signInWithGitHub = () => {
-    // Simulate GitHub OAuth flow
-    console.log("Simulating GitHub sign-in...");
-
-    const mockUser: User = {
-      _id: "mock-123",
-      name: "Jayashree",
-      username: "Jayashree-25",
-      githubId: "jayashree-github-id",
-      avatarUrl: "https://github.com/Jayashree-25.png"
-    };
-
-    // Save to localStorage to persist across page refreshes
-    localStorage.setItem('mockUser', JSON.stringify(mockUser));
-    setUser(mockUser);
-
-    // Simulate redirect back to app
-    window.location.href = "/dashboard";
+    window.location.href = "/api/auth/github";
   };
 
+  // this function now calls the backend's logout endpoint
   const signOut = async () => {
-    console.log("Signing out...");
-
-    // Remove from localStorage
-    localStorage.removeItem('mockUser');
-    setUser(null);
-
-    // Redirect to home
-    window.location.href = "/";
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   const isAuthenticated = !!user;

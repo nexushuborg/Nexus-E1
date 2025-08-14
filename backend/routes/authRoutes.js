@@ -10,6 +10,6 @@ router.get("/github", passport.authenticate("github", { scope: ['user:email'] })
 router.get("/github/callback", passport.authenticate("github", { failureRedirect: "/", session: false }), githubCallback);
 router.get("/welcome", welcome)
 router.get("/profile", protect, profile);
-router.get("/logout", logout);
+router.post("/logout", logout);
 
 export default router;

@@ -27,8 +27,8 @@ export default function Profile() {
   };
 
   const avatarFallback = user?.name ? user.name.charAt(0).toUpperCase() : "U";
-  const avatarUrl = user?.name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random` : "";
-
+  // Prioritize the real avatar from the user object, then fall back to the generated one
+  const avatarUrl = user?.avatarUrl || (user?.name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random` : "");
 
   return (
     <main className="container py-8">
@@ -38,7 +38,6 @@ export default function Profile() {
         <link rel="canonical" href="/profile" />
       </Helmet>
 
-      {/* *** THE FIX *** Added text-foreground */}
       <h1 className="text-3xl font-semibold mb-6 text-foreground">Profile</h1>
 
       <section className="rounded-xl border bg-card p-6 shadow-sm mb-6 flex items-center gap-4">
@@ -47,7 +46,6 @@ export default function Profile() {
           <AvatarFallback>{avatarFallback}</AvatarFallback>
         </Avatar>
         <div>
-          {/* *** THE FIX *** Added text-foreground */}
           <div className="font-semibold text-foreground">{user?.name ?? 'GitHub User'}</div>
           <div className="text-sm text-muted-foreground">{user?.username ?? 'username'}</div>
         </div>
@@ -55,13 +53,11 @@ export default function Profile() {
 
       <section className="rounded-xl border bg-card p-6 shadow-sm grid gap-4">
         <div>
-          {/* *** THE FIX *** Added text-foreground */}
           <label className="text-sm block mb-2 text-foreground">Connected GitHub Repository</label>
           <Input className="form-input-profile" placeholder="username/repository" value={repo} onChange={(e) => setRepo(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">The extension will commit files to this repo.</p>
         </div>
         <div>
-          {/* *** THE FIX *** Added text-foreground */}
           <label className="text-sm block mb-2 text-foreground">API Key</label>
           <Input className="form-input-profile" placeholder="Paste your key" value={gemini} onChange={(e) => setGemini(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">Used by the extension to generate summaries.</p>

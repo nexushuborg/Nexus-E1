@@ -6,7 +6,7 @@ export const home = (req, res) => {
 
 export const githubCallback = (req, res) => {
     generateToken(res, req.user._id);
-    res.redirect("/api/github/welcome");
+    res.redirect((process.env.FRONTEND_URL || 'http://localhost:8080') + "/dashboard");
 };
 
 export const welcome = (req, res) => {
@@ -14,13 +14,20 @@ export const welcome = (req, res) => {
 }
 
 export const profile = (req, res) => {
-    res.send(`<h2>github username :${req.user.username}</h2><a href="/api/github/logout">Logout</a>`);
+    if (req.user) {
+        res.status(200).json({ user: req.user });
+    } else {
+        res.status(401).json({ message: "Not authenticated" });
+    }
 };
 
 export const logout = (req, res) => {
-    req.logout(() => {
+    req.logout((err) => {
+        if (err) {
+            return res.status(500).json({ message: "Error logging out" });
+        }
         res.clearCookie("connect.sid");
         res.clearCookie("jwt");
-        res.redirect("/api/github/home");
+        res.status(200).json({ message: "Logged out successfully" });
     });
 };
