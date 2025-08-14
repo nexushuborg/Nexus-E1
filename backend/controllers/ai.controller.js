@@ -38,6 +38,7 @@ class AIController {
       });
     }
   }
+  
   // Analyze code from submission
   async analyzeSubmission(req, res) {
     try {
