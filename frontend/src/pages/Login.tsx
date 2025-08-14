@@ -1,26 +1,34 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Github } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import ConstellationAnimation from "@/components/ui/ConstellationAnimation";
 import { useTheme } from "next-themes";
-
-// A simple placeholder for the Footer
-const Footer = () => (
-    <footer className="w-full text-center p-4 text-muted-foreground text-sm">
-      © 2025 Nexus-Hub. All Rights Reserved.
-    </footer>
-);
-
+import { useNavigate } from "react-router-dom"; 
+import { Footer } from "@/components/ui/Footer";
 
 export default function Login() {
   const { signInWithGitHub } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const navigate = useNavigate(); // *** THE FIX *** Get the navigate function
+  const { user, loading } = useAuth(); // *** THE FIX *** Get user and loading status
+
+  // *** THE FIX *** Add useEffect for redirection
+  useEffect(() => {
+    // When loading is finished and a user exists, redirect to dashboard
+    if (!loading && user) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
+  // While checking for a user, we can show a blank page or a loader
+  if (loading || user) {
+      return <div className="min-h-screen bg-background"></div>;
+  }
 
   return (
-    // *** THE FIX *** Switched to a CSS Grid layout for robust positioning
-    <div className="grid h-screen grid-rows-[1fr_auto] bg-background overflow-hidden transition-colors duration-300">
+    <div className="flex flex-col h-screen bg-background overflow-hidden transition-colors duration-300">
       <Helmet>
         <title>Sign In – DSA Tracker</title>
         <meta name="description" content="Sign in to your DSA submissions account." />
@@ -42,8 +50,7 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Main content area - removed flex-grow as it's now a grid item */}
-      <main className="flex items-center justify-center p-4 relative z-10">
+      <main className="flex-grow flex items-center justify-center p-4 relative z-10">
         <div
           className={`
             w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl 
@@ -88,8 +95,6 @@ export default function Login() {
           </div>
         </div>
       </main>
-
-      {/* The Footer is now the second row in our grid */}
       <Footer />
     </div>
   );

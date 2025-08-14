@@ -26,7 +26,8 @@ export function Navbar() {
     `}>
       <nav className="container flex h-14 items-center justify-between">
         <div className="flex items-center gap-6">
-          <NavLink to="/" className="font-semibold story-link text-foreground">DSA Tracker</NavLink>
+          {/* *** THE FIX *** Added the new font-brand class */}
+          <NavLink to="/" className="font-semibold story-link text-foreground font-brand text-xl">Algolog</NavLink>
           {user && <NavLinks />}
         </div>
 
@@ -81,7 +82,6 @@ export function Navbar() {
             size="icon" 
             onClick={() => setTheme(isDark ? "light" : "dark")} 
             aria-label="Toggle theme" 
-            // *** THE FIX *** Added dark:hover:bg-transparent to remove the blue fill
             className="hidden md:inline-flex hover:border-[#F000FF] hover:text-[#F000FF] dark:hover:bg-transparent"
           >
             {isDark ? <Sun className="h-4 w-4"/> : <Moon className="h-4 w-4"/>}
