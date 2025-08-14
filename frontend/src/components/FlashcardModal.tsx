@@ -40,13 +40,6 @@ export function FlashcardModal({ open, onOpenChange, topic, cards }: FlashcardMo
             <div
               className={`relative h-48 w-full rounded-lg border bg-card text-card-foreground shadow-sm transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? '[transform:rotateY(180deg)]' : ''}`}
               onClick={() => count > 0 && setFlipped((f) => !f)}
-              // {/* Press enter or space to flip*/}
-              onKeyDown={(e) =>
-                e.key === "Enter" || e.key === " "
-                  ? setFlipped((f) => !f)
-                  : null
-              }
-              tabIndex={0}
               role="button"
               aria-label="Flip card"
             >

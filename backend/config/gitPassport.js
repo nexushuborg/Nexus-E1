@@ -11,7 +11,7 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/api/github/github/callback",
+      callbackURL: "http://localhost:5000/api/github/github/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       const githubProfile = {
@@ -37,4 +37,18 @@ passport.use(
   )
 );
 
+// switching to jwt
+
+// passport.serializeUser((user, done) => {
+//   done(null, user.id);
+// });
+
+// passport.deserializeUser(async (id, done) => {
+//   try {
+//     const user = await User.findById(id);
+//     done(null, user);
+//   } catch (err) {
+//     done(err, null);
+//   }
+// });
 

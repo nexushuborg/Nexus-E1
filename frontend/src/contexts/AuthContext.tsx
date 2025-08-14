@@ -1,88 +1,57 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-export interface User {
-  _id: string;
-  name: string;
-  username: string;
-  githubId: string;
-  avatarUrl?: string;
+// Placeholder types while backend integration is wired
+export interface MockUser {
+  id: string;
+  email?: string;
+  user_metadata?: { avatar_url?: string; user_name?: string; name?: string };
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: MockUser | null;
   loading: boolean;
-  signInWithGitHub: () => void;
+  signInWithGitHub: () => Promise<void>;
   signOut: () => Promise<void>;
-  isAuthenticated: boolean;
 }
+
+const STORAGE_KEY = "dsa-tracker-user";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      // Check if user was previously "logged in" (stored in localStorage)
-      const savedUser = localStorage.getItem('mockUser');
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (error) {
-          console.error('Error parsing saved user:', error);
-        }
-      }
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) setUser(JSON.parse(raw));
+    setLoading(false);
   }, []);
 
-  const signInWithGitHub = () => {
-    // Simulate GitHub OAuth flow
-    console.log("Simulating GitHub sign-in...");
-
-    const mockUser: User = {
-      _id: "mock-123",
-      name: "Jayashree",
-      username: "Jayashree-25",
-      githubId: "jayashree-github-id",
-      avatarUrl: "https://github.com/Jayashree-25.png"
+  const signInWithGitHub = async () => {
+    // Placeholder: Simulate GitHub OAuth success
+    const mock: MockUser = {
+      id: crypto.randomUUID(),
+      email: "octocat@example.com",
+      user_metadata: {
+        avatar_url: "https://avatars.githubusercontent.com/u/583231?v=4",
+        user_name: "octocat",
+        name: "The Octocat",
+      },
     };
-
-    // Save to localStorage to persist across page refreshes
-    localStorage.setItem('mockUser', JSON.stringify(mockUser));
-    setUser(mockUser);
-
-    // Simulate redirect back to app
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mock));
+    setUser(mock);
     window.location.href = "/dashboard";
   };
 
   const signOut = async () => {
-    console.log("Signing out...");
-
-    // Remove from localStorage
-    localStorage.removeItem('mockUser');
+    localStorage.removeItem(STORAGE_KEY);
     setUser(null);
-
-    // Redirect to home
     window.location.href = "/";
   };
 
-  const isAuthenticated = !!user;
-
-  const value = {
-    user,
-    loading,
-    signInWithGitHub,
-    signOut,
-    isAuthenticated,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, signInWithGitHub, signOut }}>
       {children}
     </AuthContext.Provider>
   );
@@ -90,8 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }

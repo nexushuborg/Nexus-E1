@@ -21,12 +21,6 @@ export default function Profile() {
     localStorage.setItem("gemini-key", gemini);
     toast({ title: "Saved", description: "Profile settings updated." });
   };
-  
-  // Create a fallback for the avatar using the first letter of the user's name
-  const avatarFallback = user?.name ? user.name.charAt(0).toUpperCase() : "U";
-  // Generate a consistent avatar image based on the user's name
-  const avatarUrl = user?.name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random` : "";
-
 
   return (
     <main className="container py-8">
@@ -40,14 +34,12 @@ export default function Profile() {
 
       <section className="rounded-xl border bg-card p-6 shadow-sm mb-6 flex items-center gap-4">
         <Avatar>
-          {/* *** THE FIX *** Use the generated avatarUrl */}
-          <AvatarImage src={avatarUrl} alt="User avatar" />
-          <AvatarFallback>{avatarFallback}</AvatarFallback>
+          <AvatarImage src={user?.user_metadata?.avatar_url} alt="GitHub avatar" />
+          <AvatarFallback>GH</AvatarFallback>
         </Avatar>
         <div>
-          {/* *** THE FIX *** Use user.name and user.username from the real user object */}
-          <div className="font-semibold">{user?.name ?? 'GitHub User'}</div>
-          <div className="text-sm text-muted-foreground">{user?.username ?? 'username'}</div>
+          <div className="font-semibold">{user?.user_metadata?.name ?? 'GitHub User'}</div>
+          <div className="text-sm text-muted-foreground">{user?.user_metadata?.user_name ?? 'username'}</div>
         </div>
       </section>
 

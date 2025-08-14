@@ -65,6 +65,3 @@ node_modules/
 
 # Windows system files
 Thumbs.db
-
-# Package-lock json
-package-lock.json
