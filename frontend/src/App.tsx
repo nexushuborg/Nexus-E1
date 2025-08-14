@@ -11,13 +11,26 @@ import Dashboard from "./pages/Dashboard/Dashboard_Page";
 import Submissions from "./pages/Submissions";
 import SubmissionDetail from "./pages/SubmissionDetail";
 import Topics from "./pages/Topics";
+import TopicsPage from "./pages/TopicsPage";
+import TopicDetail from "./pages/TopicDetail";
 import Profile from "./pages/Profile";
+import CodeView from "./pages/CodeView";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: false,
+    },
+  },
+});
 
 function AppContent() {
   const location = useLocation();

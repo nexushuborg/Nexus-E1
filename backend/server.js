@@ -22,6 +22,9 @@ const app = express();
 // Database connection
 connectDB();
 
+// Passport config
+// passportConfig(passport);
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
@@ -48,7 +51,7 @@ app.use("/leetcode", lcRoute);
 
 
 // Start server
-const PORT = process.env.BACKEND_PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
