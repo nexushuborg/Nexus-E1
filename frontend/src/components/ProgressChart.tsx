@@ -6,7 +6,7 @@ export default function ProgressChart({ data }: Props) {
   return (
     <div className="h-64 w-full">
       <ResponsiveContainer>
-        <AreaChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
+        <AreaChart data={data} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
           <defs>
             <linearGradient id="colorPrimary" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={`hsl(var(--primary))`} stopOpacity={0.7}/>

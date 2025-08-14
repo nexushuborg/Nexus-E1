@@ -2,12 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard/Dashboard_Page";
 import Submissions from "./pages/Submissions";
 import SubmissionDetail from "./pages/SubmissionDetail";
 import Topics from "./pages/Topics";
@@ -15,22 +16,96 @@ import TopicsPage from "./pages/TopicsPage";
 import TopicDetail from "./pages/TopicDetail";
 import Profile from "./pages/Profile";
 import CodeView from "./pages/CodeView";
+
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Navbar } from "./components/Navbar";
 
+// React Query client with default options
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 10 * 60 * 1000,   // 10 minutes
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       retry: false,
     },
   },
 });
+
+function AppContent() {
+  const location = useLocation();
+  const showNavbar = location.pathname !== "/dashboard";
+
+  return (
+    <>
+      {showNavbar && <Navbar />}
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/submissions"
+          element={
+            <ProtectedRoute>
+              <Submissions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/submissions/:id"
+          element={
+            <ProtectedRoute>
+              <SubmissionDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/topics"
+          element={
+            <ProtectedRoute>
+              <TopicsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/topics/:id"
+          element={
+            <ProtectedRoute>
+              <TopicDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/code/:id"
+          element={
+            <ProtectedRoute>
+              <CodeView />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+}
 
 const App = () => (
   <HelmetProvider>
@@ -41,19 +116,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/submissions" element={<ProtectedRoute><Submissions /></ProtectedRoute>} />
-                <Route path="/submissions/:id" element={<ProtectedRoute><SubmissionDetail /></ProtectedRoute>} />
-                <Route path="/topics" element={<ProtectedRoute><TopicsPage /></ProtectedRoute>} />
-                <Route path="/topics/:id" element={<ProtectedRoute><TopicDetail /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/code/:id" element={<ProtectedRoute><CodeView /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <AppContent />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
