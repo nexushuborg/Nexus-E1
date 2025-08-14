@@ -41,19 +41,23 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/submissions" element={<ProtectedRoute><Submissions /></ProtectedRoute>} />
-                <Route path="/submissions/:id" element={<ProtectedRoute><SubmissionDetail /></ProtectedRoute>} />
-                <Route path="/topics" element={<ProtectedRoute><TopicsPage /></ProtectedRoute>} />
-                <Route path="/topics/:id" element={<ProtectedRoute><TopicDetail /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/code/:id" element={<ProtectedRoute><CodeView /></ProtectedRoute>} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-grow bg-background transition-colors duration-300">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/submissions" element={<ProtectedRoute><Submissions /></ProtectedRoute>} />
+                    <Route path="/submissions/:id" element={<ProtectedRoute><SubmissionDetail /></ProtectedRoute>} />
+                    <Route path="/topics" element={<ProtectedRoute><Topics /></ProtectedRoute>} />
+                    <Route path="/topics/:id" element={<ProtectedRoute><TopicDetail /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/code/:id" element={<ProtectedRoute><CodeView /></ProtectedRoute>} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+              </div>
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
