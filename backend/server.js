@@ -10,6 +10,9 @@ import authRoutes from './routes/auth.routes.js';
 // import passportConfig from './config/passport.js';
 import "./config/gitPassport.js"
 
+import { default as gfgRoute } from "./routes/gfg.js";
+import { default as hrRoute } from "./routes/hackerrank.js";
+import { default as lcRoute } from "./routes/leetcode.js";
 
 dotenv.config();
 
@@ -23,6 +26,7 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(express.text({ type: 'text/html' }));
 app.use(cookieParser());
 
 
@@ -37,6 +41,11 @@ app.use('/api/auth', authRoutes);
 app.get('/', (req, res) => {
   res.send('Hello from Express!');
 });
+
+app.use("/gfg", gfgRoute);
+app.use("/hackerrank", hrRoute);
+app.use("/leetcode", lcRoute);
+
 
 // Start server
 const PORT = process.env.BACKEND_PORT || 5000;
