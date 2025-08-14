@@ -5,7 +5,6 @@ import User from '../models/userSchema.js';
 
 dotenv.config();
 
-
 passport.use(
   new GitHubStrategy(
     {
@@ -36,5 +35,19 @@ passport.use(
     }
   )
 );
+
+// Add these essential functions for session management
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
 
 
