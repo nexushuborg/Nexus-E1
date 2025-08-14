@@ -1,12 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import gitAuthRoutes from './routes/authRoutes.js';
 import path from 'path';
 import passport from 'passport';
+import session from 'express-session';  // required for the login system to remember users after they sign in
 import cookieParser from 'cookie-parser';
 import connectDB from './config/connect.js';
-import authRoutes from './routes/auth.routes.js';
+import authRoutes from './routes/authRoutes.js';
 // import passportConfig from './config/passport.js';
 import "./config/gitPassport.js"
 
@@ -32,12 +32,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.text({ type: 'text/html' }));
 app.use(cookieParser());
 
+//session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+}));
 
 // Passport middleware
 app.use(passport.initialize());
+app.use(passport.session()); // Enable session support for persistent logins
 
 // Routes
-app.use('/api/github', gitAuthRoutes);
 app.use('/api/auth', authRoutes);
 
 // Default route
@@ -51,7 +57,7 @@ app.use("/leetcode", lcRoute);
 
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
