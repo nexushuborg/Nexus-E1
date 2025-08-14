@@ -54,7 +54,7 @@ export default function Navbar({ searchQuery, onSearchChange }) {
     <header
       className={cn(
         "sticky top-0 z-30 h-14 border-b bg-background shadow-sm",
-        isDarkMode && "dark:shadow-sm dark:shadow-blue-900"
+        isDarkMode && "dark:shadow-sm"
       )}
     >
       <div className="flex h-full items-center justify-between px-4 max-w-7xl mx-auto">
