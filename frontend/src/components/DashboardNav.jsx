@@ -131,7 +131,7 @@ export default function Navbar({ searchQuery, onSearchChange }) {
               <DropdownMenuItem onClick={() => navigate("/profile")}>
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/settings")}>
+              <DropdownMenuItem onClick={() => navigate("/")}>
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
