@@ -3,9 +3,9 @@ const router = express.Router()
 import * as cheerio from "cheerio";
 import gfgProfile from "../middlewares/gfgProfileData.js";
 import questionData from "../middlewares/gfgQuestionData.js"
+import protect from "../middlewares/auth.middlewares.js"
 
-
-router.post('/', async (req, res) => {
+router.post('/',protect, async (req, res) => {
 
     const response = req.body;
     

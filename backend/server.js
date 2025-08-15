@@ -6,7 +6,7 @@ import path from 'path';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/connect.js';
-import authRoutes from './routes/auth.routes.js';
+import authRoutes from './routes/authRoutes.js';
 // import passportConfig from './config/passport.js';
 import "./config/gitPassport.js"
 
