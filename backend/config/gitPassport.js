@@ -5,7 +5,6 @@ import User from '../models/userSchema.js';
 
 dotenv.config();
 
-
 passport.use(
   new GitHubStrategy(
     {
