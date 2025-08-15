@@ -9,6 +9,8 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/connect.js';
 import authRoutes from './routes/authRoutes.js';
 import aiRoutes from './routes/ai.routes.js';
+
+// import passportConfig from './config/passport.js';
 import "./config/gitPassport.js"
 
 import { default as gfgRoute } from "./routes/gfg.js";
