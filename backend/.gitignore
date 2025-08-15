@@ -1,3 +1,7 @@
+#test-database files
+db-connect.js
+test-db.js
+
 # Logs
 logs
 *.log
