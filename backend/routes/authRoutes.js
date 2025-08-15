@@ -1,6 +1,6 @@
 import express from "express"
 import passport from "passport";
-import { githubCallback, logout, profile } from "../controllers/gitAuth.controller.js";
+import { githubCallback, logout, profile } from "../controllers/auth.controller.js";
 import { protect } from "../middlewares/auth.middlewares.js";
 
 const router = express.Router();
