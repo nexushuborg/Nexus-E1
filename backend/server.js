@@ -1,7 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import session from 'express-session';
 import gitAuthRoutes from './routes/authRoutes.js';
 import path from 'path';
 import passport from 'passport';
@@ -24,16 +23,6 @@ const app = express();
 // Connect to DB
 connectDB();
 
-// Session configuration (for AI features)
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
 
 // Middlewares
 app.use(cors({
@@ -47,7 +36,6 @@ app.use(cookieParser());
 
 // Passport middleware
 app.use(passport.initialize());
-app.use(passport.session());
 
 // Routes
 app.use('/api/github', gitAuthRoutes);
