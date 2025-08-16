@@ -8,12 +8,9 @@ import { submissions, type Submission } from "@/data/mock";
 import { CodeBlock } from "@/components/CodeBlock";
 import { TagInput } from "@/components/TagInput";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 
-// Error Boundary Component
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; error?: Error }
@@ -51,7 +48,6 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Custom Resizable Splitter Component
 const ResizableSplitter = ({ 
   leftPanel, 
   rightPanel, 
@@ -65,7 +61,6 @@ const ResizableSplitter = ({
   minLeftWidth?: number;
   maxLeftWidth?: number;
 }) => {
-  // Load saved split position from localStorage
   const savedWidth = localStorage.getItem('submission-split-width');
   const initialWidth = savedWidth ? parseFloat(savedWidth) : defaultLeftWidth;
   
@@ -79,7 +74,6 @@ const ResizableSplitter = ({
     setIsDragging(true);
   }, []);
 
-  // Save split position to localStorage
   const saveSplitPosition = useCallback((width: number) => {
     localStorage.setItem('submission-split-width', width.toString());
   }, []);
@@ -92,10 +86,8 @@ const ResizableSplitter = ({
       const newLeftWidth = e.clientX - containerRect.left;
       const containerWidth = containerRect.width;
 
-      // Calculate percentage
       const percentage = (newLeftWidth / containerWidth) * 100;
       
-      // Apply constraints - use percentage-based limits
       const constrainedPercentage = Math.max(minLeftWidth, Math.min(maxLeftWidth, percentage));
 
       setLeftWidth(constrainedPercentage);
@@ -127,7 +119,6 @@ const ResizableSplitter = ({
       className="flex h-full relative"
       style={{ cursor: isDragging ? 'col-resize' : 'default' }}
     >
-      {/* Left Panel */}
       <div 
         className="h-full overflow-auto"
         style={{ width: `${leftWidth}%` }}
@@ -135,7 +126,6 @@ const ResizableSplitter = ({
         {leftPanel}
       </div>
 
-      {/* Resizer Handle */}
       <div
         className="w-3 bg-border hover:bg-border/80 cursor-col-resize transition-colors relative z-10 flex items-center justify-center"
         onMouseDown={handleMouseDown}
@@ -144,7 +134,6 @@ const ResizableSplitter = ({
         <div className="w-1 h-16 bg-muted-foreground/40 rounded-full opacity-60"></div>
       </div>
 
-      {/* Right Panel */}
       <div 
         className="h-full overflow-auto"
         style={{ width: `${100 - leftWidth}%` }}
@@ -155,7 +144,6 @@ const ResizableSplitter = ({
   );
 };
 
-// EditableTextarea Component
 const EditableTextarea = ({ 
   value, 
   onChange, 
@@ -186,7 +174,10 @@ const EditableTextarea = ({
     setIsEditing(true);
     setTimeout(() => {
       textareaRef.current?.focus();
-      textareaRef.current?.select();
+      const textarea = textareaRef.current;
+      if (textarea) {
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      }
     }, 0);
   };
 
@@ -219,7 +210,7 @@ const EditableTextarea = ({
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          className="w-full bg-background border border-border rounded-lg p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#F000FF] focus:border-transparent resize-none"
+          className="w-full bg-background border border-border rounded-lg p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-slate-500 dark:focus:ring-slate-400 focus:border-transparent resize-none"
           style={{ 
             minHeight,
             maxHeight: "200px",
@@ -236,7 +227,7 @@ const EditableTextarea = ({
         <div className="absolute top-3 right-3 flex gap-2">
           <button
             onClick={handleSave}
-            className="px-4 py-2 text-sm bg-gradient-to-r from-[#F000FF] to-[#FF0080] text-white rounded-lg hover:from-[#E000E0] hover:to-[#E60073] transition-all duration-300 shadow-lg hover:shadow-xl font-semibold border-0 transform hover:scale-105 active:scale-95"
+            className="px-4 py-2 text-sm bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl font-semibold border-0 transform hover:scale-105 active:scale-95"
             aria-label="Save changes"
           >
             <Save className="w-4 h-4 mr-2 inline" />
@@ -255,16 +246,14 @@ const EditableTextarea = ({
     );
   }
 
-  // Display mode - auto-size to content
   const getDisplayHeight = () => {
     if (!value || value.trim() === '') {
-      return minHeight;
+      return '4rem';
     }
-    // Calculate approximate height based on content
     const lines = value.split('\n').length;
-    const lineHeight = 24; // 1.5 * 16px
-    const padding = 24; // 12px top + 12px bottom
-    const calculatedHeight = Math.max(parseInt(minHeight), lines * lineHeight + padding);
+    const lineHeight = 24;
+    const padding = 24;
+    const calculatedHeight = Math.max(64, lines * lineHeight + padding);
     return Math.min(calculatedHeight, 200) + 'px';
   };
 
@@ -273,7 +262,7 @@ const EditableTextarea = ({
       <textarea
         value={value}
         readOnly
-        className="w-full bg-background border border-border rounded-lg p-3 text-foreground resize-none cursor-pointer hover:border-[#F000FF]/50 transition-colors"
+        className="w-full bg-background border border-border rounded-lg p-3 text-foreground resize-none cursor-pointer hover:border-slate-500 dark:hover:border-slate-400 transition-colors"
         style={{ 
           height: getDisplayHeight(),
           lineHeight: '1.5',
@@ -286,7 +275,7 @@ const EditableTextarea = ({
       />
       {!disabled && (
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="px-2 py-1 text-xs bg-[#F000FF]/90 text-white rounded-md shadow-sm">
+          <div className="px-2 py-1 text-xs bg-slate-700 dark:bg-slate-600 text-white rounded-md shadow-sm">
             Click to edit
           </div>
         </div>
@@ -295,7 +284,30 @@ const EditableTextarea = ({
   );
 };
 
-// Custom hook for submission data management
+const validateLanguageCode = (submissionId: string, language: string, savedCode: string | null, originalCode: string) => {
+  if (savedCode && savedCode !== originalCode) {
+    const hasJavaScriptSyntax = savedCode.includes('function') || savedCode.includes('const ') || savedCode.includes('let ');
+    const hasPythonSyntax = savedCode.includes('def ') || savedCode.includes('class ') || savedCode.includes('import ');
+    const hasJavaSyntax = savedCode.includes('public class') || savedCode.includes('public void') || savedCode.includes('public static');
+    const hasCppSyntax = savedCode.includes('#include') || savedCode.includes('std::') || savedCode.includes('class Solution {');
+    
+    let shouldClear = false;
+    
+    if (language === 'python' && hasJavaScriptSyntax) shouldClear = true;
+    if (language === 'javascript' && hasPythonSyntax) shouldClear = true;
+    if (language === 'java' && (hasJavaScriptSyntax || hasPythonSyntax)) shouldClear = true;
+    if (language === 'cpp' && (hasJavaScriptSyntax || hasPythonSyntax)) shouldClear = true;
+    if (language === 'typescript' && (hasPythonSyntax || hasJavaSyntax || hasCppSyntax)) shouldClear = true;
+    
+    if (shouldClear) {
+      localStorage.removeItem(`code-${submissionId}`);
+      return originalCode;
+    }
+  }
+  
+  return savedCode || originalCode;
+};
+
 const useSubmissionData = (submissionId: string | undefined) => {
   const [notes, setNotes] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
@@ -311,10 +323,10 @@ const useSubmissionData = (submissionId: string | undefined) => {
   useEffect(() => {
     if (!sub || loadedSubmissionId === sub.id) return;
     
-    // Load saved data
     const savedNotes = localStorage.getItem(`notes-${sub.id}`) || "";
     const savedTags = localStorage.getItem(`tags-${sub.id}`);
-    const savedCode = localStorage.getItem(`code-${sub.id}`) || sub.code;
+    
+    const savedCode = validateLanguageCode(sub.id, sub.language, localStorage.getItem(`code-${sub.id}`), sub.code);
     
     setNotes(savedNotes);
     setTags(savedTags ? JSON.parse(savedTags) : (sub.tags || []));
@@ -329,7 +341,6 @@ const useSubmissionData = (submissionId: string | undefined) => {
     
     setIsSaving(true);
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
       localStorage.setItem(`notes-${sub.id}`, notes);
@@ -345,9 +356,7 @@ const useSubmissionData = (submissionId: string | undefined) => {
   }, [sub, notes, tags, code]);
 
   const resetCode = useCallback(() => {
-    // Reset to the original submission code, not the saved code
     const originalSubmissionCode = sub?.code || "";
-    console.log('Resetting code to original:', originalSubmissionCode);
     setCode(originalSubmissionCode);
     setOriginalCode(originalSubmissionCode);
     setHasUnsavedChanges(false);
@@ -395,8 +404,15 @@ export default function SubmissionDetail() {
     resetCounter
   } = useSubmissionData(id);
 
-  // Check if we're in light mode
   const isLightMode = resolvedTheme === 'light' || theme === 'light';
+  
+  useEffect(() => {
+    sessionStorage.removeItem('submissions-scroll-position');
+    
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [id]);
   
   useEffect(() => {
     const checkMobile = () => {
@@ -459,7 +475,28 @@ export default function SubmissionDetail() {
     }
   };
 
-  // Helper function to get code section classes based on theme
+  const getLanguageBadgeStyle = (language: string) => {
+    switch (language.toLowerCase()) {
+      case 'javascript':
+      case 'js':
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700';
+      case 'python':
+      case 'py':
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-700';
+      case 'java':
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700';
+      case 'cpp':
+      case 'c++':
+      case 'c':
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-700';
+      case 'typescript':
+      case 'ts':
+        return 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-200 border-cyan-200 dark:border-cyan-700';
+      default:
+        return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+    }
+  };
+
   const getCodeSectionClasses = () => {
     if (isLightMode) {
       return "bg-white border-gray-200";
@@ -467,18 +504,16 @@ export default function SubmissionDetail() {
     return "bg-background border-border";
   };
 
-  // Desktop Layout with Resizable Panels
   const DesktopLayout = () => (
     <div className="h-full">
       <ResizableSplitter
         leftPanel={
           <div className="h-full flex flex-col">
-            {/* Tabs */}
             <div className="flex border-b border-border bg-card">
               <button 
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'description' 
-                    ? 'text-[#F000FF] border-[#F000FF]' 
+                    ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
                     : 'text-muted-foreground border-transparent hover:text-foreground'
                 }`}
                 onClick={() => setActiveTab('description')}
@@ -488,8 +523,8 @@ export default function SubmissionDetail() {
               <button 
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'analysis' 
-                    ? 'text-[#F000FF] border-[#F000FF]' 
-                    : 'text-gray-400 border-transparent hover:text-[#F000FF]'
+                    ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
+                    : 'text-gray-400 border-transparent hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
                 onClick={() => setActiveTab('analysis')}
               >
@@ -497,7 +532,6 @@ export default function SubmissionDetail() {
               </button>
             </div>
 
-            {/* Tab Content */}
             <div className="flex-1 overflow-y-auto p-4">
               {activeTab === 'description' && (
                 <div className="space-y-4">
@@ -520,7 +554,7 @@ export default function SubmissionDetail() {
                             <div className="space-y-2">
                               <div>
                                 <span className="text-muted-foreground text-sm font-medium">Input: </span>
-                                <code className="text-[#F000FF] bg-background px-2 py-1 rounded text-sm">
+                                <code className="text-slate-700 dark:text-slate-300 bg-background px-2 py-1 rounded text-sm">
                                   {example.input}
                                 </code>
                               </div>
@@ -547,14 +581,36 @@ export default function SubmissionDetail() {
 
               {activeTab === 'analysis' && (
                 <div className="space-y-4">
-                  {/* AI Summary */}
                   <div className={`
                     dark:bg-[#0D1117] dark:border-[#30363D] 
                     bg-white border-gray-200
                     rounded-lg border p-4
                   `}>
                     <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-[#F000FF]" />
+                      <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                      AI Analysis
+                    </h3>
+                    <p className="text-foreground leading-relaxed mb-4">
+                      Get detailed AI-powered analysis of your code solution, including time complexity, space complexity, and optimization suggestions.
+                    </p>
+                    <Button 
+                      className="bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+                      onClick={() => {
+                        console.log('AI Analysis triggered for:', sub.title);
+                      }}
+                    >
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Analyze Code
+                    </Button>
+                  </div>
+
+                  <div className={`
+                    dark:bg-[#0D1117] dark:border-[#30363D] 
+                    bg-white border-gray-200
+                    rounded-lg border p-4
+                  `}>
+                    <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                       AI Summary
                     </h3>
                     <p className="text-foreground leading-relaxed">
@@ -568,7 +624,6 @@ export default function SubmissionDetail() {
         }
         rightPanel={
           <div className="h-full flex flex-col">
-            {/* Code Header with Tabs */}
             <div className={`h-12 border-b flex items-center justify-between px-4 ${
               isLightMode 
                 ? 'bg-white border-gray-200' 
@@ -579,7 +634,7 @@ export default function SubmissionDetail() {
                   <button 
                     className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                       activeCodeTab === 'code' 
-                        ? 'text-[#F000FF] border-[#F000FF]' 
+                        ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
                         : `${isLightMode ? 'text-gray-600' : 'text-muted-foreground'} border-transparent hover:${isLightMode ? 'text-gray-900' : 'text-foreground'}`
                     }`}
                     onClick={() => setActiveCodeTab('code')}
@@ -589,7 +644,7 @@ export default function SubmissionDetail() {
                   <button 
                     className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                       activeCodeTab === 'notes' 
-                        ? 'text-[#F000FF] border-[#F000FF]' 
+                        ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
                         : `${isLightMode ? 'text-gray-600' : 'text-muted-foreground'} border-transparent hover:${isLightMode ? 'text-gray-900' : 'text-foreground'}`
                     }`}
                     onClick={() => setActiveCodeTab('notes')}
@@ -598,35 +653,25 @@ export default function SubmissionDetail() {
                   </button>
                 </div>
                 {activeCodeTab === 'code' && (
-                  <span className="px-2 py-1 bg-[#F000FF]/10 text-[#F000FF] border border-[#F000FF]/20 rounded text-xs font-medium">
+                  <span className={`px-2 py-1 border rounded text-xs font-medium ${getLanguageBadgeStyle(sub.language)}`}>
                     {sub.language}
                   </span>
                 )}
               </div>
               {activeCodeTab === 'code' && (
                 <div className="flex items-center gap-2">
-                                    <button 
+                  <button 
                     className={`relative p-2 rounded transition-colors ${
                       isLightMode 
                         ? 'hover:bg-gray-100 text-gray-500' 
                         : 'hover:bg-muted text-muted-foreground'
                     } ${hasUnsavedChanges ? 'text-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20' : ''} border border-transparent hover:border-current`}
                     onClick={() => {
-                      if (hasUnsavedChanges) {
-                        if (window.confirm('Are you sure you want to reset the code to the original? This will discard all unsaved changes.')) {
-                          resetCode();
-                          toast({
-                            title: "Code Reset",
-                            description: "Code has been reset to the original version.",
-                          });
-                        }
-                      } else {
-                        resetCode();
-                        toast({
-                          title: "Code Reset",
-                          description: "Code has been reset to the original version.",
-                        });
-                      }
+                      resetCode();
+                      toast({
+                        title: "Code Reset",
+                        description: "Code has been reset to the original version.",
+                      });
                     }}
                     title={hasUnsavedChanges ? "Reset code to original (discards unsaved changes)" : "Reset code to original"}
                   >
@@ -639,12 +684,12 @@ export default function SubmissionDetail() {
                     size="sm"
                     onClick={saveData}
                     disabled={!hasUnsavedChanges || isSaving}
-                    className={`transition-all duration-300 ease-in-out ${
-                      hasUnsavedChanges && !isSaving
-                        ? 'dark:bg-[#F000FF] dark:hover:bg-[#F000FF]/90 bg-purple-600 hover:bg-purple-700 dark:text-white text-white shadow-lg shadow-[#F000FF]/25 scale-100' 
-                        : `${isLightMode ? 'bg-gray-200 text-gray-500' : 'bg-muted text-muted-foreground'} cursor-not-allowed scale-95`
-                    }`}
-                  >
+                    className={`transition-all duration-300 ease-in-out font-semibold ${
+                        hasUnsavedChanges && !isSaving
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl scale-100 transform hover:scale-105 active:scale-95 border-0' 
+                          : `${isLightMode ? 'bg-gray-200 text-gray-500' : 'bg-muted text-muted-foreground'} cursor-not-allowed scale-95`
+                      }`}
+                   >
                     {isSaving ? (
                       <>
                         <Save className="w-4 h-4 mr-2 animate-pulse" />
@@ -663,11 +708,9 @@ export default function SubmissionDetail() {
               )}
             </div>
 
-            {/* Tab Content */}
             <div className="flex-1 overflow-y-auto">
               {activeCodeTab === 'code' && (
                 <div className="h-full flex flex-col">
-                  {/* Code Editor */}
                   <div className={`flex-1 overflow-y-auto ${
                     isLightMode ? 'bg-white' : 'bg-background'
                   }`}>
@@ -694,47 +737,44 @@ export default function SubmissionDetail() {
               {activeCodeTab === 'notes' && (
                 <div className="h-full overflow-y-auto p-3">
                   <div className="space-y-4">
-                  {/* Personal Notes */}
                   <div className={`
                     dark:bg-[#0D1117] dark:border-[#30363D] 
                     bg-white border-gray-200
                     rounded-lg border p-3
                   `}>
                     <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-[#F000FF]" />
+                      <FileText className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                       Personal Notes
                     </h3>
                     <EditableTextarea
                       value={notes}
                       onChange={handleNotesChange}
                       placeholder="Write notes for future revision..."
-                      minHeight="6rem"
+                      minHeight="4rem"
                     />
                   </div>
 
-                  {/* Tags Section - Below notes */}
                   <div className={`
                     dark:bg-[#0D1117] dark:border-[#30363D] 
                     bg-white border-gray-200
                     rounded-lg border p-3
                   `}>
                     <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-                      <Tag className="w-5 h-5 text-[#F000FF]" />
+                      <Tag className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                       Tags
                     </h3>
                     <TagInput tags={tags} onChange={handleTagsChange} />
                   </div>
 
-                  {/* Save Button - Floating Style */}
                   <div className="flex justify-center">
                     <button
                       type="button"
                       onClick={saveData}
                       disabled={!hasUnsavedChanges || isSaving}
-                      className={`px-6 py-3 rounded-full transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center ${
+                      className={`px-6 py-3 rounded-full transition-all duration-300 font-semibold text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center ${
                         hasUnsavedChanges && !isSaving
-                          ? 'bg-gradient-to-r from-[#F000FF] to-[#FF0080] hover:from-[#E000E0] hover:to-[#E60073] text-white border-0' 
-                          : 'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-200 cursor-not-allowed border-0'
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-xl hover:shadow-2xl' 
+                          : 'bg-gray-400 text-gray-200 cursor-not-allowed border-0'
                       }`}
                       onMouseDown={(e) => e.preventDefault()}
                     >
@@ -769,20 +809,38 @@ export default function SubmissionDetail() {
     </div>
   );
 
-
-
-  // Mobile Layout with Tabs
   const MobileLayout = () => (
     <div className="space-y-4 p-3">
       <Tabs defaultValue="description" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="description">Description</TabsTrigger>
-          <TabsTrigger value="code">Code</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="analysis">AI Analysis ✨</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 gap-1 p-1 bg-muted rounded-lg">
+          <TabsTrigger 
+            value="description" 
+            className="text-xs sm:text-sm px-2 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Description
+          </TabsTrigger>
+          <TabsTrigger 
+            value="code" 
+            className="text-xs sm:text-sm px-2 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Code
+          </TabsTrigger>
+          <TabsTrigger 
+            value="notes" 
+            className="text-xs sm:text-sm px-2 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Notes
+          </TabsTrigger>
+          <TabsTrigger 
+            value="analysis" 
+            className="text-xs sm:text-sm px-1 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            <span className="hidden sm:inline">AI Analysis</span>
+            <span className="sm:hidden">AI</span>
+            <span className="ml-1">✨</span>
+          </TabsTrigger>
         </TabsList>
 
-        {/* Description Tab */}
         <TabsContent value="description" className="space-y-4">
           <div className="prose prose-invert max-w-none">
             <p className="text-foreground leading-relaxed whitespace-pre-line">
@@ -803,7 +861,7 @@ export default function SubmissionDetail() {
                     <div className="space-y-2">
                       <div>
                         <span className="text-muted-foreground text-sm font-medium">Input: </span>
-                        <code className="text-[#F000FF] bg-background px-2 py-1 rounded text-sm">
+                        <code className="text-slate-700 dark:text-slate-300 bg-background px-2 py-1 rounded text-sm">
                           {example.input}
                         </code>
                       </div>
@@ -827,7 +885,6 @@ export default function SubmissionDetail() {
           )}
         </TabsContent>
 
-        {/* Code Tab */}
         <TabsContent value="code" className="space-y-4">
           <div className={`rounded-lg border p-3 ${
             isLightMode 
@@ -838,7 +895,7 @@ export default function SubmissionDetail() {
               <h3 className={`text-lg font-semibold ${
                 isLightMode ? 'text-gray-900' : 'text-foreground'
               }`}>Your Code</h3>
-              <span className="px-2 py-1 bg-[#F000FF]/10 text-[#F000FF] border border-[#F000FF]/20 rounded text-xs font-medium">
+              <span className={`px-2 py-1 border rounded text-xs font-medium ${getLanguageBadgeStyle(sub.language)}`}>
                 {sub.language}
               </span>
             </div>
@@ -858,49 +915,45 @@ export default function SubmissionDetail() {
           </div>
         </TabsContent>
 
-        {/* Notes Tab */}
         <TabsContent value="notes" className="space-y-4">
-          {/* Personal Notes */}
           <div className={`
             dark:bg-[#0D1117] dark:border-[#30363D] 
             bg-white border-gray-200
             rounded-lg border p-3
           `}>
             <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#F000FF]" />
+              <FileText className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               Personal Notes
             </h3>
             <EditableTextarea
               value={notes}
               onChange={handleNotesChange}
               placeholder="Write notes for future revision..."
-              minHeight="6rem"
+              minHeight="4rem"
             />
           </div>
 
-          {/* Tags Section - Below notes */}
           <div className={`
             dark:bg-[#0D1117] dark:border-[#30363D] 
             bg-white border-gray-200
             rounded-lg border p-3
           `}>
             <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-              <Tag className="w-5 h-5 text-[#F000FF]" />
+              <Tag className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               Tags
             </h3>
             <TagInput tags={tags} onChange={handleTagsChange} />
           </div>
 
-          {/* Save Button - Floating Style */}
           <div className="flex justify-center">
             <button
               type="button"
               onClick={saveData}
               disabled={!hasUnsavedChanges || isSaving}
-              className={`px-6 py-3 rounded-full transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center ${
+              className={`px-6 py-3 rounded-full transition-all duration-300 font-semibold text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center ${
                 hasUnsavedChanges && !isSaving
-                  ? 'bg-gradient-to-r from-[#F000FF] to-[#FF0080] hover:from-[#E000E0] hover:to-[#E60073] text-white border-0' 
-                  : 'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-200 cursor-not-allowed border-0'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-xl hover:shadow-2xl' 
+                  : 'bg-gray-400 text-gray-200 cursor-not-allowed border-0'
               }`}
               onMouseDown={(e) => e.preventDefault()}
             >
@@ -924,16 +977,37 @@ export default function SubmissionDetail() {
           </div>
         </TabsContent>
 
-        {/* AI Analysis Tab */}
         <TabsContent value="analysis" className="space-y-6">
-          {/* AI Summary */}
           <div className={`
             dark:bg-[#0D1117] dark:border-[#30363D] 
             bg-white border-gray-200
             rounded-lg border p-4
           `}>
             <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-[#F000FF]" />
+              <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+              AI Analysis
+            </h3>
+            <p className="text-foreground leading-relaxed mb-4">
+              Get detailed AI-powered analysis of your code solution, including time complexity, space complexity, and optimization suggestions.
+            </p>
+            <Button 
+              className="bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+              onClick={() => {
+                console.log('AI Analysis triggered for:', sub.title);
+              }}
+            >
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Analyze Code
+            </Button>
+          </div>
+
+          <div className={`
+            dark:bg-[#0D1117] dark:border-[#30363D] 
+            bg-white border-gray-200
+            rounded-lg border p-4
+          `}>
+            <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               AI Summary
             </h3>
             <p className="text-foreground leading-relaxed">
@@ -953,19 +1027,13 @@ export default function SubmissionDetail() {
           <meta name="description" content={`Details and summary for ${sub.title}.`} />
         </Helmet>
 
-        {/* Header */}
-        <div className="h-12 bg-card border-b border-border flex items-center px-4">
-          {/* Empty header - Run/Submit buttons removed */}
-        </div>
-
-        {/* Problem Header */}
         <div className="p-4 border-b border-border bg-background">
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold text-foreground">{sub.title}</h1>
             <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(sub.difficulty)} ${getDifficultyBg(sub.difficulty)}`}>
               {sub.difficulty}
             </span>
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#F000FF]/10 text-[#F000FF] border border-[#F000FF]/20">
+            <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               {sub.platform}
             </span>
           </div>
@@ -978,7 +1046,6 @@ export default function SubmissionDetail() {
           </div>
         </div>
 
-        {/* Main Content - Conditional Layout */}
         <div className="flex-1">
           {isDesktop ? <DesktopLayout /> : <MobileLayout />}
         </div>

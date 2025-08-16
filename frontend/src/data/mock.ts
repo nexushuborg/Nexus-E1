@@ -25,7 +25,15 @@ export const submissions: Submission[] = [
     tags: ["Arrays", "Hash Map"],
     description:
       "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
-    code: `function twoSum(nums, target){\n  const map = new Map();\n  for (let i = 0; i < nums.length; i++){\n    const need = target - nums[i];\n    if (map.has(need)) return [map.get(need), i];\n    map.set(nums[i], i);\n  }\n  return [];\n}`,
+    code: `function twoSum(nums, target) {
+  const map = new Map();
+  for (let i = 0; i < nums.length; i++) {
+    const need = target - nums[i];
+    if (map.has(need)) return [map.get(need), i];
+    map.set(nums[i], i);
+  }
+  return [];
+}`,
     language: "javascript",
     summary:
       "Use a hash map to store seen numbers and check if complement exists in O(n).",
@@ -53,8 +61,21 @@ export const submissions: Submission[] = [
     tags: ["Strings", "Sliding Window"],
     description:
       "Given a string s, find the length of the longest substring without repeating characters.",
-    code: `function lengthOfLongestSubstring(s){\n  let l = 0, ans = 0;\n  const set = new Set();\n  for (let r = 0; r < s.length; r++){\n    while (set.has(s[r])) set.delete(s[l++]);\n    set.add(s[r]);\n    ans = Math.max(ans, r - l + 1);\n  }\n  return ans;\n}`,
-    language: "javascript",
+    code: `def lengthOfLongestSubstring(s: str) -> int:
+    char_set = set()
+    left = 0
+    max_length = 0
+    
+    for right in range(len(s)):
+        while s[right] in char_set:
+            char_set.remove(s[left])
+            left += 1
+        
+        char_set.add(s[right])
+        max_length = max(max_length, right - left + 1)
+    
+    return max_length`,
+    language: "python",
     summary:
       "Sliding window expands and contracts while maintaining a set of unique chars.",
   },
@@ -67,10 +88,215 @@ export const submissions: Submission[] = [
     tags: ["Linked List", "Heap"],
     description:
       "You are given an array of k linked-lists, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.",
-    code: `class MinHeap{\n  constructor(){ this.a = []; }\n  push(x){ this.a.push(x); this._up(this.a.length-1);}\n  pop(){ const r = this.a[0]; const x = this.a.pop(); if(this.a.length) { this.a[0]=x; this._down(0);} return r;}\n  _up(i){ while(i){ const p=(i-1>>1); if(this.a[p].val<=this.a[i].val) break; [this.a[p],this.a[i]]=[this.a[i],this.a[p]]; i=p;} }\n  _down(i){ for(;;){ let l=i*2+1, r=l+1, s=i; if(l<this.a.length&&this.a[l].val<this.a[s].val) s=l; if(r<this.a.length&&this.a[r].val<this.a[s].val) s=r; if(s===i) break; [this.a[s],this.a[i]]=[this.a[i],this.a[s]]; i=s;} }\n}\nfunction mergeKLists(lists){\n  const h = new MinHeap();\n  for (const node of lists) if (node) h.push(node);\n  const dummy = { val:0, next:null }; let cur = dummy;\n  while(h.a.length){ const n=h.pop(); cur.next=n; cur = cur.next; if(n.next) h.push(n.next);}\n  return dummy.next;\n}`,
-    language: "javascript",
+    code: `class Solution {
+    public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) return null;
+        
+        PriorityQueue<ListNode> minHeap = new PriorityQueue<>((a, b) -> a.val - b.val);
+        
+        for (ListNode node : lists) {
+            if (node != null) {
+                minHeap.offer(node);
+            }
+        }
+        
+        ListNode dummy = new ListNode(0);
+        ListNode current = dummy;
+        
+        while (!minHeap.isEmpty()) {
+            ListNode node = minHeap.poll();
+            current.next = node;
+            current = current.next;
+            
+            if (node.next != null) {
+                minHeap.offer(node.next);
+            }
+        }
+        
+        return dummy.next;
+    }
+}`,
+    language: "java",
     summary:
       "Use a min-heap to always pick the smallest head across lists; O(n log k).",
+  },
+  {
+    id: "binary-tree-inorder",
+    title: "Binary Tree Inorder Traversal",
+    platform: "LeetCode",
+    difficulty: "Easy",
+    date: new Date(Date.now() - 86400000 * 7).toISOString(),
+    tags: ["Binary Tree", "Depth-First Search"],
+    description:
+      "Given the root of a binary tree, return the inorder traversal of its nodes' values.",
+    code: `# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+class Solution:
+    def inorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
+        result = []
+        
+        def inorder(node):
+            if not node:
+                return
+            inorder(node.left)
+            result.append(node.val)
+            inorder(node.right)
+        
+        inorder(root)
+        return result`,
+    language: "python",
+    summary:
+      "Recursive inorder traversal: left subtree, root, right subtree.",
+  },
+  {
+    id: "valid-parentheses",
+    title: "Valid Parentheses",
+    platform: "LeetCode",
+    difficulty: "Easy",
+    date: new Date(Date.now() - 86400000 * 10).toISOString(),
+    tags: ["Stack", "String"],
+    description:
+      "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
+    code: `#include <stack>
+#include <string>
+
+class Solution {
+public:
+    bool isValid(string s) {
+        stack<char> st;
+        
+        for (char c : s) {
+            if (c == '(' || c == '{' || c == '[') {
+                st.push(c);
+            } else {
+                if (st.empty()) return false;
+                
+                char top = st.top();
+                if ((c == ')' && top == '(') || 
+                    (c == '}' && top == '{') || 
+                    (c == ']' && top == '[')) {
+                    st.pop();
+                } else {
+                    return false;
+                }
+            }
+        }
+        
+        return st.empty();
+    }
+};`,
+    language: "cpp",
+    summary:
+      "Use stack to match opening and closing brackets in correct order.",
+  },
+  {
+    id: "reverse-string",
+    title: "Reverse String",
+    platform: "LeetCode",
+    difficulty: "Easy",
+    date: new Date(Date.now() - 86400000 * 12).toISOString(),
+    tags: ["Strings", "Two Pointers"],
+    description:
+      "Write a function that reverses a string. The input string is given as an array of characters s.",
+    code: `class Solution {
+    public void reverseString(char[] s) {
+        int left = 0;
+        int right = s.length - 1;
+        
+        while (left < right) {
+            char temp = s[left];
+            s[left] = s[right];
+            s[right] = temp;
+            left++;
+            right--;
+        }
+    }
+}`,
+    language: "java",
+    summary:
+      "Use two pointers to swap characters from both ends until they meet in the middle.",
+  },
+  {
+    id: "fibonacci-number",
+    title: "Fibonacci Number",
+    platform: "LeetCode",
+    difficulty: "Easy",
+    date: new Date(Date.now() - 86400000 * 15).toISOString(),
+    tags: ["Dynamic Programming", "Math"],
+    description:
+      "The Fibonacci numbers, commonly denoted F(n) form a sequence, called the Fibonacci sequence, such that each number is the sum of the two preceding ones, starting from 0 and 1.",
+    code: `def fib(n: int) -> int:
+    if n <= 1:
+        return n
+    
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    
+    return b`,
+    language: "python",
+    summary:
+      "Iterative approach using two variables to track previous two numbers.",
+  },
+  {
+    id: "palindrome-number",
+    title: "Palindrome Number",
+    platform: "LeetCode",
+    difficulty: "Easy",
+    date: new Date(Date.now() - 86400000 * 18).toISOString(),
+    tags: ["Math"],
+    description:
+      "Given an integer x, return true if x is a palindrome, and false otherwise.",
+    code: `class Solution {
+public:
+    bool isPalindrome(int x) {
+        if (x < 0) return false;
+        
+        int original = x;
+        int reversed = 0;
+        
+        while (x > 0) {
+            reversed = reversed * 10 + x % 10;
+            x /= 10;
+        }
+        
+        return original == reversed;
+    }
+};`,
+    language: "cpp",
+    summary:
+      "Reverse the number and compare with original to check if palindrome.",
+  },
+  {
+    id: "climbing-stairs",
+    title: "Climbing Stairs",
+    platform: "LeetCode",
+    difficulty: "Easy",
+    date: new Date(Date.now() - 86400000 * 20).toISOString(),
+    tags: ["Dynamic Programming", "Math"],
+    description:
+      "You are climbing a staircase. It takes n steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
+    code: `function climbStairs(n: number): number {
+    if (n <= 2) return n;
+    
+    let prev1 = 1;
+    let prev2 = 2;
+    
+    for (let i = 3; i <= n; i++) {
+        const current = prev1 + prev2;
+        prev1 = prev2;
+        prev2 = current;
+    }
+    
+    return prev2;
+}`,
+    language: "typescript",
+    summary:
+      "Dynamic programming approach using two variables to track previous two states.",
   },
 ];
 

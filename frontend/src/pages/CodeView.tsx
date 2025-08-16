@@ -7,11 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TagInput } from '@/components/TagInput';
 import { CodeBlock } from '@/components/CodeBlock';
 import { Button } from '@/components/ui/button';
-import { useTheme } from 'next-themes';
+
 import { Save, AlertTriangle, Loader2, ArrowLeft, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-// TypeScript interface for Problem (with language)
 interface Problem {
   id: string;
   title: string;
@@ -29,7 +28,6 @@ interface Problem {
   }>;
 }
 
-// Mock data - in real app, this would come from API
 const mockProblems: Problem[] = [
   {
     id: "two-sum",
@@ -103,14 +101,11 @@ const mockProblems: Problem[] = [
   }
 ];
 
-// Mock API function to fetch problem by ID
 const fetchProblemById = async (id: string): Promise<Problem | null> => {
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 300));
   return mockProblems.find(problem => problem.id === id) || null;
 };
 
-// EditableTextarea Component
 const EditableTextarea = ({ 
   value, 
   onChange, 
@@ -174,7 +169,7 @@ const EditableTextarea = ({
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={handleSave}
-          className="w-full bg-background border border-border rounded-lg p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#F000FF] focus:border-transparent resize-none"
+          className="w-full bg-background border border-border rounded-lg p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-slate-500 dark:focus:ring-slate-400 focus:border-transparent resize-none"
           style={{ 
             minHeight,
             maxHeight: "200px",
@@ -191,7 +186,7 @@ const EditableTextarea = ({
         <div className="absolute top-3 right-3 flex gap-2">
           <button
             onClick={handleSave}
-            className="px-4 py-2 text-sm bg-gradient-to-r from-[#F000FF] to-[#FF0080] text-white rounded-lg hover:from-[#E000E0] hover:to-[#E60073] transition-all duration-300 shadow-lg hover:shadow-xl font-semibold border-0 transform hover:scale-105 active:scale-95"
+            className="px-4 py-2 text-sm bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl font-semibold border-0 transform hover:scale-105 active:scale-95"
             aria-label="Save changes"
           >
             <Save className="w-4 h-4 mr-2 inline" />
@@ -210,15 +205,13 @@ const EditableTextarea = ({
     );
   }
 
-  // Display mode - auto-size to content
   const getDisplayHeight = () => {
     if (!value || value.trim() === '') {
       return minHeight;
     }
-    // Calculate approximate height based on content
     const lines = value.split('\n').length;
-    const lineHeight = 24; // 1.5 * 16px
-    const padding = 24; // 12px top + 12px bottom
+    const lineHeight = 24;
+    const padding = 24;
     const calculatedHeight = Math.max(parseInt(minHeight), lines * lineHeight + padding);
     return Math.min(calculatedHeight, 200) + 'px';
   };
@@ -228,7 +221,7 @@ const EditableTextarea = ({
       <textarea
         value={value}
         readOnly
-        className="w-full bg-background border border-border rounded-lg p-3 text-foreground resize-none cursor-pointer hover:border-[#F000FF]/50 transition-colors"
+        className="w-full bg-background border border-border rounded-lg p-3 text-foreground resize-none cursor-pointer hover:border-slate-500 dark:hover:border-slate-400 transition-colors"
         style={{ 
           height: getDisplayHeight(),
           lineHeight: '1.5',
@@ -241,7 +234,7 @@ const EditableTextarea = ({
       />
       {!disabled && (
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="px-2 py-1 text-xs bg-[#F000FF]/90 text-white rounded-md shadow-sm">
+          <div className="px-2 py-1 text-xs bg-slate-700 dark:bg-slate-600 text-white rounded-md shadow-sm">
             Click to edit
           </div>
         </div>
@@ -250,24 +243,20 @@ const EditableTextarea = ({
   );
 };
 
-// Custom hook for problem data management
 const useProblemData = (problemId: string | undefined) => {
   const [localProblem, setLocalProblem] = useState<Problem | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [loadedProblemId, setLoadedProblemId] = useState<string | null>(null);
 
-  // Fetch problem data using TanStack Query
   const { data: problem, isLoading, error } = useQuery({
     queryKey: ['problem', problemId],
     queryFn: () => fetchProblemById(problemId!),
     enabled: !!problemId,
   });
 
-  // Update local state when problem data is fetched
   useEffect(() => {
     if (problem && loadedProblemId !== problem.id) {
-      // Load saved data from localStorage
       const savedNotes = localStorage.getItem(`problem-notes-${problem.id}`) || problem.notes;
       const savedTags = localStorage.getItem(`problem-tags-${problem.id}`);
       const savedSolution = localStorage.getItem(`problem-solution-${problem.id}`) || problem.solution;
@@ -283,8 +272,7 @@ const useProblemData = (problemId: string | undefined) => {
     }
   }, [problem, loadedProblemId]);
 
-  const updateProblemField = useCallback((field: keyof Problem, value: any) => {
-    setLocalProblem(prev => {
+  const updateProblemField = useCallback((field: keyof Problem, value: string | string[]) => {    setLocalProblem(prev => {
       if (!prev) return null;
       return { ...prev, [field]: value };
     });
@@ -294,11 +282,9 @@ const useProblemData = (problemId: string | undefined) => {
   const saveProblem = useCallback(async () => {
     setIsSaving(true);
     try {
-      // Get current state
       const currentProblem = localProblem;
       if (!currentProblem) return;
       
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
       localStorage.setItem(`problem-notes-${currentProblem.id}`, currentProblem.notes);
@@ -323,7 +309,6 @@ const useProblemData = (problemId: string | undefined) => {
   };
 };
 
-// Error Boundary Component
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; error?: Error }
@@ -361,7 +346,6 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Custom Resizable Splitter Component
 const ResizableSplitter = ({ 
   leftPanel, 
   rightPanel, 
@@ -375,7 +359,6 @@ const ResizableSplitter = ({
   minLeftWidth?: number;
   maxLeftWidth?: number;
 }) => {
-  // Load saved split position from localStorage
   const savedWidth = localStorage.getItem('codeview-split-width');
   const initialWidth = savedWidth ? parseFloat(savedWidth) : defaultLeftWidth;
   
@@ -389,7 +372,6 @@ const ResizableSplitter = ({
     setIsDragging(true);
   }, []);
 
-  // Save split position to localStorage
   const saveSplitPosition = useCallback((width: number) => {
     localStorage.setItem('codeview-split-width', width.toString());
   }, []);
@@ -402,10 +384,8 @@ const ResizableSplitter = ({
       const newLeftWidth = e.clientX - containerRect.left;
       const containerWidth = containerRect.width;
 
-      // Calculate percentage
       const percentage = (newLeftWidth / containerWidth) * 100;
       
-      // Apply constraints - use percentage-based limits
       const constrainedPercentage = Math.max(minLeftWidth, Math.min(maxLeftWidth, percentage));
 
       setLeftWidth(constrainedPercentage);
@@ -441,7 +421,6 @@ const ResizableSplitter = ({
       `}
       style={{ cursor: isDragging ? 'col-resize' : 'default' }}
     >
-      {/* Left Panel */}
       <div 
         className="h-full overflow-auto dark:border-[#30363D] border-gray-200"
         style={{ width: `${leftWidth}%` }}
@@ -449,7 +428,6 @@ const ResizableSplitter = ({
         {leftPanel}
       </div>
 
-      {/* Resizer Handle */}
       <div
         className="w-3 bg-border hover:bg-border/80 cursor-col-resize transition-colors relative z-10 flex items-center justify-center"
         onMouseDown={handleMouseDown}
@@ -458,7 +436,6 @@ const ResizableSplitter = ({
         <div className="w-1 h-16 bg-muted-foreground/30 rounded-full opacity-70"></div>
       </div>
 
-      {/* Right Panel */}
       <div 
         className="h-full overflow-auto dark:bg-[#161B22] bg-gray-50"
         style={{ width: `${100 - leftWidth}%` }}
@@ -469,7 +446,6 @@ const ResizableSplitter = ({
   );
 };
 
-// Loading Component
 const LoadingState = () => (
   <div className="flex items-center justify-center h-64">
     <div className="text-center">
@@ -479,7 +455,6 @@ const LoadingState = () => (
   </div>
 );
 
-// Error State Component
 const ErrorState = () => (
   <div className="flex items-center justify-center h-64">
     <div className="text-center">
@@ -498,7 +473,7 @@ const ErrorState = () => (
 
 const CodeViewPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { theme, resolvedTheme } = useTheme();
+
   const [isMobile, setIsMobile] = useState(false);
   
   const {
@@ -511,7 +486,6 @@ const CodeViewPage = () => {
     saveProblem
   } = useProblemData(id);
 
-  // Check for mobile screen size
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024); // lg breakpoint
@@ -528,22 +502,40 @@ const CodeViewPage = () => {
     return 'destructive';
   };
 
-  // Loading state
+  const getLanguageBadgeStyle = (language: string) => {
+    switch (language.toLowerCase()) {
+      case 'javascript':
+      case 'js':
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700';
+      case 'python':
+      case 'py':
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-700';
+      case 'java':
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700';
+      case 'cpp':
+      case 'c++':
+      case 'c':
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-700';
+      case 'typescript':
+      case 'ts':
+        return 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-200 border-cyan-200 dark:border-cyan-700';
+      default:
+        return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+    }
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
 
-  // Error state
   if (error || !problem) {
     return <ErrorState />;
   }
 
-  // Mobile layout (stacked)
   if (isMobile) {
     return (
       <ErrorBoundary>
         <div className="container mx-auto px-4 py-8 max-w-7xl">
-          {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <Link to="/problems">
@@ -564,9 +556,7 @@ const CodeViewPage = () => {
             </div>
           </div>
 
-          {/* Stacked Layout for Mobile */}
           <div className="space-y-8">
-            {/* Problem Description Panel */}
             <Card className="bg-card border-border rounded-xl shadow-lg">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-card-foreground text-xl font-semibold">Problem Description</CardTitle>
@@ -600,14 +590,13 @@ const CodeViewPage = () => {
               </CardContent>
             </Card>
 
-            {/* Code Solution Panel */}
             <Card className="bg-card border-border rounded-xl shadow-lg">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="flex items-center justify-between text-card-foreground">
                   <span className="text-xl font-semibold">Solution</span>
-                  <Badge variant="outline" className="border-primary/50 text-primary">
+                  <span className={`px-2 py-1 border rounded text-xs font-medium ${getLanguageBadgeStyle(problem.language)}`}>
                     {problem.language}
-                  </Badge>
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -623,7 +612,6 @@ const CodeViewPage = () => {
               </CardContent>
             </Card>
 
-            {/* Notes Panel */}
             <Card className="bg-card border-border rounded-xl shadow-lg">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-card-foreground text-lg font-semibold">Notes</CardTitle>
@@ -638,7 +626,6 @@ const CodeViewPage = () => {
               </CardContent>
             </Card>
 
-            {/* Tags Panel */}
             <Card className="bg-card border-border rounded-xl shadow-lg">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-card-foreground text-lg font-semibold">Tags</CardTitle>
@@ -653,7 +640,6 @@ const CodeViewPage = () => {
               </CardContent>
             </Card>
 
-            {/* Save Button */}
             <Button
               onClick={saveProblem}
               disabled={!hasUnsavedChanges || isSaving}
@@ -678,11 +664,9 @@ const CodeViewPage = () => {
     );
   }
 
-  // Desktop layout with resizable splitter
   return (
     <ErrorBoundary>
       <div className="h-screen flex flex-col">
-        {/* Page Header */}
         <div className="flex-shrink-0 p-6 border-b border-border/50 bg-background">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -722,7 +706,6 @@ const CodeViewPage = () => {
           </div>
         </div>
 
-        {/* Resizable Splitter */}
         <div className="flex-1 overflow-hidden">
           <ResizableSplitter
             leftPanel={
@@ -764,14 +747,13 @@ const CodeViewPage = () => {
             rightPanel={
               <div className="h-full p-4">
                 <div className="space-y-6">
-                  {/* Code Solution */}
                   <Card className="bg-card border-border rounded-xl shadow-lg">
                     <CardHeader className="border-b border-border/50">
                       <CardTitle className="flex items-center justify-between text-card-foreground">
                         <span className="text-xl font-semibold">Solution</span>
-                        <Badge variant="outline" className="border-primary/50 text-primary">
+                        <span className={`px-2 py-1 border rounded text-xs font-medium ${getLanguageBadgeStyle(problem.language)}`}>
                           {problem.language}
-                        </Badge>
+                        </span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -787,7 +769,6 @@ const CodeViewPage = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Notes */}
                   <Card className="bg-card border-border rounded-xl shadow-lg">
                     <CardHeader className="border-b border-border/50">
                       <CardTitle className="text-card-foreground text-lg font-semibold">Notes</CardTitle>
@@ -802,7 +783,6 @@ const CodeViewPage = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Tags */}
                   <Card className="bg-card border-border rounded-xl shadow-lg">
                     <CardHeader className="border-b border-border/50">
                       <CardTitle className="text-card-foreground text-lg font-semibold">Tags</CardTitle>

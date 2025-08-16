@@ -1,15 +1,36 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Design System — All colors use HSL variables */
+
 @layer base {
   html,
   body {
     height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    /* Gold Standard: Prevent scrollbar layout shifts */
+    scrollbar-gutter: stable;
+  }
+
+  /* Global scrollbar hiding - applies to ALL elements */
+  * {
+    /* Firefox */
+    scrollbar-width: none;
+    /* IE and Edge */
+    -ms-overflow-style: none;
+  }
+
+  /* WebKit browsers (Chrome, Safari, Opera) */
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Ensure scrolling still works */
+  html, body {
+    overflow-y: auto;
   }
 
   :root {
@@ -60,16 +81,8 @@
     --sidebar-ring: 217 91% 60%;
 
     /* Special FX */
-    --gradient-primary: linear-gradient(
-      135deg,
-      hsl(211 100% 50%) 0%,
-      hsl(218 86% 59%) 100%
-    );
-    --gradient-surface: linear-gradient(
-      180deg,
-      hsl(0 0% 100%) 0%,
-      hsl(0 0% 98%) 100%
-    );
+    --gradient-primary: linear-gradient(135deg, hsl(211 100% 50%) 0%, hsl(218 86% 59%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%);
     --shadow-elev-1: 0 6px 20px hsl(211 100% 40% / 0.12);
     --shadow-elev-2: 0 20px 50px hsl(211 100% 40% / 0.16);
   }
@@ -115,16 +128,8 @@
     --sidebar-border: 220 15% 18%;
     --sidebar-ring: 218 86% 59%;
 
-    --gradient-primary: linear-gradient(
-      135deg,
-      hsl(218 86% 59%) 0%,
-      hsl(211 100% 50%) 100%
-    );
-    --gradient-surface: linear-gradient(
-      180deg,
-      hsl(220 15% 12%) 0%,
-      hsl(220 15% 8%) 100%
-    );
+    --gradient-primary: linear-gradient(135deg, hsl(218 86% 59%) 0%, hsl(211 100% 50%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(220 15% 12%) 0%, hsl(220 15% 8%) 100%);
     --shadow-elev-1: 0 8px 24px hsl(218 86% 59% / 0.18);
     --shadow-elev-2: 0 28px 60px hsl(218 86% 59% / 0.22);
   }
@@ -133,58 +138,134 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box; /* Ensures padding doesn't affect width calculations */
   }
+  
   html {
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape */
   }
+  
   body {
     @apply bg-background text-foreground;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI,
-      Roboto, Helvetica Neue, Arial, Noto Sans, "Apple Color Emoji",
-      "Segoe UI Emoji";
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
-  code,
-  pre,
-  kbd,
-  samp {
-    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
-      Consolas, "Liberation Mono", monospace;
+  
+  code, pre, kbd, samp {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   }
 }
 
 /* Motion & Micro-interactions */
 @layer utilities {
-  .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+  .hover-scale { 
+    @apply transition-transform duration-200 hover:scale-105; 
   }
-  .story-link {
-    @apply relative inline-block;
+  
+  .story-link { 
+    @apply relative inline-block; 
   }
+  
   .story-link::after {
     content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 2px;
+    position: absolute; 
+    left: 0; 
+    bottom: 0; 
+    height: 2px; 
     width: 100%;
-    background: hsl(var(--primary));
-    transform: scaleX(0);
+    background: hsl(var(--primary)); 
+    transform: scaleX(0); 
     transform-origin: bottom right;
     transition: transform 300ms ease;
   }
-  .story-link:hover::after {
-    transform: scaleX(1);
-    transform-origin: bottom left;
+  
+  .story-link:hover::after { 
+    transform: scaleX(1); 
+    transform-origin: bottom left; 
   }
-}
+  
+  /* Prevent scroll chain */
+  .overscroll-contain {
+    overscroll-behavior: contain;
+  }
+  
+  /* Gold Standard Scrollbar Utilities */
+  .scrollbar-stable {
+    scrollbar-gutter: stable;
+  }
+  
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.7);
+  }
+  
+  /* Enhanced Scrollbar Styles */
+  /* WebKit Scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
 
-/* Hide scrollbar but keep scrolling */
-.no-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-.no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, hsl(var(--muted)));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb, hsl(var(--muted-foreground)));
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover, hsl(var(--primary)));
+  }
+  
+  /* Hide scrollbar on mobile/touch devices */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Prevent double scrollbars */
+  .single-scroll-container {
+    overflow: hidden;
+  }
+  
+  .single-scroll-container > * {
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  /* Mobile viewport handling */
+  .mobile-safe-height {
+    height: 100vh;
+    height: 100dvh;
+  }
 }
 
 /* Additional body styles */
