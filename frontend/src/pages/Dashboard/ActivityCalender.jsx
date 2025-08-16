@@ -149,7 +149,7 @@ export function ActivityCalendar() {
     return () => clearInterval(timer);
   }, []);
   return (
-    <Card className="rounded-2xl h-full relative overflow-hidden p-2 card">
+    <Card className="rounded-2xl p-4 h-full relative overflow-hidden card">
       <div className="absolute top-4 right-4 z-10">
         <div className="relative w-16 h-20">
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 80 90">

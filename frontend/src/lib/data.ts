@@ -1,6 +1,5 @@
-
 export type Problem = {
-  id: number;
+  id: string;
   title: string;
   difficulty: "Easy" | "Medium" | "Hard";
   tags: string[];
@@ -15,7 +14,7 @@ export type Problem = {
 
 export const problems: Problem[] = [
   {
-    id: 1,
+    id: "two-sum",
     title: "Two Sum",
     difficulty: "Easy",
     tags: ["Array", "Hash Table"],
@@ -37,10 +36,10 @@ export const problems: Problem[] = [
         }
         return null;
     }
-}`
+}`,
   },
   {
-    id: 2,
+    id: "reverse-linked-list",
     title: "Reverse Linked List",
     difficulty: "Easy",
     tags: ["Linked List", "Recursion"],
@@ -62,12 +61,12 @@ export const problems: Problem[] = [
         }
         return prev;
     }
-}`
+}`,
   },
   {
-    id: 3,
+    id: "Binary-tree-inorder",
     title: "Binary Tree Inorder Traversal",
-    difficulty: "Easy",
+    difficulty: "Medium",
     tags: ["Tree", "DFS"],
     acceptance: "33.5%",
     status: "Solved",
@@ -88,10 +87,10 @@ export const problems: Problem[] = [
             helper(root.right, res);
         }
     }
-}`
+}`,
   },
   {
-    id: 4,
+    id: "Median-of-Two-Sorted-Arrays",
     title: "Median of Two Sorted Arrays",
     difficulty: "Hard",
     tags: ["Array", "Binary Search"],
@@ -106,12 +105,12 @@ export const problems: Problem[] = [
         // Implementation here...
         return 0.0;
     }
-}`
+}`,
   },
   {
-    id: 5,
+    id: "Valid-Parentheses",
     title: "Valid Parentheses",
-    difficulty: "Easy",
+    difficulty: "Hard",
     tags: ["String", "Stack"],
     acceptance: "40.6%",
     status: "Solved",
@@ -131,13 +130,13 @@ export const problems: Problem[] = [
         }
         return stack.isEmpty();
     }
-}`
+}`,
   },
 ];
 
 const today = new Date();
 export const solvedDays: Date[] = Array.from({ length: 25 }, (_, i) => {
-    const date = new Date();
-    date.setDate(today.getDate() - i);
-    return date;
+  const date = new Date();
+  date.setDate(today.getDate() - i);
+  return date;
 });

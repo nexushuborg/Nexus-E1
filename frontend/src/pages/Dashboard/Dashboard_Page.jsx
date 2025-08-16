@@ -11,7 +11,12 @@ import { problems } from "../../lib/data";
 import ProgressChart from "../../components/ProgressChart";
 import TopicBarChart from "../../components/TopicBarChart";
 import { submissions, last30Days } from "../../data/mock";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,13 +36,26 @@ export default function Dashboard() {
 
   const filteredProblems = useMemo(() => {
     return problems.filter((problem) => {
-      const searchMatch = problem.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchMatch = problem.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
       const difficultyMatch =
-        selectedDifficulties.length === 0 || selectedDifficulties.includes(problem.difficulty);
+        selectedDifficulties.length === 0 ||
+        selectedDifficulties.includes(problem.difficulty);
       const tagMatch =
-        selectedTags.length === 0 || selectedTags.some((tag) => problem.tags.includes(tag));
+        selectedTags.length === 0 ||
+        selectedTags.some((tag) => problem.tags.includes(tag));
       const categoryMatch =
-        selectedCategories.length === 0 || selectedCategories.includes(problem.category);
+        selectedCategories.length === 0 ||
+        selectedCategories.includes(problem.source);
+
+      console.log("FILTER DEBUG", {
+        problem: problem.title,
+        source: problem.source,
+        selectedCategories,
+        categoryMatch,
+      });
+
       return searchMatch && difficultyMatch && tagMatch && categoryMatch;
     });
   }, [searchQuery, selectedDifficulties, selectedTags, selectedCategories]);
@@ -54,7 +72,9 @@ export default function Dashboard() {
 
   const handleDifficultyChange = (difficulty) => {
     setSelectedDifficulties((prev) =>
-      prev.includes(difficulty) ? prev.filter((d) => d !== difficulty) : [...prev, difficulty]
+      prev.includes(difficulty)
+        ? prev.filter((d) => d !== difficulty)
+        : [...prev, difficulty]
     );
   };
 
@@ -66,7 +86,9 @@ export default function Dashboard() {
 
   const handleCategoryChange = (category) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
     );
   };
 
@@ -93,7 +115,7 @@ export default function Dashboard() {
               onDifficultyChange={handleDifficultyChange}
             />
             <Tags selectedTags={selectedTags} onTagChange={handleTagChange} />
-            <SavedCollections />
+            {/* <SavedCollections /> */}
           </div>
           <style>
             {`
@@ -129,8 +151,8 @@ export default function Dashboard() {
               <ActivityCalendar />
             </div>
 
-            {/* Charts */}
-            <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
+            {/* Charts to be checked later */}
+            {/* <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 auto-rows-fr">
               <Card className="rounded-2xl w-full h-full">
                 <CardHeader className="py-5">
                   <CardTitle className="text-base">Last 30 Days</CardTitle>
@@ -148,7 +170,7 @@ export default function Dashboard() {
                   <TopicBarChart data={topicCounts} />
                 </CardContent>
               </Card>
-            </div>
+            </div> */}
           </div>
           <ProblemList problems={filteredProblems} />
         </main>

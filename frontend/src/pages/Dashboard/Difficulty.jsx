@@ -1,10 +1,18 @@
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 
 const difficulties = ["Easy", "Medium", "Hard"];
 
-export function Difficulty({ selectedDifficulties = [], onDifficultyChange = () => {} }) {
+export function Difficulty({
+  selectedDifficulties = [],
+  onDifficultyChange = () => {},
+}) {
   return (
     <Card className="rounded-2xl card">
       <CardHeader className="py-5">
@@ -13,7 +21,8 @@ export function Difficulty({ selectedDifficulties = [], onDifficultyChange = () 
       <CardContent className="flex gap-2 pb-5">
         {difficulties.map((difficulty) => {
           const isSelected = (selectedDifficulties || []).includes(difficulty);
-          const baseClasses = "font-semibold rounded-lg text-xs px-3 hover:cursor-pointer";
+          const baseClasses =
+            "font-semibold rounded-lg text-xs px-3 hover:cursor-pointer";
           const variants = {
             Easy: isSelected
               ? "bg-green-700 text-white hover:bg-green-600"

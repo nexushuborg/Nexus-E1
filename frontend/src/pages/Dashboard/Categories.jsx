@@ -8,7 +8,7 @@ import {
 import { Button } from "../../components/ui/button";
 import { cn } from "../../lib/utils";
 
-const categories = ["DSA", "System Design", "Behavioral"];
+const categories = ["LeetCode", "HackerRank", "Other"];
 
 export function Categories({
   selectedCategories = [],
