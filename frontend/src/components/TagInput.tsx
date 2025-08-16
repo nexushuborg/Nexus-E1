@@ -1,189 +1,432 @@
-import { useState } from 'react';
-import { X, Plus } from 'lucide-react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { X, Plus, ChevronDown, Search, Tag as TagIcon, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { getTagColor, getTagSuggestions, isValidTag, getTagCategory } from '@/lib/tagColors';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// Defines the props for our reusable TagInput component.
 interface TagInputProps {
   tags: string[];
   onChange: (tags: string[]) => void;
   placeholder?: string;
   maxTags?: number;
+  disabled?: boolean;
+  maxTagLength?: number;
+  showSuggestions?: boolean;
+  allowDuplicates?: boolean;
+  showCategories?: boolean;
+  className?: string;
 }
 
-// Tag categories with color mapping
-const tagCategories = {
-  // Data Structures
-  'Array': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-700',
-  'String': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-700',
-  'Hash Table': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-700',
-  'Hash Set': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700',
-  'Tree': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700',
-  'Binary Tree': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700',
-  'Graph': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
-  'Stack': 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-700',
-  'Queue': 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-300 border-lime-200 dark:border-lime-700',
-  'Linked List': 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-300 border-sky-200 dark:border-sky-700',
-  'Heap': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 border-orange-200 dark:border-orange-700',
-  'Trie': 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-300 border-violet-200 dark:border-violet-700',
-  'Union Find': 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300 border-rose-200 dark:border-rose-700',
-  
-  // Algorithms
-  'Dynamic Programming': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-700',
-  'Binary Search': 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-300 border-rose-200 dark:border-rose-700',
-  'Greedy': 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-300 border-violet-200 dark:border-violet-700',
-  'Backtracking': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300 border-teal-200 dark:border-teal-700',
-  'Sorting': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
-  'Recursion': 'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900 dark:text-fuchsia-300 border-fuchsia-200 dark:border-fuchsia-700',
-  'DFS': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
-  'BFS': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-700',
-  'Dijkstra': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-700',
-  'Topological Sort': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700',
-  
-  // Techniques
-  'Two Pointers': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 border-orange-200 dark:border-orange-700',
-  'Sliding Window': 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 border-pink-200 dark:border-pink-700',
-  'Bit Manipulation': 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-  'Prefix Sum': 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-300 border-lime-200 dark:border-lime-700',
-  'Monotonic Stack': 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-700',
-  'Monotonic Queue': 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-300 border-lime-200 dark:border-lime-700',
-  'Kadane': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-700',
-  
-  // Problem Types
-  'Math': 'bg-stone-100 text-stone-800 dark:bg-stone-900 dark:text-stone-300 border-stone-200 dark:border-stone-700',
-  'Design': 'bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
-  'Simulation': 'bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700',
-  'Game Theory': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700',
-  'Geometry': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300 border-cyan-200 dark:border-cyan-700',
-  
-  // Difficulty Levels
-  'Easy': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-700',
-  'Medium': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
-  'Hard': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-700',
-  
-  // Magenta-themed categories for consistency
-  'Algorithm': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
-  'Data Structure': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
-  'Pattern': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
-  'Technique': 'bg-[#F000FF]/10 text-[#F000FF] dark:bg-[#F000FF]/20 dark:text-[#F000FF] border-[#F000FF]/30 dark:border-[#F000FF]/40',
-};
+interface TagItemProps {
+  tag: string;
+  onRemove: (tag: string) => void;
+  onDragStart?: (e: React.DragEvent, tag: string) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent, tag: string) => void;
+  isDragging?: boolean;
+  index: number;
+}
 
-// Default color for uncategorized tags
-const defaultTagColor = 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300 border-gray-200 dark:border-gray-700';
-
-// Function to get tag color based on category
-const getTagColor = (tag: string): string => {
-  // Check for exact match first
-  if (tagCategories[tag as keyof typeof tagCategories]) {
-    return tagCategories[tag as keyof typeof tagCategories];
-  }
+const TagItem = React.memo(({ 
+  tag, 
+  onRemove, 
+  onDragStart, 
+  onDragOver, 
+  onDrop, 
+  isDragging, 
+  index 
+}: TagItemProps) => {
+  const category = getTagCategory(tag);
   
-  // Check for partial matches (case-insensitive)
-  const lowerTag = tag.toLowerCase();
-  for (const [category, color] of Object.entries(tagCategories)) {
-    if (lowerTag.includes(category.toLowerCase()) || category.toLowerCase().includes(lowerTag)) {
-      return color;
-    }
-  }
-  
-  return defaultTagColor;
-};
-
-/**
- * A controlled component for creating and managing a list of tags.
- */
-export const TagInput = ({
-  tags,
-  onChange,
-  placeholder = "Add a tag...",
-  maxTags = 10
-}: TagInputProps) => {
-  const [inputValue, setInputValue] = useState('');
-
-  // Adds a new tag if it's valid and doesn't already exist.
-  const addTag = (tag: string) => {
-    const trimmedTag = tag.trim();
-    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < maxTags) {
-      onChange([...tags, trimmedTag]);
-      setInputValue('');
-    }
-  };
-
-  // Removes a specific tag from the list.
-  const removeTag = (tagToRemove: string) => {
-    onChange(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  // Handles keyboard events for adding on 'Enter' or ',' and removing on 'Backspace'.
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault();
-      addTag(inputValue);
-    } 
-    // UX enhancement: remove the last tag on backspace when the input is empty.
-    else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
-      removeTag(tags[tags.length - 1]);
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      {/* Display the current list of tags */}
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <div
-            key={tag}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-sm rounded-full border transition-colors hover:opacity-80 ${getTagColor(tag)}`}
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div 
+            className={`
+              inline-flex items-center gap-1.5 px-2.5 py-1 text-sm rounded-full border 
+              transition-all duration-200 cursor-grab active:cursor-grabbing
+              hover:opacity-80 hover:scale-105 ${getTagColor(tag)}
+              ${isDragging ? 'opacity-50 scale-95' : ''}
+            `}
+            draggable
+            onDragStart={(e) => onDragStart?.(e, tag)}
+            onDragOver={onDragOver}
+            onDrop={(e) => onDrop?.(e, tag)}
           >
-            {tag}
+            <span className="flex items-center gap-1">
+              <TagIcon className="h-3 w-3 opacity-60" />
+              {tag}
+            </span>
             <button
               type="button"
-              onClick={() => removeTag(tag)}
-              className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-black/10 dark:hover:bg-white/10"
+              onClick={() => onRemove(tag)}
+              className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              aria-label={`Remove tag ${tag}`}
             >
               <X className="h-3 w-3" />
             </button>
           </div>
-        ))}
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="text-xs">
+            <div className="font-medium">{tag}</div>
+            <div className="text-muted-foreground">Category: {category}</div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+});
+
+TagItem.displayName = 'TagItem';
+
+export const TagInput = ({
+  tags,
+  onChange,
+  placeholder = "Add a tag...",
+  maxTags = 10,
+  disabled = false,
+  maxTagLength = 30,
+  showSuggestions = true,
+  allowDuplicates = false,
+  showCategories = true,
+  className = ""
+}: TagInputProps) => {
+  const [inputValue, setInputValue] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestionsPopover, setShowSuggestionsPopover] = useState(false);
+  const [draggedTag, setDraggedTag] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showSuggestions || !inputValue.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const newSuggestions = getTagSuggestions(inputValue, allowDuplicates ? [] : tags);
+      setSuggestions(newSuggestions);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [inputValue, tags, showSuggestions, allowDuplicates]);
+
+  const addTag = useCallback((tag: string) => {
+    setError(null);
+    const trimmedTag = tag.trim();
+    
+    const validation = isValidTag(trimmedTag);
+    if (!validation.isValid) {
+      setError(validation.error || 'Invalid tag');
+      return;
+    }
+    
+    if (!allowDuplicates && tags.includes(trimmedTag)) {
+      setError('Tag already exists');
+      return;
+    }
+    
+    if (tags.length >= maxTags) {
+      setError(`Maximum ${maxTags} tags allowed`);
+      return;
+    }
+    
+    onChange([...tags, trimmedTag]);
+    setInputValue('');
+    setShowSuggestionsPopover(false);
+    inputRef.current?.focus();
+  }, [tags, onChange, maxTags, allowDuplicates]);
+
+  const removeTag = useCallback((tagToRemove: string) => {
+    onChange(tags.filter(tag => tag !== tagToRemove));
+    setError(null);
+  }, [tags, onChange]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
+      e.preventDefault();
+      addTag(inputValue);
+    } else if (e.key === ',' && inputValue.trim()) {
+      e.preventDefault();
+      addTag(inputValue);
+    } else if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
+      e.preventDefault();
+      removeTag(tags[tags.length - 1]);
+    } else if (e.key === 'ArrowDown' && suggestions.length > 0) {
+      e.preventDefault();
+      setShowSuggestionsPopover(true);
+    }
+  }, [inputValue, addTag, tags, removeTag, suggestions]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData('text');
+    const newTags = pasteData.split(/[\s,;]+/).filter(t => t.trim());
+    
+    if (newTags.length > 1) {
+      const validTags = newTags
+        .map(t => t.trim())
+        .filter(t => {
+          const validation = isValidTag(t);
+          return validation.isValid && (allowDuplicates || !tags.includes(t)) && t.length <= maxTagLength;
+        })
+        .slice(0, maxTags - tags.length);
+      
+      if (validTags.length) {
+        onChange([...tags, ...validTags]);
+        setError(null);
+      } else {
+        setError('No valid tags found in pasted content');
+      }
+    } else {
+      setInputValue(pasteData.trim());
+    }
+  }, [tags, onChange, maxTags, maxTagLength, allowDuplicates]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.startsWith(' ')) return;
+    if (value.length <= maxTagLength) {
+      setInputValue(value);
+      setError(null);
+      if (value.trim()) {
+        setShowSuggestionsPopover(true);
+      } else {
+        setShowSuggestionsPopover(false);
+      }
+    }
+  }, [maxTagLength]);
+
+  const handleFormSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      addTag(inputValue);
+    }
+  }, [inputValue, addTag]);
+
+  const handleDragStart = useCallback((e: React.DragEvent, tag: string) => {
+    setDraggedTag(tag);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', tag);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, targetTag: string) => {
+    e.preventDefault();
+    if (!draggedTag || draggedTag === targetTag) return;
+
+    const draggedIndex = tags.indexOf(draggedTag);
+    const targetIndex = tags.indexOf(targetTag);
+    
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const newTags = [...tags];
+    newTags.splice(draggedIndex, 1);
+    newTags.splice(targetIndex, 0, draggedTag);
+    
+    onChange(newTags);
+    setDraggedTag(null);
+    setDragOverIndex(null);
+  }, [draggedTag, tags, onChange]);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedTag(null);
+    setDragOverIndex(null);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
+        setShowSuggestionsPopover(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const tagItems = useMemo(() => 
+    tags.map((tag, index) => (
+      <TagItem 
+        key={tag} 
+        tag={tag} 
+        onRemove={removeTag}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        isDragging={draggedTag === tag}
+        index={index}
+      />
+    )), [tags, removeTag, handleDragStart, handleDragOver, handleDrop, draggedTag]
+  );
+
+  const isDisabled = disabled || tags.length >= maxTags;
+
+  const tagTemplates = useMemo(() => [
+    { name: 'Data Structures', tags: ['Array', 'String', 'Tree', 'Graph', 'Stack', 'Queue'] },
+    { name: 'Algorithms', tags: ['Dynamic Programming', 'Binary Search', 'DFS', 'BFS', 'Recursion'] },
+    { name: 'Techniques', tags: ['Two Pointers', 'Sliding Window', 'Bit Manipulation', 'Prefix Sum'] },
+    { name: 'Difficulty', tags: ['Easy', 'Medium', 'Hard'] }
+  ], []);
+
+  return (
+    <div className={`space-y-4 ${className}`} role="region" aria-live="polite" aria-label="Tag input field">
+      <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-1 border border-border rounded-lg bg-background">
+        {tagItems}
+        {tags.length === 0 && (
+          <div className="text-muted-foreground text-sm flex items-center gap-2 px-2">
+            <TagIcon className="h-4 w-4" />
+            No tags added yet
+          </div>
+        )}
       </div>
       
-
-      {/* Visual separator */}
       {tags.length > 0 && tags.length < maxTags && (
         <div className="border-t border-border/50 my-2"></div>
       )}
-      {/* Show the input field only if the tag limit hasn't been reached */}
-      {tags.length < maxTags && (
-        <div className="flex gap-2">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className="flex-1 bg-background border-border focus:ring-[#F000FF] focus:border-[#F000FF]"
-          />
-          <Button
-            type="button"
-            size="icon"
-            onClick={() => addTag(inputValue)}
-            disabled={!inputValue.trim()}
-            className="bg-[#F000FF] hover:bg-[#F000FF]/80 text-white disabled:bg-muted disabled:text-muted-foreground"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+      
+      {!isDisabled && (
+        <div className="space-y-3">
+          <form onSubmit={handleFormSubmit} className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                ref={inputRef}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                placeholder={placeholder}
+                className="flex-1 bg-background border-border focus:ring-[#4C1D95] focus:border-[#4C1D95] pr-10"
+                aria-label="Add new tag"
+                maxLength={maxTagLength}
+                disabled={disabled}
+              />
+              {inputValue && (
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-muted-foreground">
+                  {inputValue.length}/{maxTagLength}
+                </div>
+              )}
+            </div>
+            
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!inputValue.trim() || disabled}
+              className="bg-[#4C1D95] hover:bg-[#4C1D95]/80 text-white disabled:bg-muted disabled:text-muted-foreground"
+              aria-label="Add tag"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </form>
+
+          {showSuggestions && suggestions.length > 0 && showSuggestionsPopover && (
+            <div ref={suggestionsRef} className="relative">
+              <Popover open={showSuggestionsPopover} onOpenChange={setShowSuggestionsPopover}>
+                <PopoverContent className="w-[300px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search tags..." />
+                    <CommandList>
+                      <CommandEmpty>No tags found.</CommandEmpty>
+                      <CommandGroup heading="Suggestions">
+                        {suggestions.map((suggestion) => (
+                          <CommandItem
+                            key={suggestion}
+                            onSelect={() => addTag(suggestion)}
+                            className="flex items-center gap-2"
+                          >
+                            <div className={`w-3 h-3 rounded-full ${getTagColor(suggestion).split(' ')[0]}`}></div>
+                            <span>{suggestion}</span>
+                            {showCategories && (
+                              <Badge variant="outline" className="ml-auto text-xs">
+                                {getTagCategory(suggestion)}
+                              </Badge>
+                            )}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {showSuggestions && tags.length === 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Sparkles className="h-4 w-4" />
+                Quick add common tags:
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tagTemplates.map((template) => (
+                  <Popover key={template.name}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-xs">
+                        {template.name}
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-2">
+                      <div className="space-y-1">
+                        {template.tags.map((tag) => (
+                          <Button
+                            key={tag}
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-xs"
+                            onClick={() => addTag(tag)}
+                          >
+                            {tag}
+                          </Button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
       
-      {/* Show a message when the tag limit is reached */}
       {tags.length >= maxTags && (
         <div className="border-t border-border/50 my-2"></div>
       )}
+      
+      {error && (
+        <p className="text-xs text-red-500 dark:text-red-400" role="alert">
+          {error}
+        </p>
+      )}
+      
       {tags.length >= maxTags && (
         <p className="text-xs text-muted-foreground">
           Maximum {maxTags} tags reached
         </p>
       )}
+      
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>{tags.length} of {maxTags} tags used</span>
+        {showCategories && tags.length > 0 && (
+          <span>
+            Categories: {Array.from(new Set(tags.map(getTagCategory))).join(', ')}
+          </span>
+        )}
+      </div>
     </div>
   );
 };
