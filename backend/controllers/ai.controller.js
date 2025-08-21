@@ -1,5 +1,4 @@
 import aiService from '../services/aiService.js';
-import Submission from '../models/Submission.js';
 
 class AIController {
   //Code visualisation

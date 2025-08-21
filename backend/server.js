@@ -12,9 +12,6 @@ import aiRoutes from './routes/ai.routes.js';
 // import passportConfig from './config/passport.js';
 import "./config/gitPassport.js"
 
-import { default as gfgRoute } from "./routes/gfg.js";
-import { default as hrRoute } from "./routes/hackerrank.js";
-import { default as lcRoute } from "./routes/leetcode.js";
 
 dotenv.config();
 
@@ -41,11 +38,6 @@ app.use(passport.initialize());
 app.use('/api/github', gitAuthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
-
-// Platform routes
-app.use("/gfg", gfgRoute);
-app.use("/hackerrank", hrRoute);
-app.use("/leetcode", lcRoute);
 
 // Default route
 app.get('/', (req, res) => {

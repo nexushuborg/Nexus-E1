@@ -1,46 +1,55 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
+  // GitHub profile information
+  githubId: { 
+    type: String, 
     required: true,
+    unique: true 
   },
-  username: {
-    type: String,
-    required: true,
+  username: { 
+    type: String, 
+    required: true, 
+    trim: true 
+  },
+  email: { 
+    type: String, 
+    required: false,
+    trim: true,
     unique: true,
+    sparse: true 
   },
-  password: {
+  
+  // User profile information
+  avatar: { 
+    type: String, 
+    default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+  },
+  bio: { 
     type: String,
-    required: true
+    maxlength: 500
   },
-  githubId: {
+  
+  // User engagement and stats
+  streakCount: { 
+    type: Number, 
+    default: 0 
+  },
+  lastProblemSolvedDate: {
+    type: Date
+  },
+  
+  // User settings and preferences
+  preferredLanguage: {
     type: String,
-    unique: true,
-    required: true,
+    default: 'javascript'
   },
-  githubRepo: {
-    type: String
-  },
-  apiKey: {
-    type: String
-  },
-  leetcodeUsername: String,
-  gfgUsername: String,
-  hackerrankUsername: String,
-  currentStreak: {
-    type: Number,
-    default: 0
-  },
-  maxStreak: {
-    type: Number,
-    default: 0
-  }
-}, { timestamps: true });
+  
+}, {
+  timestamps: true
+});
 
 // Indexes for better query performance
-userSchema.index({ username: 1 }, { unique: true });
-userSchema.index({ githubId: 1 }, { unique: true });
+userSchema.index({ githubId: 1 });
 
-const User = mongoose.model('User', userSchema);
-export default User;
+export default mongoose.model('User', userSchema);
