@@ -1,11 +1,38 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Current Tab</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 10px;
+    }
+
+    #loginBtn {
+      background-color: #24292e;
+      color: white;
+    }
+
+    #logoutBtn {
+      background-color: #24292e;
+      color: white;
+    }
+
+    #output {
+      color: rgb(12, 163, 7);
+    }
+  </style>
 </head>
+
 <body style="width: 300px;">
+  <button id="loginBtn">Login with GitHub</button>
+  <button id="logoutBtn">Logout</button>
+  <p id="output"></p>
   <h1>Current Tab URL:</h1>
   <p id="url-display">Loading...</p>
   <script src="background.js"></script>
+  <script src="popup.js"></script>
 </body>
+
 </html>
