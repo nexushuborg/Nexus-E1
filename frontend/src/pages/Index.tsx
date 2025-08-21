@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext"; 
 import { Footer } from "@/components/ui/Footer";
 
+// Updated SpinningWire component to use the new blue color
 function SpinningWire({ isDark }: { isDark: boolean }) {
   const ref = useRef<any>();
   useFrame((_, delta) => {
@@ -19,8 +20,8 @@ function SpinningWire({ isDark }: { isDark: boolean }) {
   });
   return (
     <mesh ref={ref} position={[0, 0, 0]}>
-      <icosahedronGeometry args={[3, 1]} />
-      <meshStandardMaterial wireframe color={'#F000FF'} opacity={isDark ? 0.25 : 0.5} transparent />
+      <icosahedronGeometry args={[4, 1]} />
+      <meshStandardMaterial wireframe color={isDark ? '#ffffff' : '#ff0000'} opacity={0.7} transparent />
     </mesh>
   );
 }
@@ -33,10 +34,10 @@ const features = [
     animation: (
       <div className="w-48 h-48 relative flex justify-center items-center">
         <div className="w-full h-1 bg-muted absolute top-1/2 left-0 -translate-y-1/2">
-          <div className="h-full bg-[#F000FF] animate-[draw-main-line_1s_ease-out_forwards]"></div>
+          <div className="h-full bg-[#253fac] animate-[draw-main-line_1s_ease-out_forwards]"></div>
         </div>
         <div className="w-1 h-24 bg-muted absolute top-1/2 left-1/2 -translate-x-1/2">
-           <div className="h-full bg-[#F000FF] animate-[draw-branch-line_1s_ease-out_1s_forwards] origin-top"></div>
+           <div className="h-full bg-[#253fac] animate-[draw-branch-line_1s_ease-out_1s_forwards] origin-top"></div>
         </div>
       </div>
     )
@@ -48,9 +49,9 @@ const features = [
     animation: (
        <div className="w-48 h-48 relative flex justify-center items-center">
         <div className="w-32 h-20 bg-muted rounded-md relative">
-            <Sparkles className="h-8 w-8 text-[#F000FF] absolute -top-4 -right-4 animate-[sparkle-pulse_1.5s_ease-in-out_infinite]" />
-            <Sparkles className="h-5 w-5 text-[#F000FF] absolute top-1/2 left-4 animate-[sparkle-pulse_1.5s_ease-in-out_infinite_0.5s]" />
-            <Sparkles className="h-6 w-6 text-[#F000FF] absolute -bottom-3 right-8 animate-[sparkle-pulse_1.5s_ease-in-out_infinite_1s]" />
+            <Sparkles className="h-8 w-8 text-[#253fac] absolute -top-4 -right-4 animate-[sparkle-pulse_1.5s_ease-in-out_infinite]" />
+            <Sparkles className="h-5 w-5 text-[#253fac] absolute top-1/2 left-4 animate-[sparkle-pulse_1.5s_ease-in-out_infinite_0.5s]" />
+            <Sparkles className="h-6 w-6 text-[#253fac] absolute -bottom-3 right-8 animate-[sparkle-pulse_1.5s_ease-in-out_infinite_1s]" />
         </div>
       </div>
     )
@@ -66,7 +67,7 @@ const features = [
                 <h3 className="font-bold text-lg text-foreground">Question?</h3>
             </div>
             <div className="absolute inset-0 bg-primary/20 rounded-lg flex items-center justify-center" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)'}}>
-                <BookOpenCheck className="h-12 w-12 text-[#F000FF]" />
+                <BookOpenCheck className="h-12 w-12 text-[#253fac]" />
             </div>
         </div>
       </div>
@@ -78,7 +79,7 @@ const features = [
     description: "A clean, keyboard-friendly UI that gets out of your way. Focus on solving problems, not fighting your tools.",
     animation: (
        <div className="w-48 h-48 relative flex justify-center items-center">
-          <Github className="h-24 w-24 text-[#F000FF] animate-[icon-pop-in_0.8s_ease-out_forwards]" />
+          <Github className="h-24 w-24 text-[#253fac] animate-[icon-pop-in_0.8s_ease-out_forwards]" />
        </div>
     )
   }
@@ -98,7 +99,7 @@ const FeatureShowcase = () => {
                         onClick={() => setActiveTab(index)}
                         className={`
                             px-4 py-2 text-sm md:text-base rounded-lg transition-colors duration-300
-                            ${activeTab === index ? 'bg-[#F000FF] text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}
+                            ${activeTab === index ? 'bg-[#253fac] text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}
                         `}
                     >
                         {feature.title}
@@ -114,7 +115,7 @@ const FeatureShowcase = () => {
                         </div>
                         <div className={`${activeTab === index ? 'block' : 'hidden'}`}>
                             <div className="flex items-center gap-3 mb-3">
-                                <feature.icon className="h-7 w-7 text-[#F000FF]" />
+                                <feature.icon className="h-7 w-7 text-[#253fac]" />
                                 <h3 className="text-2xl font-semibold text-foreground">{feature.title}</h3>
                             </div>
                             <p className="text-muted-foreground">{feature.description}</p>
@@ -131,10 +132,10 @@ const Index = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  // *** THE FIX *** Get user and loading status
+  //Get user and loading status
   const { user, loading } = useAuth();
 
-  // *** THE FIX *** Add useEffect for redirection
+  //Add useEffect for redirection
   useEffect(() => {
     // When loading is finished and a user exists, redirect to dashboard
     if (!loading && user) {
@@ -176,7 +177,7 @@ const Index = () => {
             A clean dashboard for competitive programmers. Auto‑scraped code, AI summaries, and GitHub‑backed history.
           </p>
           <div className="flex items-center justify-center gap-4">
-            <button onClick={() => navigate("/login")} className="glossy-button inline-flex items-center justify-center font-semibold py-2 px-4 rounded-lg bg-[#F000FF] text-white hover:bg-[#c100cc] hover:shadow-lg hover:shadow-[#F000FF]/40 hover-scale">
+            <button onClick={() => navigate("/login")} className="glossy-button inline-flex items-center justify-center font-semibold py-2 px-4 rounded-lg bg-[#253fac] text-white hover:bg-[#3a52b4] hover:shadow-lg hover:shadow-[#253fac]/40 hover-scale">
                 Get Started
             </button>
           </div>
@@ -190,17 +191,17 @@ const Index = () => {
           <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center text-foreground">How it works</h2>
           <div className="grid md:grid-cols-3 gap-6">
             <article className="rounded-xl border bg-card p-6 shadow-sm">
-              <div className="text-sm font-semibold mb-2 text-[#F000FF]">Step 1</div>
+              <div className="text-sm font-bold mb-2 text-[#253fac]">Step 1</div>
               <h3 className="font-semibold mb-1 text-foreground">Solve a problem</h3>
               <p className="text-sm text-muted-foreground">On LeetCode, GFG, or your favorite platform.</p>
             </article>
             <article className="rounded-xl border bg-card p-6 shadow-sm">
-              <div className="text-sm font-semibold mb-2 text-[#F000FF]">Step 2</div>
+              <div className="text-sm font-bold mb-2 text-[#253fac]">Step 2</div>
               <h3 className="font-semibold mb-1 text-foreground">Extension captures details</h3>
               <p className="text-sm text-muted-foreground">Code + question + AI summary sent to GitHub.</p>
             </article>
             <article className="rounded-xl border bg-card p-6 shadow-sm">
-              <div className="text-sm font-semibold mb-2 text-[#F000FF]">Step 3</div>
+              <div className="text-sm font-bold mb-2 text-[#253fac]">Step 3</div>
               <h3 className="font-semibold mb-1 text-foreground">Revise and track</h3>
               <p className="text-sm text-muted-foreground">Use the dashboard, filters, and flashcards.</p>
             </article>
