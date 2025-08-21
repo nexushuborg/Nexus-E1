@@ -310,3 +310,7 @@ body::before {
 .backface-hidden {
   backface-visibility: hidden;
 }
+
+.dark-gradient-background {
+  background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+}

@@ -154,7 +154,7 @@ const Index = () => {
   }
 
   return (
-    <main>
+    <main className={isDark ? 'dark-gradient-background' : ''}>
       <Helmet>
         <title>DSA Tracker – Your DSA Journey, Organized</title>
         <meta name="description" content="Track LeetCode & GFG submissions with AI summaries and GitHub sync. Organize your DSA journey with ease." />
