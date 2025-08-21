@@ -1,31 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "HTML Sender",
+  "name": "Editor Content Logger",
   "version": "1.0",
-  "description": "Sends the current page's HTML to a backend.",
   "permissions": [
-    "activeTab",
     "scripting",
-    "webRequest"
+    "activeTab",
+    "tabs",
+    "webRequest"  
   ],
   "host_permissions": [
-    "https://www.hackerrank.com/*",
-    "http://localhost:8000/*"
+    "https://*.geeksforgeeks.org/*",
+    "https://*.codechef.com/*"
+  ],"web_accessible_resources": [
+    {
+      "resources": [ "script/getSolCf.js", "script/getSolGfg.js" ],
+      "matches": [ "<all_urls>" ]
+    }
   ],
   "background": {
     "service_worker": "background.js"
-  },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "images/icon-16.png",
-      "48": "images/icon-48.png",
-      "128": "images/icon-128.png"
-    }
-  },
-  "icons": {
-    "16": "images/icon-16.png",
-    "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
   }
 }

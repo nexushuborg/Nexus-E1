@@ -1,55 +1,66 @@
-let submissionCaptured = false; // Flag to stop after first success
-let resetTimeout = null; // Store timeout ID
-let lastHackerrankData = null; // Store last submission for popup requests
 
-chrome.webRequest.onCompleted.addListener(
-  async (details) => {
-    try {
-      // Prevent duplicate captures within cooldown period
-      if (submissionCaptured) return;
+function checkEvent() {
+  console.log('listening to event');
+  window.addEventListener('DataSendGfg', (e) => {
+    console.log(e.detail);
+    chrome.runtime.sendMessage({
+      id: e.detail.id,
+      resData: e.detail.resData
+    })
+  })
+}
+  
+  const GFG_SUBMIT_URL = 'https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/';
+const CODECHEF_SUBMIT_URL = 'https://www.codechef.com/api/ide/submit';
 
-      const url = details.url;
+  chrome.webRequest.onCompleted.addListener(
+  (details) => {
+    let scriptToInject = null;
 
-      // Match submission API endpoint
-      const match = url.match(/\/submissions\/(\d+)/);
-      if (match) {
-        console.log('📡 Fetched submission URL:', url);
+    if (details.url.startsWith(GFG_SUBMIT_URL) && details.method === 'POST') {
+      console.log('GFG submission detected.');
+      scriptToInject = 'script/getSolGfg.js';
+    }
+    else if (details.url.startsWith(CODECHEF_SUBMIT_URL) && details.method === 'GET') {
+      console.log('CodeChef submission detected.');
+      scriptToInject = 'script/getSolCf.js';
+    }
 
-        const response = await fetch(url, {
-          credentials: "include", // Use same cookies/session as browser
+    chrome.scripting.executeScript({
+      target: {tabId: details.tabId},
+      func: checkEvent
+    });
+
+    if (scriptToInject && details.tabId > 0) {
+      setTimeout(() => {
+        chrome.scripting.executeScript({
+          target: { tabId: details.tabId },
+          files: [scriptToInject],
+          world: 'MAIN' 
         });
-
-        if (!response.ok) {
-          console.warn("⚠️ Fetch failed:", response.status);
-          return;
-        }
-
-        const data = await response.json();
-
-        if (data.model && data.model.code) {
-          submissionCaptured = true; // Prevent further captures temporarily
-          console.log("✅ HackerRank submission captured:", data.model);
-
-          // Send to backend
-          await fetch("http://localhost:8000/hackerrank", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data.model),
-          });
-
-          // Reset capture flag after delay
-          if (resetTimeout) clearTimeout(resetTimeout);
-          resetTimeout = setTimeout(() => {
-            submissionCaptured = false;
-            console.log("🔄 Capture flag reset — ready for next submission.");
-          }, 5000);
-        }
-      }
-    } catch (err) {
-      console.error("❌ Error capturing submission:", err);
+      }, 1500); 
     }
   },
-  { urls: ["https://www.hackerrank.com/rest/contests/*/submissions/*"] }
+  {
+    urls: [
+      "https://practiceapiorigin.geeksforgeeks.org/*",
+      "https://www.codechef.com/api/ide/submit*"
+    ]
+  }
 );
+    
+    chrome.runtime.onMessage.addListener((request, sender, sendRes) => {
+
+      //debug
+    console.log('Received the message', request.id);
+
+      if (request.id === 'GfgSoln') {
+        console.log("GFG response");
+        console.log(request);
+      }
+      else if (request.id === 'CfSoln')
+        console.log("Codechef response");
+        console.log(request);
+        
+    });
+    
