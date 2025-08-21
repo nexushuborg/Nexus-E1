@@ -6,14 +6,32 @@
     "scripting",
     "activeTab",
     "tabs",
-    "webRequest"  
+    "webRequest"
   ],
   "host_permissions": [
     "https://*.geeksforgeeks.org/*",
-    "https://*.codechef.com/*"
-  ],"web_accessible_resources": [
+    "https://*.codechef.com/*",
+    "https://*.hackerrank.com/*",
+    "https://*.leetcode.com/*"
+  ],
+  "content_scripts": [
     {
-      "resources": [ "script/getSolCf.js", "script/getSolGfg.js" ],
+      "matches": ["https://www.hackerrank.com/*"],
+      "js": ["script/content.js"]
+    },
+    {
+      "matches": ["https://leetcode.com/*"],
+      "js": ["script/getSolLc.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "script/getSolCf.js",
+        "script/getSolGfg.js",
+        "script/hackerrank/pageScript.js",
+        "script/leetcode/pageScript.js"
+      ],
       "matches": [ "<all_urls>" ]
     }
   ],
