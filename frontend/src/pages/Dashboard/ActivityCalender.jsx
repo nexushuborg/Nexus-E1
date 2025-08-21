@@ -32,20 +32,24 @@ const CustomCalendar = ({
       new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i)
     );
   }
+
   const handleDayClick = (day) => {
     if (day) onDateChange(day);
   };
+
   const isSolved = (day) =>
     solvedDays.some((solvedDay) => isSameDay(solvedDay, day));
+
   const DayCell = ({ day }) => {
     if (!day) return <div className="h-8 w-8"></div>;
     const today = isToday(day);
     const solved = isSolved(day);
     const isSelected = selectedDate && isSameDay(selectedDate, day);
+
     let cellClasses =
       "h-8 w-8 flex items-center justify-center text-sm rounded-full transition-colors duration-200 hover:text-foreground";
     if (isSelected) {
-      cellClasses += "text-primary-foreground";
+      cellClasses += " text-primary-foreground";
     } else if (solved) {
       cellClasses += " bg-purple-100 text-purple-600";
     } else if (today) {
@@ -71,7 +75,7 @@ const CustomCalendar = ({
   };
   return (
     <div className="w-full">
-      <div className="flex justify-between items-center relative px-8 mb-2 mt-4">
+      <div className="flex justify-between items-center relative px-4 sm:px-8 mb-2 mt-4">
         <Button
           variant="ghost"
           className="h-7 w-7 p-0 absolute left-0"
@@ -106,7 +110,7 @@ const CustomCalendar = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-      <div className="flex justify-around mt-4 mb-2">
+      <div className="grid grid-cols-7 place-items-center mt-4 mb-2">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
           <div
             key={day}
@@ -116,7 +120,7 @@ const CustomCalendar = ({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-2 hover:text-foreground">
+      <div className="grid grid-cols-7 gap-2 justify-items-center">
         {daysInMonth.map((day, index) => (
           <DayCell key={index} day={day} />
         ))}
@@ -149,8 +153,8 @@ export function ActivityCalendar() {
     return () => clearInterval(timer);
   }, []);
   return (
-    <Card className="rounded-2xl h-full relative overflow-hidden p-2 card">
-      <div className="absolute top-4 right-4 z-10">
+    <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
+      <div className="absolute top-4 right-4 z-10 hidden sm:block">
         <div className="relative w-16 h-20">
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 80 90">
             <path
@@ -169,16 +173,19 @@ export function ActivityCalendar() {
         </div>
       </div>
       <CardHeader className="pt-2 pb-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-start gap-2">
           <div className="flex flex-col">
             <span className="text-lg font-semibold">Day 11</span>
             <span className="text-xs text-muted-foreground">
               {timeLeft} left
             </span>
           </div>
+          <div className="sm:hidden text-center text-sm font-semibold p-2 bg-muted rounded-full">
+            {format(new Date(), "d MMM")}
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4">
+      <CardContent className="p-4 pt-0 sm:p-4 sm:h-[345px]">
         <CustomCalendar
           selectedDate={date}
           onDateChange={setDate}

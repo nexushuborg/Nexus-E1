@@ -3,9 +3,10 @@ import { ProblemCard } from "./ProblemCard";
 import { Button } from "../../components/ui/button";
 import { UploadCodeDialog } from "./UploadPopup";
 import SearchBar from "../../components/SearchBar";
-
+import { useNavigate } from "react-router-dom";
 export function ProblemList({ problems }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const filteredProblems = useMemo(() => {
     if (!searchQuery) return problems;
@@ -14,29 +15,26 @@ export function ProblemList({ problems }) {
     );
   }, [problems, searchQuery]);
 
+  const handleViewAllClick = () => {
+    navigate("/submissions");
+  };
+
   return (
-    <div className="pb-20"> {/* Increased bottom padding for bigger gap */}
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2 sm:gap-0">
-        <h2 className="text-xl font-bold text-foreground">
-          Code Cards ({filteredProblems.length})
+    <div className="pb-1">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 sm:gap-0">
+        <h2 className="text-lg sm:text-xl font-bold text-foreground pl-1">
+          Recent Activity
         </h2>
-        <div className="flex gap-2">
+        {/* Future buttons (commented for now) */}
+        {/* <div className="flex gap-2">
           <Button variant="outline" className="rounded-lg text-foreground">
             Start Session
           </Button>
           <UploadCodeDialog />
-        </div>
+        </div> */}
       </div>
-
-      {/* Search Bar with spacing below */}
-      <div className="mb-6 pl-1 mr-2">
-        <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-      </div>
-
-      {/* Problem Grid */}
       {filteredProblems.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="space-y-3">
           {filteredProblems.map((problem) => (
             <ProblemCard key={problem.id} problem={problem} />
           ))}
@@ -46,6 +44,15 @@ export function ProblemList({ problems }) {
           No problems match your current filters.
         </div>
       )}
+      <div className="flex justify-center mt-6">
+        <Button
+          onClick={handleViewAllClick}
+          variant="outline"
+          className="rounded-full text-foreground px-6"
+        >
+          View All
+        </Button>
+      </div>
     </div>
   );
 }
