@@ -179,7 +179,6 @@ const Index = () => {
             <button onClick={() => navigate("/login")} className="glossy-button inline-flex items-center justify-center font-semibold py-2 px-4 rounded-lg bg-[#F000FF] text-white hover:bg-[#c100cc] hover:shadow-lg hover:shadow-[#F000FF]/40 hover-scale">
                 Get Started
             </button>
-            <Button variant="outline" onClick={() => navigate("/dashboard")} className="text-foreground hover:border-[#F000FF] hover:text-[#F000FF] hover:bg-transparent">View Demo</Button>
           </div>
         </div>
       </section>

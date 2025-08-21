@@ -4,8 +4,7 @@ import { Github } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import ConstellationAnimation from "@/components/ui/ConstellationAnimation";
 import { useTheme } from "next-themes";
-import { useNavigate } from "react-router-dom"; 
-import { Footer } from "@/components/ui/Footer";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { signInWithGitHub } = useAuth();
@@ -24,19 +23,19 @@ export default function Login() {
 
   // While checking for a user, we can show a blank page or a loader
   if (loading || user) {
-      return <div className="min-h-screen bg-background"></div>;
+    return <div className="h-full bg-background"></div>;
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden transition-colors duration-300">
+    <div className="relative flex-grow flex items-center justify-center p-[125px]">
       <Helmet>
-        <title>Sign In – DSA Tracker</title>
+        <title>Sign In Algolog</title>
         <meta name="description" content="Sign in to your DSA submissions account." />
         <link rel="canonical" href="/login" />
       </Helmet>
 
       {/* Background Glows with smooth transition (Dark mode only) */}
-      <div 
+      <div
         className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none transition-opacity duration-500"
         style={{ opacity: isDark ? 1 : 0 }}
       >
@@ -50,7 +49,6 @@ export default function Login() {
         </div>
       </div>
 
-      <main className="flex-grow flex items-center justify-center p-4 relative z-10">
         <div
           className={`
             w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl 
@@ -60,14 +58,8 @@ export default function Login() {
         >
           {/* Left Panel */}
           <div className="p-8 md:p-12">
-             <div className="flex items-center space-x-3 mb-8">
-              <div className="w-10 h-10">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-all duration-300">
-                  <path d="M30 15 L30 85 L70 85 M30 50 L60 50 M30 15 L70 15" stroke={isDark ? "#EAEAEA" : "hsl(var(--foreground))"} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M30 50 L60 50" stroke="#F000FF" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold text-foreground">Nexus-E1</h1>
+            <div className="flex items-center space-x-3 mb-8">
+              <h1 className="text-2xl font-bold text-foreground">Algolog</h1>
             </div>
 
             <h2 className="text-3xl font-bold mb-2 text-foreground">Your coding journey awaits</h2>
@@ -76,16 +68,16 @@ export default function Login() {
             </p>
 
             <div className="mt-6">
-              <button 
-                onClick={signInWithGitHub} 
+              <button
+                onClick={signInWithGitHub}
                 className="glossy-button w-full flex items-center justify-center font-semibold py-3 px-4 rounded-lg bg-[#F000FF] text-white hover:bg-[#c100cc] hover:shadow-lg hover:shadow-[#F000FF]/40"
               >
                 <Github className="w-5 h-5 mr-2" />
                 Sign In with GitHub
               </button>
             </div>
-             <p className="text-xs text-muted-foreground mt-4 text-center">
-                By signing in, you agree to our Terms of Service.
+            <p className="text-xs text-muted-foreground mt-4 text-center">
+              By signing in, you agree to our Terms of Service.
             </p>
           </div>
 
@@ -94,8 +86,6 @@ export default function Login() {
             <ConstellationAnimation />
           </div>
         </div>
-      </main>
-      <Footer />
     </div>
   );
 }
