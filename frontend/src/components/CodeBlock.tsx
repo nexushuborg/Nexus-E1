@@ -27,121 +27,227 @@ const languageMap: Record<string, string> = {
   'c': 'c',
   'csharp': 'csharp',
   'cs': 'csharp',
-  'php': 'php',
-  'ruby': 'ruby',
   'go': 'go',
   'rust': 'rust',
+  'php': 'php',
+  'ruby': 'ruby',
   'swift': 'swift',
   'kotlin': 'kotlin',
   'scala': 'scala',
+  'r': 'r',
+  'matlab': 'matlab',
+  'sql': 'sql',
   'html': 'markup',
   'css': 'css',
-  'sql': 'sql',
-  'bash': 'bash',
-  'shell': 'bash',
+  'scss': 'scss',
+  'sass': 'sass',
   'json': 'json',
-  'xml': 'markup',
   'yaml': 'yaml',
   'yml': 'yaml',
+  'xml': 'markup',
+  'bash': 'bash',
+  'shell': 'bash',
+  'sh': 'bash',
+  'powershell': 'powershell',
+  'ps1': 'powershell',
+  'dockerfile': 'docker',
+  'docker': 'docker',
+  'markdown': 'markdown',
+  'md': 'markdown',
 };
 
-// Strict color definitions
-const DARK_BG = '#0D1117';
-const DARK_TEXT = '#E0E0E0';
-const MAGENTA = '#F000FF';
-
-// Dark Theme (Your exact specs)
-const customDarkTheme = {
+// Atom One Dark theme (official colors)
+const atomOneDarkTheme = {
   plain: {
-    backgroundColor: DARK_BG,
-    color: DARK_TEXT,
+    backgroundColor: '#282c34',
+    color: '#abb2bf',
   },
   styles: [
     {
-      types: ['keyword', 'operator', 'punctuation'],
-      style: { color: MAGENTA }, // Electric magenta
-    },
-    {
-      types: ['string'],
-      style: { color: '#34D399' }, // Complementary green
-    },
-    {
-      types: ['function', 'method'],
-      style: { color: '#3F88F2' }, // Blue for functions
-    },
-    {
-      types: ['number', 'boolean'],
-      style: { color: '#F59E0B' }, // Orange for numbers and booleans
-    },
-    {
-      types: ['comment'],
-      style: { 
-        color: '#6B7280', // Gray for comments
+      types: ['comment', 'prolog', 'doctype', 'cdata'],
+      style: {
+        color: '#5c6370',
         fontStyle: 'italic' as const,
+      },
+    },
+    {
+      types: ['punctuation'],
+      style: {
+        color: '#abb2bf',
+      },
+    },
+    {
+      types: ['property', 'tag', 'boolean', 'number', 'constant', 'symbol', 'deleted'],
+      style: {
+        color: '#d19a66',
+      },
+    },
+    {
+      types: ['selector', 'attr-name', 'string', 'char', 'builtin', 'inserted'],
+      style: {
+        color: '#98c379',
+      },
+    },
+    {
+      types: ['operator', 'entity', 'url'],
+      style: {
+        color: '#56b6c2',
+      },
+    },
+    {
+      types: ['atrule', 'attr-value', 'keyword'],
+      style: {
+        color: '#c678dd',
+      },
+    },
+    {
+      types: ['function', 'class-name'],
+      style: {
+        color: '#61afef',
+      },
+    },
+    {
+      types: ['regex', 'important', 'variable'],
+      style: {
+        color: '#e06c75',
+      },
+    },
+    {
+      types: ['important', 'bold'],
+      style: {
+        fontWeight: 'bold' as const,
+      },
+    },
+    {
+      types: ['italic'],
+      style: {
+        fontStyle: 'italic' as const,
+      },
+    },
+    {
+      types: ['entity'],
+      style: {
+        cursor: 'help',
       },
     },
   ],
 };
 
-// Light Theme (Optimized contrast)
-const customLightTheme = {
+// Light theme (consistent with application)
+const lightTheme = {
   plain: {
-    backgroundColor: '#F9FAFB',
-    color: '#1F2937',
+    backgroundColor: '#f8f9fa',
+    color: '#24292e',
   },
   styles: [
     {
-      types: ['keyword', 'operator'],
-      style: { color: '#7C3AED' }, // Purple (softer alternative)
-    },
-    {
-      types: ['string'],
-      style: { color: '#059669' }, // Green for strings
-    },
-    {
-      types: ['function', 'method'],
-      style: { color: '#2563EB' }, // Blue for functions
-    },
-    {
-      types: ['number', 'boolean'],
-      style: { color: '#D97706' }, // Orange for numbers and booleans
-    },
-    {
-      types: ['comment'],
-      style: { 
-        color: '#6B7280', // Gray for comments
+      types: ['comment', 'prolog', 'doctype', 'cdata'],
+      style: {
+        color: '#6a737d',
         fontStyle: 'italic' as const,
+      },
+    },
+    {
+      types: ['punctuation'],
+      style: {
+        color: '#24292e',
+      },
+    },
+    {
+      types: ['property', 'tag', 'boolean', 'number', 'constant', 'symbol', 'deleted'],
+      style: {
+        color: '#e36209',
+      },
+    },
+    {
+      types: ['selector', 'attr-name', 'string', 'char', 'builtin', 'inserted'],
+      style: {
+        color: '#22863a',
+      },
+    },
+    {
+      types: ['operator', 'entity', 'url'],
+      style: {
+        color: '#005cc5',
+      },
+    },
+    {
+      types: ['atrule', 'attr-value', 'keyword'],
+      style: {
+        color: '#d73a49',
+      },
+    },
+    {
+      types: ['function', 'class-name'],
+      style: {
+        color: '#6f42c1',
+      },
+    },
+    {
+      types: ['regex', 'important', 'variable'],
+      style: {
+        color: '#e36209',
+      },
+    },
+    {
+      types: ['important', 'bold'],
+      style: {
+        fontWeight: 'bold' as const,
+      },
+    },
+    {
+      types: ['italic'],
+      style: {
+        fontStyle: 'italic' as const,
+      },
+    },
+    {
+      types: ['entity'],
+      style: {
+        cursor: 'help',
       },
     },
   ],
 };
 
-// Editable CodeBlock component
-const EditableCodeBlock = ({ code, language, onChange, placeholder, className, maxHeight }: CodeBlockProps) => {
+export function CodeBlock({
+  code,
+  language = "javascript",
+  editable = false,
+  onChange,
+  placeholder = "Enter your code here...",
+  className = "",
+  showLineNumbers = true,
+  maxHeight = "none",
+}: CodeBlockProps) {
   const { theme, resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark' || theme === 'dark';
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(code);
-  const [hasError, setHasError] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Memoize normalized language for performance
-  const normalizedLanguage = useMemo(() => 
-    languageMap[language?.toLowerCase() || ''] || 'javascript', 
-    [language]
-  );
+  // Determine the actual theme to use
+  const isDark = resolvedTheme === 'dark' || theme === 'dark';
+  const currentTheme = isDark ? atomOneDarkTheme : lightTheme;
+
+  // Map language to Prism language identifier
+  const prismLanguage = languageMap[language.toLowerCase()] || language.toLowerCase();
 
   useEffect(() => {
     setEditValue(code);
-    setHasError(false);
   }, [code]);
 
-  const handleDoubleClick = () => {
+  const handleEdit = () => {
+    if (!editable) return;
     setIsEditing(true);
     setTimeout(() => {
       textareaRef.current?.focus();
       textareaRef.current?.select();
     }, 0);
+  };
+
+  const handleDoubleClick = () => {
+    if (!editable) return;
+    handleEdit();
   };
 
   const handleSave = () => {
@@ -154,179 +260,115 @@ const EditableCodeBlock = ({ code, language, onChange, placeholder, className, m
   const handleCancel = () => {
     setIsEditing(false);
     setEditValue(code);
-    setHasError(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       handleCancel();
-    } else if (e.key === 'Enter' && e.ctrlKey) {
-      handleSave();
     }
   };
 
   if (isEditing) {
     return (
-      <div className={`relative ${className || ''}`}>
+      <div className={`relative ${className}`}>
         <textarea
           ref={textareaRef}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          onBlur={handleSave}
-          className={`w-full font-mono text-sm border border-input rounded-lg p-4 resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent leading-relaxed ${
-            isDark ? 'bg-background text-foreground' : 'bg-background text-foreground'
-          }`}
+
+          className="w-full bg-background border border-border rounded-lg p-4 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-slate-500 dark:focus:ring-slate-400 focus:border-transparent resize-none font-mono text-sm leading-relaxed"
           style={{ 
-            minHeight: '300px',
-            maxHeight: maxHeight || '400px',
-            lineHeight: '1.5',
-            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace'
+            minHeight: '200px',
+            maxHeight: maxHeight === "none" ? "400px" : maxHeight,
+            lineHeight: '1.6',
+            overflowY: 'auto'
           }}
-          placeholder={placeholder || "Write your code here..."}
+          placeholder={placeholder}
           spellCheck={false}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
           aria-label="Code editor"
         />
-        <div className="absolute top-2 right-2 flex gap-2">
+        <div className="absolute top-3 right-3 flex gap-2">
           <button
             onClick={handleSave}
-            className="px-2 py-1 text-xs bg-[#F000FF] text-white rounded hover:bg-[#F000FF]/80 transition-colors"
+            className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium"
             aria-label="Save changes"
           >
-            Save (Ctrl+Enter)
+            Save
           </button>
           <button
             onClick={handleCancel}
-            className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+            className="px-3 py-1.5 text-xs bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors font-medium"
             aria-label="Cancel editing"
           >
-            Cancel (Esc)
+            Cancel
           </button>
         </div>
       </div>
     );
   }
 
-  // Display mode with syntax highlighting
   return (
-    <div 
-      className={`cursor-pointer group relative ${className || ''}`}
-      onDoubleClick={handleDoubleClick}
-      title="Double-click to edit"
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleDoubleClick();
-        }
-      }}
-      aria-label="Code block - double click to edit"
-    >
-      <Highlight
-        theme={isDark ? customDarkTheme : customLightTheme}
-        code={code}
-        language={normalizedLanguage}
+    <div className={`relative group ${className}`}>
+      <div 
+        className="rounded-lg border border-border overflow-hidden bg-background"
+        style={{ maxHeight }}
+        onDoubleClick={handleDoubleClick}
+        title={editable ? "Double-click to edit" : ""}
+        role={editable ? "button" : undefined}
+        tabIndex={editable ? 0 : undefined}
+        onKeyDown={(e) => {
+          if (editable && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            handleDoubleClick();
+          }
+        }}
       >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre 
-            className={`${className} rounded-lg p-4 overflow-x-auto`} 
-            style={{ ...style, maxHeight: maxHeight || 'none' }}
-          >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line })}>
-                {line.map((token, key) => (
-                  <span key={key} {...getTokenProps({ token })} />
-                ))}
-              </div>
-            ))}
-          </pre>
-        )}
-      </Highlight>
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="px-2 py-1 text-xs bg-[#F000FF]/80 text-white rounded">
-          Double-click to edit
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Read-only CodeBlock component
-const ReadOnlyCodeBlock = ({ code, language, className, showLineNumbers, maxHeight }: CodeBlockProps) => {
-  const { theme, resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark' || theme === 'dark';
-  
-  // Memoize normalized language for performance
-  const normalizedLanguage = useMemo(() => 
-    languageMap[language?.toLowerCase() || ''] || 'javascript', 
-    [language]
-  );
-
-  return (
-    <div className={`${isDark ? "bg-[#0D1117]" : "bg-white"} ${className || ''}`}>
-      <Highlight
-        theme={isDark ? customDarkTheme : customLightTheme}
-        code={code}
-        language={normalizedLanguage}
-      >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre 
-            className={`${className} rounded-lg p-4 overflow-x-auto`} 
-            style={{ ...style, maxHeight: maxHeight || 'none' }}
-          >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line })}>
-                {showLineNumbers && (
-                  <span className="inline-block w-8 text-muted-foreground text-xs select-none">
-                    {i + 1}
+        <Highlight
+          theme={currentTheme}
+          code={code}
+          language={prismLanguage}
+        >
+          {({ className, style, tokens, getLineProps, getTokenProps }) => (
+            <pre 
+              className={`${className} p-4 overflow-auto font-mono text-sm leading-relaxed`}
+              style={{
+                ...style,
+                margin: 0,
+                backgroundColor: 'transparent',
+                fontSize: '14px',
+                lineHeight: '1.6',
+              }}
+            >
+              {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })} className="table-row">
+                  {showLineNumbers && (
+                    <span className="table-cell text-right pr-4 select-none text-muted-foreground/60 text-xs">
+                      {i + 1}
+                    </span>
+                  )}
+                  <span className="table-cell">
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token })} />
+                    ))}
                   </span>
-                )}
-                {line.map((token, key) => (
-                  <span key={key} {...getTokenProps({ token })} />
-                ))}
-              </div>
-            ))}
-          </pre>
-        )}
-      </Highlight>
+                </div>
+              ))}
+            </pre>
+          )}
+        </Highlight>
+      </div>
+      
+      {editable && (
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="px-2 py-1 text-xs bg-slate-700 dark:bg-slate-600 text-white rounded-md shadow-sm font-medium">
+            Double-click to edit
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export const CodeBlock = ({ 
-  code, 
-  language = "javascript", 
-  editable = false, 
-  onChange, 
-  placeholder,
-  className,
-  showLineNumbers = false,
-  maxHeight
-}: CodeBlockProps) => {
-  if (editable) {
-    return (
-      <EditableCodeBlock 
-        code={code} 
-        language={language} 
-        onChange={onChange}
-        placeholder={placeholder}
-        className={className}
-        maxHeight={maxHeight}
-      />
-    );
-  }
-
-  return (
-    <ReadOnlyCodeBlock 
-      code={code} 
-      language={language} 
-      className={className}
-      showLineNumbers={showLineNumbers}
-      maxHeight={maxHeight}
-    />
-  );
-};
+}
