@@ -116,19 +116,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
+
 function checkEvent() {
   console.log('listening to event');
-  window.addEventListener('DataSendGfg', (e) => {
+  window.addEventListener('DataSend', (e) => {
     console.log(e.detail);
-    chrome.runtime.sendMessage({
+    
+   chrome.runtime.sendMessage({
       id: e.detail.id,
       resData: e.detail.resData
     })
+    
+    
   })
 }
 
 const GFG_SUBMIT_URL = 'https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/';
-const CODECHEF_SUBMIT_URL = 'https://www.codechef.com/api/ide/submit';
+const CODECHEF_SUBMIT_URL = 'https://www.codechef.com/error_status_table/';
+const HACKERRANK_SUMBIT_URL = 'https://www.hackerrank.com/rest/contests/master/testcases/';
 
 chrome.webRequest.onCompleted.addListener(
   (details) => {
@@ -141,6 +146,10 @@ chrome.webRequest.onCompleted.addListener(
     else if (details.url.startsWith(CODECHEF_SUBMIT_URL) && details.method === 'GET') {
       console.log('CodeChef submission detected.');
       scriptToInject = 'script/getSolCf.js';
+    }
+    else if(details.url.startsWith(HACKERRANK_SUMBIT_URL) && details.method === 'GET'){ 
+      console.log('Hackerrank Submission detected.');
+      scriptToInject = 'script/getSolHr.js'
     }
 
     chrome.scripting.executeScript({
@@ -159,24 +168,46 @@ chrome.webRequest.onCompleted.addListener(
     }
   },
   {
+    //https://www.codechef.com/error_status_table
     urls: [
-      "https://practiceapiorigin.geeksforgeeks.org/*",
-      "https://www.codechef.com/api/ide/submit*"
+      "https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/",
+      // "https://www.codechef.com/api/ide/submit*",
+      "https://www.codechef.com/error_status_table/*",
+      "https://www.hackerrank.com/rest/contests/master/testcases/*/*/testcase_data"
     ]
   }
 );
+
+var isProcessing = false
 
 chrome.runtime.onMessage.addListener((request, sender, sendRes) => {
 
   //debug
   console.log('Received the message', request.id);
 
-  if (request.id === 'GfgSoln') {
+  if (request.id === 'GfgSoln' && !isProcessing) {
+    isProcessing = true;
+    console.log(isProcessing);
+    
     console.log("GFG response");
     console.log(request);
   }
-  else if (request.id === 'CfSoln')
+  else if (request.id === 'CfSoln'){
     console.log("Codechef response");
-  console.log(request);
+    console.log(request);
+  } 
+  else if(request.id === 'HrSoln'){
+    isProcessing = true;
+    console.log("Hr Response");
+    console.log(request);
+  }
+
+  setInterval(() => {
+    isProcessing = false;
+    console.log(isProcessing);
+    clearInterval()
+  },
+    5000
+  )
 
 });
