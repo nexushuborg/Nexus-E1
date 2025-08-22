@@ -42,7 +42,7 @@ export const problems: Problem[] = [
   {
     id: 2,
     title: "Reverse Linked List",
-    difficulty: "Easy",
+    difficulty: "Medium",
     tags: ["Linked List", "Recursion"],
     acceptance: "38.2%",
     status: "Solved",
@@ -67,7 +67,7 @@ export const problems: Problem[] = [
   {
     id: 3,
     title: "Binary Tree Inorder Traversal",
-    difficulty: "Easy",
+    difficulty: "Hard",
     tags: ["Tree", "DFS"],
     acceptance: "33.5%",
     status: "Solved",
@@ -93,7 +93,7 @@ export const problems: Problem[] = [
   {
     id: 4,
     title: "Median of Two Sorted Arrays",
-    difficulty: "Hard",
+    difficulty: "Easy",
     tags: ["Array", "Binary Search"],
     acceptance: "35.0%",
     status: "Attempted",
@@ -111,7 +111,7 @@ export const problems: Problem[] = [
   {
     id: 5,
     title: "Valid Parentheses",
-    difficulty: "Easy",
+    difficulty: "Hard",
     tags: ["String", "Stack"],
     acceptance: "40.6%",
     status: "Solved",
