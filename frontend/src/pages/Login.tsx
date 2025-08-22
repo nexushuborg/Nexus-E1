@@ -5,15 +5,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import ConstellationAnimation from "@/components/ui/ConstellationAnimation";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
+import { Footer } from "@/components/ui/Footer"
 
 export default function Login() {
   const { signInWithGitHub } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const navigate = useNavigate(); // *** THE FIX *** Get the navigate function
-  const { user, loading } = useAuth(); // *** THE FIX *** Get user and loading status
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
-  // *** THE FIX *** Add useEffect for redirection
+  // Add useEffect for redirection
   useEffect(() => {
     // When loading is finished and a user exists, redirect to dashboard
     if (!loading && user) {
@@ -27,27 +28,20 @@ export default function Login() {
   }
 
   return (
-    <div className="relative flex-grow flex items-center justify-center p-[125px]">
-      <Helmet>
-        <title>Sign In Algolog</title>
-        <meta name="description" content="Sign in to your DSA submissions account." />
-        <link rel="canonical" href="/login" />
-      </Helmet>
-
-      {/* Background Glows with smooth transition (Dark mode only) */}
-      <div
-        className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none transition-opacity duration-500"
-        style={{ opacity: isDark ? 1 : 0 }}
+    <div className="min-h-screen flex flex-col">
+      <div 
+        className="relative flex-grow flex items-center justify-center p-[125px]"
+        style={{
+          background: isDark 
+            ? 'linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%)' 
+            : 'linear-gradient(135deg, #f8fafc 0%, #f8fafc 50%, #f8fafc 100%)',
+        }}
       >
-        <div
-          className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-[#7c1779] rounded-full opacity-20"
-          style={{ filter: 'blur(150px)' }}>
-        </div>
-        <div
-          className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-[#F000FF] rounded-full opacity-20"
-          style={{ filter: 'blur(150px)' }}>
-        </div>
-      </div>
+        <Helmet>
+          <title>Sign In Algolog</title>
+          <meta name="description" content="Sign in to your DSA submissions account." />
+          <link rel="canonical" href="/login" />
+        </Helmet>
 
         <div
           className={`
@@ -70,7 +64,7 @@ export default function Login() {
             <div className="mt-6">
               <button
                 onClick={signInWithGitHub}
-                className="glossy-button w-full flex items-center justify-center font-semibold py-3 px-4 rounded-lg bg-[#F000FF] text-white hover:bg-[#c100cc] hover:shadow-lg hover:shadow-[#F000FF]/40"
+                className="glossy-button w-full flex items-center justify-center font-semibold py-3 px-4 rounded-lg bg-[#253fac] text-white hover:bg-[#3a52b4] hover:shadow-lg hover:shadow-[#253fac]/40"
               >
                 <Github className="w-5 h-5 mr-2" />
                 Sign In with GitHub
@@ -86,6 +80,10 @@ export default function Login() {
             <ConstellationAnimation />
           </div>
         </div>
+      </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
