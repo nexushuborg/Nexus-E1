@@ -27,7 +27,7 @@ console.log('Script injecting...');
     resData : resData
     }
 
-    const event = new CustomEvent('DataSendGfg', {
+    const event = new CustomEvent('DataSend', {
       detail: payload,
     })
 
