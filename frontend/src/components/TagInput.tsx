@@ -3,7 +3,7 @@ import { X, Plus, Tag as TagIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { getTagColor, getSuggestions, checkTag, getCategory } from '@/lib/tagColors';
+import { getTagColor, getSuggestions, checkTag } from '@/lib/tagColors';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TagInputProps {
@@ -28,21 +28,18 @@ const TagItem = React.memo(({
   tag, 
   onRemove
 }: TagItemProps) => {
-  const category = getCategory(tag);
-  
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div 
             className={`
-              inline-flex items-center gap-1.5 px-2.5 py-1 text-sm rounded-full border 
+              inline-flex items-center gap-1.5 px-2.5 py-1 text-sm rounded-full
               transition-all duration-200
-              hover:opacity-80 hover:scale-105 ${getTagColor(tag)}
+              ${getTagColor(tag)}
             `}
           >
             <span className="flex items-center gap-1">
-              <TagIcon className="h-3 w-3 opacity-60" />
               {tag}
             </span>
             <button
@@ -58,7 +55,6 @@ const TagItem = React.memo(({
         <TooltipContent>
           <div className="text-xs">
             <div className="font-medium">{tag}</div>
-            <div className="text-muted-foreground">Category: {category}</div>
           </div>
         </TooltipContent>
       </Tooltip>
@@ -228,7 +224,7 @@ export const TagInput = ({
 
   return (
     <div className={`space-y-4 ${className}`} role="region" aria-live="polite" aria-label="Tag input field">
-      <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-1 border border-border rounded-lg bg-background">
+      <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-1 bg-background">
         {tagItems}
         {tags.length === 0 && (
           <div className="text-muted-foreground text-sm flex items-center gap-2 px-2">
@@ -279,7 +275,7 @@ export const TagInput = ({
           {showSuggestions && suggestions.length > 0 && showSuggestionsPopover && (
             <div 
               ref={suggestionsRef} 
-              className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-md shadow-lg max-h-48 overflow-y-auto"
+              className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-md max-h-48 overflow-y-auto"
             >
               <div className="p-1">
                 {suggestions.map((suggestion) => (
@@ -290,11 +286,6 @@ export const TagInput = ({
                   >
                     <div className={`w-3 h-3 rounded-full ${getTagColor(suggestion).split(' ')[0]}`}></div>
                     <span className="flex-1 text-left">{suggestion}</span>
-                    {showCategories && (
-                      <Badge variant="outline" className="text-xs">
-                        {getCategory(suggestion)}
-                      </Badge>
-                    )}
                   </button>
                 ))}
               </div>
@@ -321,11 +312,6 @@ export const TagInput = ({
       
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{tags.length} of {maxTags} tags used</span>
-        {showCategories && tags.length > 0 && (
-          <span>
-            Categories: {Array.from(new Set(tags.map(getCategory))).join(', ')}
-          </span>
-        )}
       </div>
     </div>
   );

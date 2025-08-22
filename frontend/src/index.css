@@ -164,14 +164,23 @@ body {
 .form-input {
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #eaeaea;
+  color: #000000;
   transition: all 0.3s ease;
+}
+
+.dark .form-input {
+  color: #ffffff; /* White text in dark mode */
 }
 
 .form-input:focus {
   outline: none;
   border-color: #f000ff;
   box-shadow: 0 0 10px rgba(240, 0, 255, 0.6);
+  color: #000000;
+}
+
+.dark .form-input:focus {
+  color: #ffffff; /* Ensure white text when focused in dark mode */
 }
 
 .glossy-button {
@@ -204,19 +213,18 @@ body {
 }
 
 .dark .form-input-profile:focus-visible {
-  outline: none;
-  border-color: #f000ff !important;
-  box-shadow: 0 0 10px rgba(240, 0, 255, 0.6) !important;
+  color: #ffffff !important;
 }
 
 .form-input-profile:focus-visible {
   outline: none;
-  border-color: #f000ff !important;
-  box-shadow: 0 0 10px rgba(240, 0, 255, 0.6) !important;
+  border-color: #253fac !important;
+  box-shadow: 0 0 10px #1a3398 !important;
+  color: #000000 !important;
 }
 
 .dark .story-link::after {
-  background: #f000ff;
+  background: #253fac;
 }
 
 .font-brand {
