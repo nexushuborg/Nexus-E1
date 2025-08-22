@@ -14,7 +14,6 @@ import Topics from "./pages/Topics";
 import TopicsPage from "./pages/TopicsPage";
 import TopicDetail from "./pages/TopicDetail";
 import Profile from "./pages/Profile";
-import CodeView from "./pages/CodeView";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -53,7 +52,6 @@ const App = () => (
                     <Route path="/topics" element={<ProtectedRoute><Topics /></ProtectedRoute>} />
                     <Route path="/topics/:id" element={<ProtectedRoute><TopicDetail /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                    <Route path="/code/:id" element={<ProtectedRoute><CodeView /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>

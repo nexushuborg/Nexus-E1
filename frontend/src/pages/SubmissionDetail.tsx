@@ -8,12 +8,9 @@ import { submissions, type Submission } from "@/data/mock";
 import { CodeBlock } from "@/components/CodeBlock";
 import { TagInput } from "@/components/TagInput";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 
-// Error Boundary Component
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; error?: Error }
@@ -51,7 +48,6 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Custom Resizable Splitter Component
 const ResizableSplitter = ({ 
   leftPanel, 
   rightPanel, 
@@ -65,7 +61,6 @@ const ResizableSplitter = ({
   minLeftWidth?: number;
   maxLeftWidth?: number;
 }) => {
-  // Load saved split position from localStorage
   const savedWidth = localStorage.getItem('submission-split-width');
   const initialWidth = savedWidth ? parseFloat(savedWidth) : defaultLeftWidth;
   
@@ -79,7 +74,6 @@ const ResizableSplitter = ({
     setIsDragging(true);
   }, []);
 
-  // Save split position to localStorage
   const saveSplitPosition = useCallback((width: number) => {
     localStorage.setItem('submission-split-width', width.toString());
   }, []);
@@ -92,10 +86,8 @@ const ResizableSplitter = ({
       const newLeftWidth = e.clientX - containerRect.left;
       const containerWidth = containerRect.width;
 
-      // Calculate percentage
       const percentage = (newLeftWidth / containerWidth) * 100;
       
-      // Apply constraints - use percentage-based limits
       const constrainedPercentage = Math.max(minLeftWidth, Math.min(maxLeftWidth, percentage));
 
       setLeftWidth(constrainedPercentage);
@@ -127,7 +119,6 @@ const ResizableSplitter = ({
       className="flex h-full relative"
       style={{ cursor: isDragging ? 'col-resize' : 'default' }}
     >
-      {/* Left Panel */}
       <div 
         className="h-full overflow-auto"
         style={{ width: `${leftWidth}%` }}
@@ -135,7 +126,6 @@ const ResizableSplitter = ({
         {leftPanel}
       </div>
 
-      {/* Resizer Handle */}
       <div
         className="w-3 bg-border hover:bg-border/80 cursor-col-resize transition-colors relative z-10 flex items-center justify-center"
         onMouseDown={handleMouseDown}
@@ -144,7 +134,6 @@ const ResizableSplitter = ({
         <div className="w-1 h-16 bg-muted-foreground/40 rounded-full opacity-60"></div>
       </div>
 
-      {/* Right Panel */}
       <div 
         className="h-full overflow-auto"
         style={{ width: `${100 - leftWidth}%` }}
@@ -155,10 +144,10 @@ const ResizableSplitter = ({
   );
 };
 
-// EditableTextarea Component
 const EditableTextarea = ({ 
   value, 
-  onChange, 
+  onSave,
+  onFinalSave,
   placeholder = "Write your notes here...",
   className = "",
   minHeight = "6rem",
@@ -166,7 +155,8 @@ const EditableTextarea = ({
   disabled = false
 }: {
   value: string;
-  onChange?: (value: string) => void;
+  onSave?: (value: string) => void;
+  onFinalSave?: (value: string) => void;
   placeholder?: string;
   className?: string;
   minHeight?: string;
@@ -175,134 +165,151 @@ const EditableTextarea = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const debounceTimeoutRef = useRef<number>();
+  const currentValueRef = useRef(value);
+
+  // Sync with parent value only when not editing and not transitioning
+  useEffect(() => {
+    if (!isEditing && !isTransitioning) {
+      setEditValue(value);
+      currentValueRef.current = value;
+    }
+  }, [value, isEditing, isTransitioning]);
+
+  // Debounced save for persistence only (doesn't update parent state)
+  const debouncedSave = useCallback((val: string) => {
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    debounceTimeoutRef.current = window.setTimeout(() => {
+      onSave?.(val); // Only for persistence, not parent state update
+    }, 500);
+  }, [onSave]);
 
   useEffect(() => {
-    setEditValue(value);
-  }, [value]);
+    return () => {
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    };
+  }, []);
 
   const handleClick = () => {
     if (disabled) return;
     setIsEditing(true);
+    // Focus after state update
     setTimeout(() => {
       textareaRef.current?.focus();
-      textareaRef.current?.select();
-    }, 0);
+      textareaRef.current?.setSelectionRange(
+        textareaRef.current.value.length,
+        textareaRef.current.value.length
+      );
+    }, 10);
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    if (onChange && editValue !== value) {
-      onChange(editValue);
-    }
+  // Final save: persistence + parent state update
+  const handleFinalSave = () => {
+    // Prevent immediate state change to avoid flicker
+    const finalValue = editValue;
+    currentValueRef.current = finalValue;
+    
+    // Call onFinalSave without changing local state immediately
+    onFinalSave?.(finalValue);
+    
+    // Smooth transition with longer delay
+    setTimeout(() => {
+      setIsEditing(false);
+      setIsTransitioning(false);
+    }, 150);
   };
 
   const handleCancel = () => {
-    setIsEditing(false);
+    setIsTransitioning(true);
     setEditValue(value);
+    currentValueRef.current = value;
+    
+    setTimeout(() => {
+      setIsEditing(false);
+      setIsTransitioning(false);
+    }, 100);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       handleCancel();
-    } else if (e.key === 'Enter' && e.ctrlKey) {
-      handleSave();
+    } else if (e.key === "Enter" && e.ctrlKey) {
+      handleFinalSave();
     }
-  };
-
-  if (isEditing) {
-    return (
-      <div className={`relative ${className}`}>
-        <textarea
-          ref={textareaRef}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleSave}
-          className="w-full bg-background border border-border rounded-lg p-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#F000FF] focus:border-transparent resize-none"
-          style={{ 
-            minHeight,
-            maxHeight: "200px",
-            lineHeight: '1.5',
-            overflowY: 'auto'
-          }}
-          placeholder={placeholder}
-          spellCheck={false}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          aria-label="Notes editor"
-        />
-        <div className="absolute top-3 right-3 flex gap-2">
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 text-sm bg-gradient-to-r from-[#F000FF] to-[#FF0080] text-white rounded-lg hover:from-[#E000E0] hover:to-[#E60073] transition-all duration-300 shadow-lg hover:shadow-xl font-semibold border-0 transform hover:scale-105 active:scale-95"
-            aria-label="Save changes"
-          >
-            <Save className="w-4 h-4 mr-2 inline" />
-            Save
-          </button>
-          <button
-            onClick={handleCancel}
-            className="px-4 py-2 text-sm bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold border-0 transform hover:scale-105 active:scale-95"
-            aria-label="Cancel editing"
-          >
-            <X className="w-4 h-4 mr-2 inline" />
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Display mode - auto-size to content
-  const getDisplayHeight = () => {
-    if (!value || value.trim() === '') {
-      return minHeight;
-    }
-    // Calculate approximate height based on content
-    const lines = value.split('\n').length;
-    const lineHeight = 24; // 1.5 * 16px
-    const padding = 24; // 12px top + 12px bottom
-    const calculatedHeight = Math.max(parseInt(minHeight), lines * lineHeight + padding);
-    return Math.min(calculatedHeight, 200) + 'px';
   };
 
   return (
     <div className={`relative ${className}`}>
       <textarea
-        value={value}
-        readOnly
-        className="w-full bg-background border border-border rounded-lg p-3 text-foreground resize-none cursor-pointer hover:border-[#F000FF]/50 transition-colors"
+        ref={isEditing ? textareaRef : undefined}
+        value={isEditing || isTransitioning ? editValue : currentValueRef.current}
+        readOnly={!isEditing}
+        onChange={isEditing ? (e) => {
+          const newVal = e.target.value;
+          setEditValue(newVal);
+          currentValueRef.current = newVal;
+          debouncedSave(newVal); // Persistence only, no parent state update
+        } : undefined}
+        onKeyDown={isEditing ? handleKeyDown : undefined}
+        onBlur={isEditing ? handleFinalSave : undefined}
+        onClick={!isEditing && !isTransitioning ? handleClick : undefined}
+        className={`w-full bg-background border border-border rounded-lg p-3 text-foreground resize-none transition-all duration-300 ease-in-out ${
+          isEditing 
+            ? 'placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-slate-500 dark:focus:ring-slate-400' 
+            : isTransitioning
+            ? 'placeholder-muted-foreground'
+            : 'cursor-pointer hover:border-slate-500 dark:hover:border-slate-400'
+        }`}
         style={{ 
-          height: getDisplayHeight(),
-          lineHeight: '1.5',
-          overflowY: 'hidden'
+          minHeight, 
+          maxHeight: (isEditing || isTransitioning) ? "200px" : "auto", 
+          lineHeight: "1.5", 
+          overflowY: (isEditing || isTransitioning) ? "auto" : "hidden",
+          opacity: isTransitioning ? 0.9 : 1
         }}
         placeholder={placeholder}
-        disabled={false}
-        onClick={handleClick}
-        title={disabled ? "" : "Click to edit"}
+        spellCheck={false}
       />
-      {!disabled && (
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="px-2 py-1 text-xs bg-[#F000FF]/90 text-white rounded-md shadow-sm">
-            Click to edit
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-// Custom hook for submission data management
+const validateLanguageCode = (submissionId: string, language: string, savedCode: string | null, originalCode: string) => {
+  if (savedCode && savedCode !== originalCode) {
+    const hasJavaScriptSyntax = savedCode.includes('function') || savedCode.includes('const ') || savedCode.includes('let ');
+    const hasPythonSyntax = savedCode.includes('def ') || savedCode.includes('class ') || savedCode.includes('import ');
+    const hasJavaSyntax = savedCode.includes('public class') || savedCode.includes('public void') || savedCode.includes('public static');
+    const hasCppSyntax = savedCode.includes('#include') || savedCode.includes('std::') || savedCode.includes('class Solution {');
+    
+    let shouldClear = false;
+    
+    if (language === 'python' && hasJavaScriptSyntax) shouldClear = true;
+    if (language === 'javascript' && hasPythonSyntax) shouldClear = true;
+    if (language === 'java' && (hasJavaScriptSyntax || hasPythonSyntax)) shouldClear = true;
+    if (language === 'cpp' && (hasJavaScriptSyntax || hasPythonSyntax)) shouldClear = true;
+    if (language === 'typescript' && (hasPythonSyntax || hasJavaSyntax || hasCppSyntax)) shouldClear = true;
+    
+    if (shouldClear) {
+      localStorage.removeItem(`code-${submissionId}`);
+      return originalCode;
+    }
+  }
+  
+  return savedCode || originalCode;
+};
+
 const useSubmissionData = (submissionId: string | undefined) => {
   const [notes, setNotes] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [code, setCode] = useState<string>("");
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [hasUnsavedCodeChanges, setHasUnsavedCodeChanges] = useState(false);
   const [originalCode, setOriginalCode] = useState<string>("");
-  const [isSaving, setIsSaving] = useState(false);
+  const [originalNotes, setOriginalNotes] = useState<string>("");
+  const [originalTags, setOriginalTags] = useState<string[]>([]);
+  const [isSavingCode, setIsSavingCode] = useState(false);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [loadedSubmissionId, setLoadedSubmissionId] = useState<string | null>(null);
   const [resetCounter, setResetCounter] = useState(0);
 
@@ -311,46 +318,103 @@ const useSubmissionData = (submissionId: string | undefined) => {
   useEffect(() => {
     if (!sub || loadedSubmissionId === sub.id) return;
     
-    // Load saved data
     const savedNotes = localStorage.getItem(`notes-${sub.id}`) || "";
     const savedTags = localStorage.getItem(`tags-${sub.id}`);
-    const savedCode = localStorage.getItem(`code-${sub.id}`) || sub.code;
+    
+    const savedCode = validateLanguageCode(sub.id, sub.language, localStorage.getItem(`code-${sub.id}`), sub.code);
     
     setNotes(savedNotes);
     setTags(savedTags ? JSON.parse(savedTags) : (sub.tags || []));
     setCode(savedCode);
     setOriginalCode(savedCode);
-    setHasUnsavedChanges(false);
+    setOriginalNotes(savedNotes);
+    setOriginalTags(savedTags ? JSON.parse(savedTags) : (sub.tags || []));
+    setHasUnsavedCodeChanges(false);
     setLoadedSubmissionId(sub.id);
   }, [submissionId, sub?.id, loadedSubmissionId]);
 
-  const saveData = useCallback(async () => {
+  const saveCode = useCallback(async () => {
     if (!sub) return;
     
-    setIsSaving(true);
+    setIsSavingCode(true);
     try {
-      // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      localStorage.setItem(`notes-${sub.id}`, notes);
-      localStorage.setItem(`tags-${sub.id}`, JSON.stringify(tags));
       localStorage.setItem(`code-${sub.id}`, code);
       setOriginalCode(code);
-      setHasUnsavedChanges(false);
+      setHasUnsavedCodeChanges(false);
     } catch (error) {
-      console.error('Failed to save data:', error);
+      console.error('Failed to save code:', error);
     } finally {
-      setIsSaving(false);
+      setIsSavingCode(false);
     }
-  }, [sub, notes, tags, code]);
+  }, [sub, code]);
+
+  // Debounced save for persistence only (doesn't update parent state)
+  const saveNotesPersist = useCallback(async (currentNotes?: string, currentTags?: string[]) => {
+    if (!sub) return;
+    
+    const notesToSave = currentNotes ?? notes;
+    const tagsToSave = currentTags ?? tags;
+    
+    try {
+      localStorage.setItem(`notes-${sub.id}`, notesToSave);
+      localStorage.setItem(`tags-${sub.id}`, JSON.stringify(tagsToSave));
+    } catch (error) {
+      console.error('Failed to save notes:', error);
+    }
+  }, [sub, notes, tags]);
+
+  // Final save: persistence + parent state update
+  const saveNotesFinal = useCallback(async (currentNotes?: string, currentTags?: string[]) => {
+    if (!sub) return;
+    
+    const notesToSave = currentNotes ?? notes;
+    const tagsToSave = currentTags ?? tags;
+    
+    setIsSavingNotes(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      localStorage.setItem(`notes-${sub.id}`, notesToSave);
+      localStorage.setItem(`tags-${sub.id}`, JSON.stringify(tagsToSave));
+      setOriginalNotes(notesToSave);
+      setOriginalTags(tagsToSave);
+      setNotes(notesToSave); // Update parent state
+    } catch (error) {
+      console.error('Failed to save notes:', error);
+    } finally {
+      setIsSavingNotes(false);
+    }
+  }, [sub, notes, tags, setNotes]);
+
+  // Legacy saveNotes function for backward compatibility
+  const saveNotes = useCallback(async (currentNotes?: string, currentTags?: string[]) => {
+    if (!sub) return;
+    
+    const notesToSave = currentNotes ?? notes;
+    const tagsToSave = currentTags ?? tags;
+    
+    setIsSavingNotes(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      localStorage.setItem(`notes-${sub.id}`, notesToSave);
+      localStorage.setItem(`tags-${sub.id}`, JSON.stringify(tagsToSave));
+      setOriginalNotes(notesToSave);
+      setOriginalTags(tagsToSave);
+    } catch (error) {
+      console.error('Failed to save notes:', error);
+    } finally {
+      setIsSavingNotes(false);
+    }
+  }, [sub, notes, tags]);
 
   const resetCode = useCallback(() => {
-    // Reset to the original submission code, not the saved code
     const originalSubmissionCode = sub?.code || "";
-    console.log('Resetting code to original:', originalSubmissionCode);
     setCode(originalSubmissionCode);
     setOriginalCode(originalSubmissionCode);
-    setHasUnsavedChanges(false);
+    setHasUnsavedCodeChanges(false);
     setResetCounter(prev => prev + 1);
   }, [sub?.code]);
 
@@ -362,10 +426,15 @@ const useSubmissionData = (submissionId: string | undefined) => {
     setTags,
     code,
     setCode,
-    hasUnsavedChanges,
-    setHasUnsavedChanges,
-    isSaving,
-    saveData,
+    hasUnsavedCodeChanges,
+    setHasUnsavedCodeChanges,
+    originalNotes,
+    isSavingCode,
+    isSavingNotes,
+    saveCode,
+    saveNotes,
+    saveNotesPersist,
+    saveNotesFinal,
     resetCode,
     resetCounter
   };
@@ -378,6 +447,7 @@ export default function SubmissionDetail() {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const [activeTab, setActiveTab] = useState('description');
   const [activeCodeTab, setActiveCodeTab] = useState('code');
+
   
   const {
     sub,
@@ -387,16 +457,28 @@ export default function SubmissionDetail() {
     setTags,
     code,
     setCode,
-    hasUnsavedChanges,
-    setHasUnsavedChanges,
-    isSaving,
-    saveData,
+    hasUnsavedCodeChanges,
+    setHasUnsavedCodeChanges,
+    originalNotes,
+    isSavingCode,
+    isSavingNotes,
+    saveCode,
+    saveNotes,
+    saveNotesPersist,
+    saveNotesFinal,
     resetCode,
     resetCounter
   } = useSubmissionData(id);
 
-  // Check if we're in light mode
   const isLightMode = resolvedTheme === 'light' || theme === 'light';
+  
+  useEffect(() => {
+    sessionStorage.removeItem('submissions-scroll-position');
+    
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }, [id]);
   
   useEffect(() => {
     const checkMobile = () => {
@@ -410,18 +492,22 @@ export default function SubmissionDetail() {
 
   const handleCodeChange = useCallback((newCode: string) => {
     setCode(newCode);
-    setHasUnsavedChanges(true);
+    setHasUnsavedCodeChanges(true);
   }, []);
 
   const handleNotesChange = useCallback((value: string) => {
     setNotes(value);
-    setHasUnsavedChanges(true);
   }, []);
+
+
 
   const handleTagsChange = useCallback((newTags: string[]) => {
     setTags(newTags);
-    setHasUnsavedChanges(true);
-  }, []);
+    // Auto-save tags when they change
+    if (sub) {
+      localStorage.setItem(`tags-${sub.id}`, JSON.stringify(newTags));
+    }
+  }, [sub]);
 
   if (!sub) {
     return (
@@ -435,50 +521,42 @@ export default function SubmissionDetail() {
     );
   }
 
-  const getDifficultyVariant = (difficulty: 'Easy' | 'Medium' | 'Hard') => {
-    if (difficulty === 'Easy') return 'default';
-    if (difficulty === 'Medium') return 'secondary';
-    return 'destructive';
-  };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy': return 'text-green-400';
-      case 'Medium': return 'text-yellow-400';
-      case 'Hard': return 'text-red-400';
-      default: return 'text-gray-400';
+
+  const getLanguageBadgeStyle = (language: string) => {
+    switch (language.toLowerCase()) {
+      case 'javascript':
+      case 'js':
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700';
+      case 'python':
+      case 'py':
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-700';
+      case 'java':
+        return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700';
+      case 'cpp':
+      case 'c++':
+      case 'c':
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-700';
+      case 'typescript':
+      case 'ts':
+        return 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-800 dark:text-cyan-200 border-cyan-200 dark:border-cyan-700';
+      default:
+        return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
     }
   };
 
-  const getDifficultyBg = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy': return 'bg-green-400/10 border-green-400/20';
-      case 'Medium': return 'bg-yellow-400/10 border-yellow-400/20';
-      case 'Hard': return 'bg-red-400/10 border-red-400/20';
-      default: return 'bg-gray-400/10 border-gray-400/20';
-    }
-  };
 
-  // Helper function to get code section classes based on theme
-  const getCodeSectionClasses = () => {
-    if (isLightMode) {
-      return "bg-white border-gray-200";
-    }
-    return "bg-background border-border";
-  };
 
-  // Desktop Layout with Resizable Panels
   const DesktopLayout = () => (
     <div className="h-full">
       <ResizableSplitter
         leftPanel={
           <div className="h-full flex flex-col">
-            {/* Tabs */}
             <div className="flex border-b border-border bg-card">
               <button 
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'description' 
-                    ? 'text-[#F000FF] border-[#F000FF]' 
+                    ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
                     : 'text-muted-foreground border-transparent hover:text-foreground'
                 }`}
                 onClick={() => setActiveTab('description')}
@@ -488,16 +566,25 @@ export default function SubmissionDetail() {
               <button 
                 className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'analysis' 
-                    ? 'text-[#F000FF] border-[#F000FF]' 
-                    : 'text-gray-400 border-transparent hover:text-[#F000FF]'
+                    ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
+                    : 'text-gray-400 border-transparent hover:text-slate-700 dark:hover:text-slate-300'
                 }`}
                 onClick={() => setActiveTab('analysis')}
               >
                 AI Analysis ✨
               </button>
+              <button 
+                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'notes' 
+                    ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
+                    : 'text-muted-foreground border-transparent hover:text-foreground'
+                }`}
+                onClick={() => setActiveTab('notes')}
+              >
+                Notes
+              </button>
             </div>
 
-            {/* Tab Content */}
             <div className="flex-1 overflow-y-auto p-4">
               {activeTab === 'description' && (
                 <div className="space-y-4">
@@ -520,7 +607,7 @@ export default function SubmissionDetail() {
                             <div className="space-y-2">
                               <div>
                                 <span className="text-muted-foreground text-sm font-medium">Input: </span>
-                                <code className="text-[#F000FF] bg-background px-2 py-1 rounded text-sm">
+                                <code className="text-slate-700 dark:text-slate-300 bg-background px-2 py-1 rounded text-sm">
                                   {example.input}
                                 </code>
                               </div>
@@ -547,14 +634,33 @@ export default function SubmissionDetail() {
 
               {activeTab === 'analysis' && (
                 <div className="space-y-4">
-                  {/* AI Summary */}
                   <div className={`
                     dark:bg-[#0D1117] dark:border-[#30363D] 
                     bg-white border-gray-200
                     rounded-lg border p-4
                   `}>
                     <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-[#F000FF]" />
+                      <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                      AI Analysis
+                    </h3>
+                    <p className="text-foreground leading-relaxed mb-4">
+                      Get detailed AI-powered analysis of your code solution, including time complexity, space complexity, and optimization suggestions.
+                    </p>
+                                <Button 
+              className="bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white transition-colors"
+            >
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Analyze Code
+                    </Button>
+                  </div>
+
+                  <div className={`
+                    dark:bg-[#0D1117] dark:border-[#30363D] 
+                    bg-white border-gray-200
+                    rounded-lg border p-4
+                  `}>
+                    <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                       AI Summary
                     </h3>
                     <p className="text-foreground leading-relaxed">
@@ -563,12 +669,41 @@ export default function SubmissionDetail() {
                   </div>
                 </div>
               )}
+
+              {activeTab === 'notes' && (
+                <div className="space-y-4">
+                  <div className={`
+                    dark:bg-[#0D1117] dark:border-[#30363D] 
+                    bg-white border-gray-200
+                    rounded-lg border p-4
+                  `}>
+                    <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                      Personal Notes
+                    </h3>
+                    <EditableTextarea
+                      value={notes}
+                      onSave={(val) => saveNotesPersist(val, tags)}
+                      onFinalSave={(val) => saveNotesFinal(val, tags)}
+                      placeholder="Write notes for future revision..."
+                      minHeight="4rem"
+                    />
+                  </div>
+
+                  <div className="bg-card border-border rounded-lg border p-4">
+                    <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+                      <Tag className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                      Tags
+                    </h3>
+                    <TagInput tags={tags} onChange={handleTagsChange} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         }
         rightPanel={
           <div className="h-full flex flex-col">
-            {/* Code Header with Tabs */}
             <div className={`h-12 border-b flex items-center justify-between px-4 ${
               isLightMode 
                 ? 'bg-white border-gray-200' 
@@ -579,95 +714,61 @@ export default function SubmissionDetail() {
                   <button 
                     className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                       activeCodeTab === 'code' 
-                        ? 'text-[#F000FF] border-[#F000FF]' 
+                        ? 'text-slate-700 dark:text-slate-300 border-slate-700 dark:border-slate-300' 
                         : `${isLightMode ? 'text-gray-600' : 'text-muted-foreground'} border-transparent hover:${isLightMode ? 'text-gray-900' : 'text-foreground'}`
                     }`}
                     onClick={() => setActiveCodeTab('code')}
                   >
                     Code
                   </button>
-                  <button 
-                    className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
-                      activeCodeTab === 'notes' 
-                        ? 'text-[#F000FF] border-[#F000FF]' 
-                        : `${isLightMode ? 'text-gray-600' : 'text-muted-foreground'} border-transparent hover:${isLightMode ? 'text-gray-900' : 'text-foreground'}`
-                    }`}
-                    onClick={() => setActiveCodeTab('notes')}
-                  >
-                    Notes
-                  </button>
                 </div>
                 {activeCodeTab === 'code' && (
-                  <span className="px-2 py-1 bg-[#F000FF]/10 text-[#F000FF] border border-[#F000FF]/20 rounded text-xs font-medium">
+                  <span className={`px-2 py-1 border rounded text-xs font-medium ${getLanguageBadgeStyle(sub.language)}`}>
                     {sub.language}
                   </span>
                 )}
               </div>
               {activeCodeTab === 'code' && (
                 <div className="flex items-center gap-2">
-                                    <button 
+                  <button 
                     className={`relative p-2 rounded transition-colors ${
                       isLightMode 
                         ? 'hover:bg-gray-100 text-gray-500' 
                         : 'hover:bg-muted text-muted-foreground'
-                    } ${hasUnsavedChanges ? 'text-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20' : ''} border border-transparent hover:border-current`}
+                    } ${hasUnsavedCodeChanges ? 'text-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20' : ''} border border-transparent hover:border-current`}
                     onClick={() => {
-                      if (hasUnsavedChanges) {
-                        if (window.confirm('Are you sure you want to reset the code to the original? This will discard all unsaved changes.')) {
-                          resetCode();
-                          toast({
-                            title: "Code Reset",
-                            description: "Code has been reset to the original version.",
-                          });
-                        }
-                      } else {
-                        resetCode();
-                        toast({
-                          title: "Code Reset",
-                          description: "Code has been reset to the original version.",
-                        });
-                      }
+                      resetCode();
+                      toast({
+                        title: "Code Reset",
+                        description: "Code has been reset to the original version.",
+                      });
                     }}
-                    title={hasUnsavedChanges ? "Reset code to original (discards unsaved changes)" : "Reset code to original"}
+                    title={hasUnsavedCodeChanges ? "Reset code to original (discards unsaved changes)" : "Reset code to original"}
                   >
-                    <RotateCcw className={`w-4 h-4 ${hasUnsavedChanges ? 'animate-pulse' : ''}`} />
-                    {hasUnsavedChanges && (
+                    <RotateCcw className={`w-4 h-4 ${hasUnsavedCodeChanges ? 'animate-pulse' : ''}`} />
+                    {hasUnsavedCodeChanges && (
                       <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
                     )}
                   </button>
-                  <Button 
-                    size="sm"
-                    onClick={saveData}
-                    disabled={!hasUnsavedChanges || isSaving}
-                    className={`transition-all duration-300 ease-in-out ${
-                      hasUnsavedChanges && !isSaving
-                        ? 'dark:bg-[#F000FF] dark:hover:bg-[#F000FF]/90 bg-purple-600 hover:bg-purple-700 dark:text-white text-white shadow-lg shadow-[#F000FF]/25 scale-100' 
-                        : `${isLightMode ? 'bg-gray-200 text-gray-500' : 'bg-muted text-muted-foreground'} cursor-not-allowed scale-95`
-                    }`}
+                                    <button
+                    onClick={saveCode}
+                    disabled={!hasUnsavedCodeChanges || isSavingCode}
+                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                        hasUnsavedCodeChanges && !isSavingCode
+                          ? 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white' 
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed'
+                      }`}
                   >
-                    {isSaving ? (
-                      <>
-                        <Save className="w-4 h-4 mr-2 animate-pulse" />
-                        Saving...
-                      </>
-                    ) : hasUnsavedChanges ? (
-                      <>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save Changes
-                      </>
-                    ) : (
-                      'Saved'
-                    )}
-                  </Button>
+                    <Save className="w-3.5 h-3.5" />
+                    {isSavingCode ? 'Saving...' : hasUnsavedCodeChanges ? 'Save' : 'Saved'}
+                  </button>
                 </div>
               )}
             </div>
 
-            {/* Tab Content */}
             <div className="flex-1 overflow-y-auto">
               {activeCodeTab === 'code' && (
                 <div className="h-full flex flex-col">
-                  {/* Code Editor */}
                   <div className={`flex-1 overflow-y-auto ${
                     isLightMode ? 'bg-white' : 'bg-background'
                   }`}>
@@ -691,74 +792,7 @@ export default function SubmissionDetail() {
                 </div>
               )}
 
-              {activeCodeTab === 'notes' && (
-                <div className="h-full overflow-y-auto p-3">
-                  <div className="space-y-4">
-                  {/* Personal Notes */}
-                  <div className={`
-                    dark:bg-[#0D1117] dark:border-[#30363D] 
-                    bg-white border-gray-200
-                    rounded-lg border p-3
-                  `}>
-                    <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-[#F000FF]" />
-                      Personal Notes
-                    </h3>
-                    <EditableTextarea
-                      value={notes}
-                      onChange={handleNotesChange}
-                      placeholder="Write notes for future revision..."
-                      minHeight="6rem"
-                    />
-                  </div>
 
-                  {/* Tags Section - Below notes */}
-                  <div className={`
-                    dark:bg-[#0D1117] dark:border-[#30363D] 
-                    bg-white border-gray-200
-                    rounded-lg border p-3
-                  `}>
-                    <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-                      <Tag className="w-5 h-5 text-[#F000FF]" />
-                      Tags
-                    </h3>
-                    <TagInput tags={tags} onChange={handleTagsChange} />
-                  </div>
-
-                  {/* Save Button - Floating Style */}
-                  <div className="flex justify-center">
-                    <button
-                      type="button"
-                      onClick={saveData}
-                      disabled={!hasUnsavedChanges || isSaving}
-                      className={`px-6 py-3 rounded-full transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center ${
-                        hasUnsavedChanges && !isSaving
-                          ? 'bg-gradient-to-r from-[#F000FF] to-[#FF0080] hover:from-[#E000E0] hover:to-[#E60073] text-white border-0' 
-                          : 'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-200 cursor-not-allowed border-0'
-                      }`}
-                      onMouseDown={(e) => e.preventDefault()}
-                    >
-                      {isSaving ? (
-                        <>
-                          <Save className="w-4 h-4 mr-2 animate-pulse" />
-                          Saving...
-                        </>
-                      ) : hasUnsavedChanges ? (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Changes
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          Saved
-                        </>
-                      )}
-                    </button>
-                  </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         }
@@ -769,20 +803,38 @@ export default function SubmissionDetail() {
     </div>
   );
 
-
-
-  // Mobile Layout with Tabs
   const MobileLayout = () => (
     <div className="space-y-4 p-3">
       <Tabs defaultValue="description" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="description">Description</TabsTrigger>
-          <TabsTrigger value="code">Code</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="analysis">AI Analysis ✨</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 gap-1 p-1 bg-muted rounded-lg">
+          <TabsTrigger 
+            value="description" 
+            className="text-xs sm:text-sm px-2 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Description
+          </TabsTrigger>
+          <TabsTrigger 
+            value="notes" 
+            className="text-xs sm:text-sm px-2 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Notes
+          </TabsTrigger>
+          <TabsTrigger 
+            value="code" 
+            className="text-xs sm:text-sm px-2 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            Code
+          </TabsTrigger>
+          <TabsTrigger 
+            value="analysis" 
+            className="text-xs sm:text-sm px-1 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+          >
+            <span className="hidden sm:inline">AI Analysis</span>
+            <span className="sm:hidden">AI</span>
+            <span className="ml-1">✨</span>
+          </TabsTrigger>
         </TabsList>
 
-        {/* Description Tab */}
         <TabsContent value="description" className="space-y-4">
           <div className="prose prose-invert max-w-none">
             <p className="text-foreground leading-relaxed whitespace-pre-line">
@@ -803,7 +855,7 @@ export default function SubmissionDetail() {
                     <div className="space-y-2">
                       <div>
                         <span className="text-muted-foreground text-sm font-medium">Input: </span>
-                        <code className="text-[#F000FF] bg-background px-2 py-1 rounded text-sm">
+                        <code className="text-slate-700 dark:text-slate-300 bg-background px-2 py-1 rounded text-sm">
                           {example.input}
                         </code>
                       </div>
@@ -827,7 +879,34 @@ export default function SubmissionDetail() {
           )}
         </TabsContent>
 
-        {/* Code Tab */}
+        <TabsContent value="notes" className="space-y-4">
+          <div className={`
+            dark:bg-[#0D1117] dark:border-[#30363D] 
+            bg-white border-gray-200
+            rounded-lg border p-3
+          `}>
+            <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
+              <FileText className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+              Personal Notes
+            </h3>
+            <EditableTextarea
+              value={notes}
+              onSave={(val) => saveNotesPersist(val, tags)}
+              onFinalSave={(val) => saveNotesFinal(val, tags)}
+              placeholder="Write notes for future revision..."
+              minHeight="4rem"
+            />
+          </div>
+
+          <div className="bg-card border-border rounded-lg border p-3">
+            <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
+              <Tag className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+              Tags
+            </h3>
+            <TagInput tags={tags} onChange={handleTagsChange} />
+          </div>
+        </TabsContent>
+
         <TabsContent value="code" className="space-y-4">
           <div className={`rounded-lg border p-3 ${
             isLightMode 
@@ -838,7 +917,7 @@ export default function SubmissionDetail() {
               <h3 className={`text-lg font-semibold ${
                 isLightMode ? 'text-gray-900' : 'text-foreground'
               }`}>Your Code</h3>
-              <span className="px-2 py-1 bg-[#F000FF]/10 text-[#F000FF] border border-[#F000FF]/20 rounded text-xs font-medium">
+              <span className={`px-2 py-1 border rounded text-xs font-medium ${getLanguageBadgeStyle(sub.language)}`}>
                 {sub.language}
               </span>
             </div>
@@ -858,82 +937,34 @@ export default function SubmissionDetail() {
           </div>
         </TabsContent>
 
-        {/* Notes Tab */}
-        <TabsContent value="notes" className="space-y-4">
-          {/* Personal Notes */}
-          <div className={`
-            dark:bg-[#0D1117] dark:border-[#30363D] 
-            bg-white border-gray-200
-            rounded-lg border p-3
-          `}>
-            <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#F000FF]" />
-              Personal Notes
-            </h3>
-            <EditableTextarea
-              value={notes}
-              onChange={handleNotesChange}
-              placeholder="Write notes for future revision..."
-              minHeight="6rem"
-            />
-          </div>
-
-          {/* Tags Section - Below notes */}
-          <div className={`
-            dark:bg-[#0D1117] dark:border-[#30363D] 
-            bg-white border-gray-200
-            rounded-lg border p-3
-          `}>
-            <h3 className="text-lg font-semibold mb-2 text-foreground flex items-center gap-2">
-              <Tag className="w-5 h-5 text-[#F000FF]" />
-              Tags
-            </h3>
-            <TagInput tags={tags} onChange={handleTagsChange} />
-          </div>
-
-          {/* Save Button - Floating Style */}
-          <div className="flex justify-center">
-            <button
-              type="button"
-              onClick={saveData}
-              disabled={!hasUnsavedChanges || isSaving}
-              className={`px-6 py-3 rounded-full transition-all duration-300 font-medium text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 flex items-center justify-center ${
-                hasUnsavedChanges && !isSaving
-                  ? 'bg-gradient-to-r from-[#F000FF] to-[#FF0080] hover:from-[#E000E0] hover:to-[#E60073] text-white border-0' 
-                  : 'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-200 cursor-not-allowed border-0'
-              }`}
-              onMouseDown={(e) => e.preventDefault()}
-            >
-              {isSaving ? (
-                <>
-                  <Save className="w-4 h-4 mr-2 animate-pulse" />
-                  Saving...
-                </>
-              ) : hasUnsavedChanges ? (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Changes
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  Saved
-                </>
-              )}
-            </button>
-          </div>
-        </TabsContent>
-
-        {/* AI Analysis Tab */}
         <TabsContent value="analysis" className="space-y-6">
-          {/* AI Summary */}
           <div className={`
             dark:bg-[#0D1117] dark:border-[#30363D] 
             bg-white border-gray-200
             rounded-lg border p-4
           `}>
             <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-[#F000FF]" />
+              <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+              AI Analysis
+            </h3>
+            <p className="text-foreground leading-relaxed mb-4">
+              Get detailed AI-powered analysis of your code solution, including time complexity, space complexity, and optimization suggestions.
+            </p>
+            <Button 
+              className="bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white transition-colors"
+            >
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Analyze Code
+            </Button>
+          </div>
+
+          <div className={`
+            dark:bg-[#0D1117] dark:border-[#30363D] 
+            bg-white border-gray-200
+            rounded-lg border p-4
+          `}>
+            <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               AI Summary
             </h3>
             <p className="text-foreground leading-relaxed">
@@ -953,19 +984,17 @@ export default function SubmissionDetail() {
           <meta name="description" content={`Details and summary for ${sub.title}.`} />
         </Helmet>
 
-        {/* Header */}
-        <div className="h-12 bg-card border-b border-border flex items-center px-4">
-          {/* Empty header - Run/Submit buttons removed */}
-        </div>
-
-        {/* Problem Header */}
         <div className="p-4 border-b border-border bg-background">
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold text-foreground">{sub.title}</h1>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(sub.difficulty)} ${getDifficultyBg(sub.difficulty)}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+              sub.difficulty === 'Easy' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
+              sub.difficulty === 'Medium' ? 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' :
+              'text-red-400 bg-red-400/10 border-red-400/20'
+            }`}>
               {sub.difficulty}
             </span>
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#F000FF]/10 text-[#F000FF] border border-[#F000FF]/20">
+            <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               {sub.platform}
             </span>
           </div>
@@ -978,7 +1007,6 @@ export default function SubmissionDetail() {
           </div>
         </div>
 
-        {/* Main Content - Conditional Layout */}
         <div className="flex-1">
           {isDesktop ? <DesktopLayout /> : <MobileLayout />}
         </div>
