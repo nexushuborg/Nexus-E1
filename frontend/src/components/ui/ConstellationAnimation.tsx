@@ -67,13 +67,13 @@ const ConstellationAnimation = () => {
         updateTheme(newTheme: string | undefined) {
           const isDark = newTheme === 'dark';
           if (isDark) {
-            this.colors = { primary: '#F000FF', card: '#161B22', line: '#F000FF' };
+            this.colors = { primary: '#253fac', card: '#161B22', line: '#253fac' };
           } else {
             // *** THE FIX *** Use magenta for nodes and lines in light mode
             this.colors = {
-              primary: '#F000FF',
+              primary: '#253fac',
               card: '#FFFFFF', // White background
-              line: '#F000FF', // Magenta lines
+              line: '#253fac', // Magenta lines
             };
           }
         },
@@ -137,6 +137,18 @@ const ConstellationAnimation = () => {
               ctx.fill();
           });
 
+          this.constellation.nodes.forEach((node: Node) => {
+              const r = parseInt(this.colors.primary.slice(1, 3), 16);
+              const g = parseInt(this.colors.primary.slice(3, 5), 16);
+              const b = parseInt(this.colors.primary.slice(5, 7), 16);
+              const color = `rgba(${r}, ${g}, ${b}, ${node.opacity})`;
+              ctx.fillStyle = color;
+              ctx.shadowColor = color;
+              ctx.shadowBlur = 10;
+              ctx.beginPath();
+              ctx.arc(node.x * canvas.width, node.y * canvas.height, 4, 0, 2 * Math.PI);
+              ctx.fill();
+          });
           this.constellation.edges.forEach((edge: Edge) => {
               if (edge.progress > 0) {
                   const fromNode = nodesMap.get(edge.from) as Node | undefined;
@@ -144,7 +156,10 @@ const ConstellationAnimation = () => {
                   if (fromNode && toNode) {
                       const fromX = fromNode.x * canvas.width, fromY = fromNode.y * canvas.height;
                       const toX = toNode.x * canvas.width, toY = toNode.y * canvas.height;
-                      const lineColor = `rgba(240, 0, 255, ${fromNode.opacity * 0.7})`;
+                      const r = parseInt(this.colors.line.slice(1, 3), 16);
+                      const g = parseInt(this.colors.line.slice(3, 5), 16);
+                      const b = parseInt(this.colors.line.slice(5, 7), 16);
+                      const lineColor = `rgba(${r}, ${g}, ${b}, ${fromNode.opacity * 0.7})`;
                       ctx.strokeStyle = lineColor;
                       ctx.lineWidth = 2;
                       ctx.shadowColor = lineColor;
