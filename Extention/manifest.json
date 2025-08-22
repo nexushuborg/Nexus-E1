@@ -6,13 +6,17 @@
     "scripting",
     "activeTab",
     "tabs",
-    "webRequest"
+    "webRequest",
+    "identity",
+    "storage"
   ],
   "host_permissions": [
     "https://*.geeksforgeeks.org/*",
     "https://*.codechef.com/*",
     "https://*.hackerrank.com/*",
-    "https://*.leetcode.com/*"
+    "https://*.leetcode.com/*",
+    "http://localhost:5000/*",
+    "https://github.com/*"
   ],
   "content_scripts": [
     {
@@ -37,5 +41,9 @@
   ],
   "background": {
     "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "images/icon-16.png"
   }
 }
