@@ -116,6 +116,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
+// Webscrapping Part start
 
 function checkEvent() {
   console.log('listening to event');
@@ -134,6 +135,8 @@ function checkEvent() {
 const GFG_SUBMIT_URL = 'https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/';
 const CODECHEF_SUBMIT_URL = 'https://www.codechef.com/error_status_table/';
 const HACKERRANK_SUMBIT_URL = 'https://www.hackerrank.com/rest/contests/master/testcases/';
+
+//Submission Trigger, Web Scrapping entry point
 
 chrome.webRequest.onCompleted.addListener(
   (details) => {
@@ -168,10 +171,8 @@ chrome.webRequest.onCompleted.addListener(
     }
   },
   {
-    //https://www.codechef.com/error_status_table
     urls: [
       "https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/",
-      // "https://www.codechef.com/api/ide/submit*",
       "https://www.codechef.com/error_status_table/*",
       "https://www.hackerrank.com/rest/contests/master/testcases/*/*/testcase_data"
     ]
@@ -180,6 +181,8 @@ chrome.webRequest.onCompleted.addListener(
 
 var isProcessing = false
 
+
+//Result Fetcher, Web Scrapping exit point
 chrome.runtime.onMessage.addListener((request, sender, sendRes) => {
 
   //debug
@@ -192,11 +195,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendRes) => {
     console.log("GFG response");
     console.log(request);
   }
-  else if (request.id === 'CfSoln'){
+  else if (request.id === 'CfSoln'&& !isProcessing){
+    isProcessing = true;
     console.log("Codechef response");
     console.log(request);
   } 
-  else if(request.id === 'HrSoln'){
+  else if(request.id === 'HrSoln' && !isProcessing){
     isProcessing = true;
     console.log("Hr Response");
     console.log(request);
@@ -211,3 +215,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendRes) => {
   )
 
 });
+
+//Web Scrapping part end
