@@ -12,10 +12,10 @@ export function Navbar() {
 
   const NavLinks = () => (
     <div className="hidden md:flex items-center gap-4 text-sm">
-      <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Dashboard</NavLink>
-      <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>All Submissions</NavLink>
-      <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Topics for Revision</NavLink>
-      <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Profile</NavLink>
+      <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-foreground hover:text-foreground/80" : "text-foreground/80 hover:text-foreground")}>Dashboard</NavLink>
+      <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-foreground hover:text-foreground/80" : "text-foreground/80 hover:text-foreground")}>All Submissions</NavLink>
+      <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-foreground hover:text-foreground/80" : "text-foreground/80 hover:text-foreground")}>Topics for Revision</NavLink>
+      <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-foreground hover:text-foreground/80" : "text-foreground/80 hover:text-foreground")}>Profile</NavLink>
     </div>
   );
 
@@ -26,7 +26,7 @@ export function Navbar() {
     `}>
       <nav className="container flex h-14 items-center justify-between">
         <div className="flex items-center gap-6">
-          {/* *** THE FIX *** Added the new font-brand class */}
+          {/* Added the new font-brand class */}
           <NavLink to="/" className="font-semibold story-link text-foreground font-brand text-xl">Algolog</NavLink>
           {user && <NavLinks />}
         </div>
@@ -41,13 +41,13 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="left" className="w-72">
               <nav className="mt-6 grid gap-4 text-sm">
-                <NavLink to="/" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Home</NavLink>
+                <NavLink to="/" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Home</NavLink>
                 {user && (
                   <>
-                    <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Dashboard</NavLink>
-                    <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>All Submissions</NavLink>
-                    <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Topics for Revision</NavLink>
-                    <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#F000FF]" : "text-primary") : "hover:text-foreground/80"}>Profile</NavLink>
+                    <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Dashboard</NavLink>
+                    <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>All Submissions</NavLink>
+                    <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Topics for Revision</NavLink>
+                    <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Profile</NavLink>
                   </>
                 )}
                 <div className="pt-2">
@@ -55,7 +55,7 @@ export function Navbar() {
                     variant={isDark ? "outline" : "secondary"} 
                     onClick={() => setTheme(isDark ? "light" : "dark")} 
                     aria-label="Toggle theme" 
-                    className="w-full justify-start hover:text-[#F000FF] hover:border-[#F000FF] dark:hover:bg-transparent"
+                    className="w-full justify-start hover:text-[#5065bc] hover:border-[#5065bc] dark:hover:bg-transparent"
                   >
                     {isDark ? <Sun className="h-4 w-4 mr-2"/> : <Moon className="h-4 w-4 mr-2"/>}
                     Toggle Theme
@@ -67,7 +67,7 @@ export function Navbar() {
                   </Button>
                 ) : (
                   <NavLink to="/login">
-                    <button className="glossy-button w-full flex items-center justify-start font-semibold py-2 px-4 rounded-lg bg-[#F000FF] text-white">
+                    <button className="glossy-button w-full flex items-center justify-start font-semibold py-2 px-4 rounded-lg bg-[#5065bc] text-white">
                         <LogIn className="h-4 w-4 mr-2"/> Sign In
                     </button>
                   </NavLink>
@@ -82,7 +82,7 @@ export function Navbar() {
             size="icon" 
             onClick={() => setTheme(isDark ? "light" : "dark")} 
             aria-label="Toggle theme" 
-            className="hidden md:inline-flex hover:border-[#F000FF] hover:text-[#F000FF] dark:hover:bg-transparent"
+            className="hidden md:inline-flex hover:border-[#5065bc] hover:text-[#5065bc] dark:hover:bg-transparent"
           >
             {isDark ? <Sun className="h-4 w-4"/> : <Moon className="h-4 w-4"/>}
           </Button>
@@ -92,7 +92,7 @@ export function Navbar() {
             </Button>
           ) : (
             <NavLink to="/login">
-                <button className="glossy-button hidden md:inline-flex items-center justify-center font-semibold py-2 px-4 rounded-lg bg-[#F000FF] text-white">
+                <button className="glossy-button hidden md:inline-flex items-center justify-center font-semibold py-2 px-4 rounded-lg bg-[#253fac] text-white">
                     <LogIn className="h-4 w-4 mr-2"/> Sign In
                 </button>
             </NavLink>
