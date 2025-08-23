@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard/Dashboard_Page";
 import Submissions from "./pages/Submissions";
 import SubmissionDetail from "./pages/SubmissionDetail";
-import Topics from "./pages/Topics";
 import TopicsPage from "./pages/TopicsPage";
 import TopicDetail from "./pages/TopicDetail";
 import Profile from "./pages/Profile";
@@ -49,7 +48,7 @@ const App = () => (
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                     <Route path="/submissions" element={<ProtectedRoute><Submissions /></ProtectedRoute>} />
                     <Route path="/submissions/:id" element={<ProtectedRoute><SubmissionDetail /></ProtectedRoute>} />
-                    <Route path="/topics" element={<ProtectedRoute><Topics /></ProtectedRoute>} />
+                    <Route path="/topics" element={<ProtectedRoute><TopicsPage /></ProtectedRoute>} />
                     <Route path="/topics/:id" element={<ProtectedRoute><TopicDetail /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="*" element={<NotFound />} />
