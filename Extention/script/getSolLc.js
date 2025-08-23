@@ -17,8 +17,11 @@ function waitForElement() {
       )
       .closest("button");
     const lang = langButton?.childNodes[0]?.textContent?.trim();
-
-    const resData = {
+      
+    const title = document.querySelector('.no-underline.hover\\:text-blue-s.dark\\:hover\\:text-dark-blue-s.truncate.cursor-text.whitespace-normal.hover\\:\\!text-\\[inherit\\]').innerText.replace(/^\d+\.\s/, '')
+    
+      const resData = {
+      Problem_Title: title,
       Problem_Statement: ps || "N/A",
       Solution_Language: lang || "N/A",
       Solution_Code: code,
@@ -36,9 +39,9 @@ function waitForElement() {
     window.dispatchEvent(event);
     console.log("Sending message Lc");
 
-    return true; 
+    return true;
   }
-  return false; 
+  return false;
 }
 
 // Try as soon as the element appears
