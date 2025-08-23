@@ -435,3 +435,12 @@ body {
 html, body {
   scrollbar-gutter: stable;
 }
+
+
+/* Code editor line numbers */
+.code-editor .line-numbers {
+  min-width: 2.2em;
+  text-align: right;
+  padding-right: 0.3em;
+  box-sizing: content-box;
+}
