@@ -93,28 +93,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 //logout:just clear the local storage
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "logout") {
-    // debug
-    chrome.storage.local.get(["jwt", "username", "avatarUrl", "scopes"], (result) => {
-      console.log("Stored data:", result);
-
-      if (result.jwt) {
-        console.log("Username:", result.username);
-        console.log("jwt:", result.jwt);
-        console.log("Avatar URL:", result.avatarUrl);
-        console.log("Scopes:", result.scopes);
-      } else {
-        console.log("No user logged in.");
-      }
-    });
-    chrome.storage.local.clear().then(() => {
-      console.log("All user data cleared.");
-      sendResponse({ success: true });
-    });
-    return true;
-  }
-});
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "logout") {
+      // debug
+      chrome.storage.local.get(["jwt", "username", "avatarUrl", "scopes"], (result) => {
+        console.log("Stored data:", result);
+        
+        if (result.jwt) {
+          console.log("Username:", result.username);
+          console.log("jwt:", result.jwt);
+          console.log("Avatar URL:", result.avatarUrl);
+          console.log("Scopes:", result.scopes);
+        } else {
+          console.log("No user logged in.");
+        }
+      });
+      chrome.storage.local.clear().then(() => {
+        console.log("All user data cleared.");
+        sendResponse({ success: true });
+      });
+      return true;
+    }
+  });
 
 // Webscrapping Part start
 
@@ -139,52 +139,52 @@ const LEETCODE_SUBMIT_URL = "https://leetcode.com/submissions/detail/";
 
 //Submission Trigger, Web Scrapping entry point
 
-chrome.webRequest.onCompleted.addListener(
-  (details) => {
-    let scriptToInject = null;
+  chrome.webRequest.onCompleted.addListener(
+    (details) => {
+      let scriptToInject = null;
+      
+      if (details.url.startsWith(GFG_SUBMIT_URL) && details.method === 'POST') {
+        console.log('GFG submission detected.');
+        scriptToInject = 'script/getSolGfg.js';
+      }
+      else if (details.url.startsWith(CODECHEF_SUBMIT_URL) && details.method === 'GET') {
+        console.log('CodeChef submission detected.');
+        scriptToInject = 'script/getSolCf.js';
+      }
+      else if(details.url.startsWith(HACKERRANK_SUMBIT_URL) && details.method === 'GET'){ 
+        console.log('Hackerrank Submission detected.');
+        scriptToInject = 'script/getSolHr.js'
+      }
+       else if (details.url.startsWith(LEETCODE_SUBMIT_URL) && details.method === "GET") {
+        console.log("Leetcode Submission detected.");
+        scriptToInject = 'script/getSolLc.js';
+      }
+      chrome.scripting.executeScript({
+        target: { tabId: details.tabId },
+        func: checkEvent
+      });
+      
+      if (scriptToInject && details.tabId > 0) {
+        setTimeout(() => {
+          chrome.scripting.executeScript({
+            target: { tabId: details.tabId },
+            files: [scriptToInject],
+            world: 'MAIN',
+          });
+        }, 1500);
+      }
+    },
+    {
+      urls: [
+        "https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/",
+        "https://www.codechef.com/error_status_table/*",
+        "https://www.hackerrank.com/rest/contests/master/testcases/*/*/testcase_data",
+        "https://leetcode.com/submissions/detail/*/check/"
+      ]
+    }
+  );
 
-    if (details.url.startsWith(GFG_SUBMIT_URL) && details.method === 'POST') {
-      console.log('GFG submission detected.');
-      scriptToInject = 'script/getSolGfg.js';
-    }
-    else if (details.url.startsWith(CODECHEF_SUBMIT_URL) && details.method === 'GET') {
-      console.log('CodeChef submission detected.');
-      scriptToInject = 'script/getSolCf.js';
-    }
-    else if(details.url.startsWith(HACKERRANK_SUMBIT_URL) && details.method === 'GET'){ 
-      console.log('Hackerrank Submission detected.');
-      scriptToInject = 'script/getSolHr.js'
-    }
-     else if (details.url.startsWith(LEETCODE_SUBMIT_URL) && details.method === "GET") {
-      console.log("Leetcode Submission detected.");
-      scriptToInject = 'script/getSolLc.js';
-    }
-    chrome.scripting.executeScript({
-      target: { tabId: details.tabId },
-      func: checkEvent
-    });
-    
-    if (scriptToInject && details.tabId > 0) {
-      setTimeout(() => {
-        chrome.scripting.executeScript({
-          target: { tabId: details.tabId },
-          files: [scriptToInject],
-          world: 'MAIN',
-        });
-      }, 1500);
-    }
-  },
-  {
-    urls: [
-      "https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/",
-      "https://www.codechef.com/error_status_table/*",
-      "https://www.hackerrank.com/rest/contests/master/testcases/*/*/testcase_data",
-      "https://leetcode.com/submissions/detail/*/check/"
-    ]
-  }
-);
-
-var isProcessing = false
+  var isProcessing = false
 
 
 //Result Fetcher, Web Scrapping exit point

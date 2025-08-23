@@ -18,11 +18,14 @@ function waitForElement() {
       
     const title = document.querySelector('.no-underline.hover\\:text-blue-s.dark\\:hover\\:text-dark-blue-s.truncate.cursor-text.whitespace-normal.hover\\:\\!text-\\[inherit\\]').innerText.replace(/^\d+\.\s/, '')
     
+      const diff = document.querySelector('.relative.inline-flex.items-center.justify-center.text-caption.px-2.py-1.gap-1.rounded-full.bg-fill-secondary.text-difficulty-easy.dark\\:text-difficulty-easy').innerText;
+
       const resData = {
       Problem_Title: title,
       Problem_Statement: ps || "N/A",
       Solution_Language: lang || "N/A",
       Solution_Code: code,
+      Problem_Difficulty: diff,
     };
 
     const payload = {

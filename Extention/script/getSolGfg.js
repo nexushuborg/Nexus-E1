@@ -13,10 +13,12 @@ console.log('Script injecting...');
     const lang = document.querySelector(".problems_language_dropdown__DgjFb");
         const title = document.querySelector('.problems_header_content__title__L2cB2').innerText
 
+    const diff = document.querySelector('.problems_header_description__t_8PB span strong').innerText
     const code = ace.edit("ace-editor").getValue();
     const resData = {
       Problem_Title : title,
       Problem_Statement: ps.innerText,
+      Problem_Difficulty: diff,
       Solution_Language: lang.innerText,
       Solution_Code: code,
     };
