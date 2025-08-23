@@ -9,7 +9,9 @@ console.log('Script injecting...');
     const solnCode = ace.edit('submit-ide-v2').getValue();
     const ps = document.querySelector('#problem-statement').innerText;
     const solnLang = document.querySelector('#language-select').innerText;
+    const title = document.querySelectorAll('#problem-statement h3')[0].innerText;
     const resData = {
+      Problem_Title: title,
       Problem_Statement: ps,
       Solution_Code: solnCode,
       Solution_Language: solnLang

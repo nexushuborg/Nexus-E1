@@ -157,7 +157,7 @@ chrome.webRequest.onCompleted.addListener(
     }
      else if (details.url.startsWith(LEETCODE_SUBMIT_URL) && details.method === "GET") {
       console.log("Leetcode Submission detected.");
-      scriptToInject = "script/getSolLc.js";
+      scriptToInject = 'script/getSolLc.js';
     }
     chrome.scripting.executeScript({
       target: { tabId: details.tabId },

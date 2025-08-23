@@ -7,8 +7,10 @@ if (document.querySelector('.compiler-message__value').innerText === 'Success') 
     //debug
     const ps = document.querySelector('.challenge-body-html').innerText
     const lang = document.querySelector('.css-ki0glp').innerText
+    const title = document.querySelector('.page-label').innerText
     console.log('Script injected, code output', code);    
     resData = {
+      Problem_Title: title,
       Problem_Statement: ps,
       Solution_Language: lang,
       Solution_Code: code,
