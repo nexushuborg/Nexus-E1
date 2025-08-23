@@ -2,7 +2,7 @@ import { Linkedin, Github, Mail } from "lucide-react";
 
 export function Footer() {
   const linkStyle = `
-    flex items-center gap-2 text-muted-foreground hover:text-[#F000FF] 
+    flex items-center gap-2 text-muted-foreground hover:text-[#3a52b4] 
     transition-colors duration-200
   `;
 
