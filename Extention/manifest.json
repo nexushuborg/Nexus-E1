@@ -18,32 +18,13 @@
     "http://localhost:5000/*",
     "https://github.com/*"
   ],
-  "content_scripts": [
-    {
-      "matches": ["https://www.hackerrank.com/*"],
-      "js": ["script/content.js"]
-    },
-    {
-      "matches": ["https://leetcode.com/*"],
-      "js": ["script/getSolLc.js"]
-    }
-  ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "script/getSolCf.js",
-        "script/getSolGfg.js",
-        "script/hackerrank/pageScript.js",
-        "script/leetcode/pageScript.js"
-      ],
+      "resources": [ "script/getSolCf.js", "script/getSolGfg.js", "script/getSolHr.js", "script/getSolLc.js" ],
       "matches": [ "<all_urls>" ]
     }
   ],
   "background": {
     "service_worker": "background.js"
-  },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "images/icon-16.png"
   }
 }

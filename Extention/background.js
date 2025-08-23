@@ -135,6 +135,7 @@ function checkEvent() {
 const GFG_SUBMIT_URL = 'https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/';
 const CODECHEF_SUBMIT_URL = 'https://www.codechef.com/error_status_table/';
 const HACKERRANK_SUMBIT_URL = 'https://www.hackerrank.com/rest/contests/master/testcases/';
+const LEETCODE_SUBMIT_URL = "https://leetcode.com/submissions/detail/";
 
 //Submission Trigger, Web Scrapping entry point
 
@@ -154,18 +155,21 @@ chrome.webRequest.onCompleted.addListener(
       console.log('Hackerrank Submission detected.');
       scriptToInject = 'script/getSolHr.js'
     }
-
+     else if (details.url.startsWith(LEETCODE_SUBMIT_URL) && details.method === "GET") {
+      console.log("Leetcode Submission detected.");
+      scriptToInject = "script/getSolLc.js";
+    }
     chrome.scripting.executeScript({
       target: { tabId: details.tabId },
       func: checkEvent
     });
-
+    
     if (scriptToInject && details.tabId > 0) {
       setTimeout(() => {
         chrome.scripting.executeScript({
           target: { tabId: details.tabId },
           files: [scriptToInject],
-          world: 'MAIN'
+          world: 'MAIN',
         });
       }, 1500);
     }
@@ -174,7 +178,8 @@ chrome.webRequest.onCompleted.addListener(
     urls: [
       "https://practiceapiorigin.geeksforgeeks.org/api/latest/problems/submission/submit/result/",
       "https://www.codechef.com/error_status_table/*",
-      "https://www.hackerrank.com/rest/contests/master/testcases/*/*/testcase_data"
+      "https://www.hackerrank.com/rest/contests/master/testcases/*/*/testcase_data",
+      "https://leetcode.com/submissions/detail/*/check/"
     ]
   }
 );
@@ -205,6 +210,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendRes) => {
     console.log("Hr Response");
     console.log(request);
   }
+  else if (request.id === "LcSoln" && !isProcessing) {
+    isProcessing = true;
+    console.log("Leetcode Response");
+    console.log(request);
+  }
+  
 
   setInterval(() => {
     isProcessing = false;
