@@ -22,6 +22,11 @@
     #output {
       color: rgb(12, 163, 7);
     }
+
+    #repoSection {
+      display: none;
+      margin-top: 15px;
+    }
   </style>
 </head>
 
@@ -29,6 +34,13 @@
   <button id="loginBtn">Login with GitHub</button>
   <button id="logoutBtn">Logout</button>
   <p id="output"></p>
+  <div id="repoSection">
+    <h3>Link Your GitHub Repo</h3>
+    <input type="text" id="repoUrl" placeholder="Paste your repo URL (e.g. https://github.com/user/repo)">
+    <button id="linkBtn">Link Repo</button>
+    <button id="disconnectBtn">Unlink Repo</button>
+  </div>
+  <div id="repoStatus"></div>
   <h1>Current Tab URL:</h1>
   <p id="url-display">Loading...</p>
   <script src="background.js"></script>

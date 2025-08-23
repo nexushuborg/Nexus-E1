@@ -70,6 +70,13 @@ router.post("/exchange-code", async (req, res) => {
             { expiresIn: "1h" }
         );
 
+        res.cookie("jwt", jwtToken, {
+            httpOnly: true,      // prevents JavaScript from reading cookie
+            secure: process.env.NODE_ENV === "production", // use HTTPS in prod
+            sameSite: "lax",     // helps prevent CSRF
+            maxAge: 3600000      // 1 hour in ms
+        });
+
         //sends back everything to background.js
         res.json({
             repos: ghUser.repos,
