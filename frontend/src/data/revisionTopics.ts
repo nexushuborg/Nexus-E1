@@ -4,11 +4,9 @@ export interface RevisionTopic {
   id: string;
   name: string;
   status: RevisionStatus;
-  lastReviewed: string | null; // ISO date string or null if never reviewed
   relatedSubmissionIds: string[];
   description: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  estimatedTime: number; // in minutes
 }
 
 export const revisionTopics: RevisionTopic[] = [
@@ -16,90 +14,91 @@ export const revisionTopics: RevisionTopic[] = [
     id: 'dynamic-programming',
     name: 'Dynamic Programming',
     status: 'In Progress',
-    lastReviewed: new Date(Date.now() - 86400000 * 3).toISOString(), // 3 days ago
     relatedSubmissionIds: ['two-sum', 'longest-substring-no-repeat'],
     description: 'Optimization problems solved by breaking them into smaller subproblems',
-    difficulty: 'Advanced',
-    estimatedTime: 120
+    difficulty: 'Advanced'
   },
   {
     id: 'arrays',
     name: 'Arrays',
     status: 'Completed',
-    lastReviewed: new Date(Date.now() - 86400000 * 7).toISOString(), // 1 week ago
     relatedSubmissionIds: ['two-sum'],
     description: 'Linear data structure for storing elements in contiguous memory',
-    difficulty: 'Beginner',
-    estimatedTime: 60
+    difficulty: 'Beginner'
   },
   {
     id: 'strings',
     name: 'Strings',
     status: 'In Progress',
-    lastReviewed: new Date(Date.now() - 86400000 * 1).toISOString(), // 1 day ago
     relatedSubmissionIds: ['longest-substring-no-repeat'],
     description: 'Sequence of characters and common string manipulation techniques',
-    difficulty: 'Beginner',
-    estimatedTime: 90
+    difficulty: 'Beginner'
   },
   {
     id: 'linked-lists',
     name: 'Linked Lists',
     status: 'Not Started',
-    lastReviewed: null,
     relatedSubmissionIds: ['merge-k-lists'],
     description: 'Linear data structure with nodes containing data and references',
-    difficulty: 'Intermediate',
-    estimatedTime: 75
+    difficulty: 'Intermediate'
   },
   {
     id: 'trees',
     name: 'Trees',
     status: 'Not Started',
-    lastReviewed: null,
     relatedSubmissionIds: [],
     description: 'Hierarchical data structure with nodes and edges',
-    difficulty: 'Intermediate',
-    estimatedTime: 100
+    difficulty: 'Intermediate'
   },
   {
     id: 'graphs',
     name: 'Graphs',
     status: 'Not Started',
-    lastReviewed: null,
     relatedSubmissionIds: [],
     description: 'Non-linear data structure with vertices and edges',
-    difficulty: 'Advanced',
-    estimatedTime: 150
+    difficulty: 'Advanced'
   },
   {
     id: 'sliding-window',
     name: 'Sliding Window',
     status: 'Completed',
-    lastReviewed: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
     relatedSubmissionIds: ['longest-substring-no-repeat'],
     description: 'Technique for solving problems involving contiguous subarrays',
-    difficulty: 'Intermediate',
-    estimatedTime: 80
+    difficulty: 'Intermediate'
+  },
+  {
+    id: 'stack',
+    name: 'Stack',
+    status: 'Not Started',
+    relatedSubmissionIds: [],
+    description: 'LIFO data structure for managing elements with last-in-first-out access',
+    difficulty: 'Beginner'
+  },
+  {
+    id: 'two-pointers',
+    name: 'Two Pointers',
+    status: 'Not Started',
+    relatedSubmissionIds: [],
+    description: 'Technique using two indices to traverse data structures efficiently',
+    difficulty: 'Intermediate'
   }
 ];
 
-// Helper function to get topic by ID
 export const getTopicById = (id: string): RevisionTopic | undefined => {
   return revisionTopics.find(topic => topic.id === id);
 };
 
-// Helper function to get topics by status
 export const getTopicsByStatus = (status: RevisionStatus): RevisionTopic[] => {
   return revisionTopics.filter(topic => topic.status === status);
 };
 
-// Helper function to get topics that need review (not reviewed in last 7 days)
 export const getTopicsNeedingReview = (): RevisionTopic[] => {
-  const sevenDaysAgo = new Date(Date.now() - 86400000 * 7);
-  return revisionTopics.filter(topic => 
-    topic.status === 'Completed' && 
-    topic.lastReviewed && 
-    new Date(topic.lastReviewed) < sevenDaysAgo
-  );
+  return revisionTopics.filter(topic => topic.status === 'Completed');
+};
+
+export const updateTopicStatus = (topicId: string, newStatus: RevisionStatus): void => {
+  const topicIndex = revisionTopics.findIndex(topic => topic.id === topicId);
+  if (topicIndex !== -1) {
+    revisionTopics[topicIndex].status = newStatus;
+  }
 };
