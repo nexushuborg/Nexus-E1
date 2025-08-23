@@ -1,6 +1,6 @@
 import { useTheme } from "next-themes";
 import { Highlight } from "prism-react-renderer";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface CodeBlockProps {
   code: string;
@@ -13,7 +13,6 @@ interface CodeBlockProps {
   maxHeight?: string;
 }
 
-// Map common language names to Prism language identifiers
 const languageMap: Record<string, string> = {
   'javascript': 'javascript',
   'js': 'javascript',
@@ -56,7 +55,7 @@ const languageMap: Record<string, string> = {
   'md': 'markdown',
 };
 
-// Atom One Dark theme (official colors)
+// Atom One Dark theme 
 const atomOneDarkTheme = {
   plain: {
     backgroundColor: '#282c34',
@@ -133,7 +132,7 @@ const atomOneDarkTheme = {
   ],
 };
 
-// Light theme (consistent with application)
+// Light theme
 const lightTheme = {
   plain: {
     backgroundColor: '#f8f9fa',
@@ -225,11 +224,9 @@ export function CodeBlock({
   const [editValue, setEditValue] = useState(code);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Determine the actual theme to use
   const isDark = resolvedTheme === 'dark' || theme === 'dark';
   const currentTheme = isDark ? atomOneDarkTheme : lightTheme;
 
-  // Map language to Prism language identifier
   const prismLanguage = languageMap[language.toLowerCase()] || language.toLowerCase();
 
   useEffect(() => {
@@ -241,11 +238,10 @@ export function CodeBlock({
     setIsEditing(true);
     setTimeout(() => {
       textareaRef.current?.focus();
-      textareaRef.current?.select();
     }, 0);
   };
 
-  const handleDoubleClick = () => {
+  const handleSingleClick = () => {
     if (!editable) return;
     handleEdit();
   };
@@ -270,102 +266,163 @@ export function CodeBlock({
 
   if (isEditing) {
     return (
-      <div className={`relative ${className}`}>
-        <textarea
-          ref={textareaRef}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-
-          className="w-full bg-background border border-border rounded-lg p-4 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-slate-500 dark:focus:ring-slate-400 focus:border-transparent resize-none font-mono text-sm leading-relaxed"
-          style={{ 
-            minHeight: '200px',
-            maxHeight: maxHeight === "none" ? "400px" : maxHeight,
-            lineHeight: '1.6',
-            overflowY: 'auto'
-          }}
-          placeholder={placeholder}
-          spellCheck={false}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          aria-label="Code editor"
-        />
-        <div className="absolute top-3 right-3 flex gap-2">
-          <button
-            onClick={handleSave}
-            className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium"
-            aria-label="Save changes"
+      <div className={`relative group code-editor ${className}`}>
+          <div
+            className="rounded-lg border border-border overflow-hidden bg-background"
+            style={{ height: maxHeight === "none" ? "auto" : maxHeight }}
           >
-            Save
-          </button>
-          <button
-            onClick={handleCancel}
-            className="px-3 py-1.5 text-xs bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors font-medium"
-            aria-label="Cancel editing"
-          >
-            Cancel
-          </button>
+            <div className="flex h-full">
+              <div className="flex-1 relative">
+                <Highlight
+                  theme={currentTheme}
+                  code={editValue}
+                  language={prismLanguage}
+                >
+                  {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                    <pre
+                      className={`${className} overflow-auto font-mono text-sm leading-relaxed h-full`}
+                      style={{
+                        ...style,
+                        margin: 0,
+                        backgroundColor: 'transparent',
+                        fontSize: '14px',
+                        lineHeight: '1.6',
+                        padding: '8px',
+                        letterSpacing: 'normal',
+                        whiteSpace: 'pre',
+                        wordSpacing: 'normal',
+                        tabSize: 2,
+                      }}
+                    >
+                      {tokens.map((line, i) => (
+                        <div key={i} {...getLineProps({ line })} className="table-row">
+                          {showLineNumbers && (
+                            <span className="table-cell text-right pr-4 select-none text-muted-foreground/60 text-xs line-numbers">
+                              {i + 1}
+                            </span>
+                          )}
+                          <span className="table-cell">
+                            {line.map((token, key) => (
+                              <span key={key} {...getTokenProps({ token })} />
+                            ))}
+                          </span>
+                        </div>
+                      ))}
+                    </pre>
+                  )}
+                </Highlight>
+                <textarea
+                  ref={textareaRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onScroll={(e) => {
+                    const highlightedPre = e.currentTarget.parentElement?.querySelector('pre') as HTMLElement;
+                    if (highlightedPre) {
+                      highlightedPre.scrollTop = e.currentTarget.scrollTop;
+                      highlightedPre.scrollLeft = e.currentTarget.scrollLeft;
+                    }
+                  }}
+                  className="absolute inset-0 w-full h-full bg-transparent border-0 text-transparent caret-foreground placeholder-transparent focus:outline-none focus:ring-0 resize-none font-mono text-sm leading-relaxed"
+                  style={{
+                    paddingLeft: showLineNumbers ? 'calc(2.2em + 8px)' : '8px',
+                    paddingTop: '8px',
+                    paddingRight: '8px',
+                    paddingBottom: '8px',
+                    lineHeight: '1.6',
+                    overflowY: 'auto',
+                    fontSize: '14px',
+                    whiteSpace: 'pre',
+                    wordSpacing: 'normal',
+                    tabSize: 2,
+                  }}
+                  placeholder={placeholder}
+                  spellCheck={false}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  aria-label="Code editor"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="absolute bottom-4 right-4 flex gap-2 z-10">
+            <button
+              onClick={handleSave}
+              className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium shadow-lg"
+              aria-label="Save changes"
+            >
+              Save
+            </button>
+            <button
+              onClick={handleCancel}
+              className="px-3 py-1.5 text-xs bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors font-medium shadow-lg"
+              aria-label="Cancel editing"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className={`relative group ${className}`}>
-      <div 
+    <div className={`relative group code-editor ${className}`}>
+      <div
         className="rounded-lg border border-border overflow-hidden bg-background"
-        style={{ maxHeight }}
-        onDoubleClick={handleDoubleClick}
-        title={editable ? "Double-click to edit" : ""}
+        style={{ height: maxHeight === "none" ? "auto" : maxHeight }}
+        onClick={handleSingleClick}
+        title={editable ? "Click to edit" : ""}
         role={editable ? "button" : undefined}
         tabIndex={editable ? 0 : undefined}
         onKeyDown={(e) => {
           if (editable && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
-            handleDoubleClick();
+            handleSingleClick();
           }
         }}
       >
-        <Highlight
-          theme={currentTheme}
-          code={code}
-          language={prismLanguage}
-        >
-          {({ className, style, tokens, getLineProps, getTokenProps }) => (
-            <pre 
-              className={`${className} p-4 overflow-auto font-mono text-sm leading-relaxed`}
-              style={{
-                ...style,
-                margin: 0,
-                backgroundColor: 'transparent',
-                fontSize: '14px',
-                lineHeight: '1.6',
-              }}
-            >
-              {tokens.map((line, i) => (
-                <div key={i} {...getLineProps({ line })} className="table-row">
-                  {showLineNumbers && (
-                    <span className="table-cell text-right pr-4 select-none text-muted-foreground/60 text-xs">
-                      {i + 1}
+        <div className="h-full overflow-hidden">
+          <Highlight
+            theme={currentTheme}
+            code={code}
+            language={prismLanguage}
+          >
+            {({ className, style, tokens, getLineProps, getTokenProps }) => (
+              <pre
+                className={`${className} p-2 overflow-auto font-mono text-sm leading-relaxed h-full`}
+                style={{
+                  ...style,
+                  margin: 0,
+                  backgroundColor: 'transparent',
+                  fontSize: '14px',
+                  lineHeight: '1.6',
+                }}
+              >
+                {tokens.map((line, i) => (
+                  <div key={i} {...getLineProps({ line })} className="table-row">
+                    {showLineNumbers && (
+                      <span className="table-cell text-right pr-4 select-none text-muted-foreground/60 text-xs line-numbers">
+                        {i + 1}
+                      </span>
+                    )}
+                    <span className="table-cell">
+                      {line.map((token, key) => (
+                        <span key={key} {...getTokenProps({ token })} />
+                      ))}
                     </span>
-                  )}
-                  <span className="table-cell">
-                    {line.map((token, key) => (
-                      <span key={key} {...getTokenProps({ token })} />
-                    ))}
-                  </span>
-                </div>
-              ))}
-            </pre>
-          )}
-        </Highlight>
+                  </div>
+                ))}
+              </pre>
+            )}
+          </Highlight>
+        </div>
       </div>
-      
+
       {editable && (
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <div className="px-2 py-1 text-xs bg-slate-700 dark:bg-slate-600 text-white rounded-md shadow-sm font-medium">
-            Double-click to edit
+            Click to edit
           </div>
         </div>
       )}
