@@ -421,3 +421,17 @@ body {
 .dark-gradient-background {
   background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%);
 }
+
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Prevent layout shifts when scrollbars are hidden */
+html, body {
+  scrollbar-gutter: stable;
+}
