@@ -2,11 +2,9 @@ console.log("Script Injecting....");
 
 // hold for the element to appear
 function waitForElement() {
-  const banner = document.querySelector(
-    'div[data-e2e-locator="console-result"]'
-  );
+  const banner = document.querySelector('.text-green-s.dark\\:text-dark-green-s.flex.flex-1.items-center.gap-2.text-\\[16px\\].font-medium.leading-6 span').innerText;
 
-  if (banner && banner.textContent.trim() === "Accepted") {
+  if (banner === "Accepted") {
     const code = window.monaco?.editor?.getModels?.()[0]?.getValue();
     const ps = document.querySelector(
       "div.flex.w-full.flex-1.flex-col.gap-4.overflow-y-auto.px-4.py-5"
