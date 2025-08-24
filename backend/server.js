@@ -35,8 +35,8 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 // Routes
-app.use('/api/github', gitAuthRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', gitAuthRoutes);
+// app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Default route
@@ -57,6 +57,6 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.BACKEND_PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🤖 Gemini AI integration: ${process.env.GEMINI_API_KEY ? 'ENABLED' : 'DISABLED'}`);
+  console.log(` Server running on http://localhost:${PORT}`);
+  console.log(` Gemini AI integration: ${process.env.GEMINI_API_KEY ? 'ENABLED' : 'DISABLED'}`);
 });
