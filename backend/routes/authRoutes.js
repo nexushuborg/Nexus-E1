@@ -3,11 +3,18 @@ import passport from "passport";
 import { githubCallback, logout, profile } from "../controllers/auth.controller.js";
 import { protect } from "../middlewares/auth.middlewares.js";
 import jwt from "jsonwebtoken"
+import User from "../models/userSchema.js";  // Add this import
 
 const router = express.Router();
 
-// test endpoint
-// router.get("/signin", signin);
+// Health check endpoint
+router.get("/health", (req, res) => {
+    res.status(200).json({ 
+        status: "OK", 
+        message: "Auth service is running",
+        timestamp: new Date().toISOString()
+    });
+});
 
 // the login button will hit this endpoint 
 router.get("/github", passport.authenticate("github", { scope: ['user:email'] }));
@@ -15,16 +22,13 @@ router.get("/github", passport.authenticate("github", { scope: ['user:email'] })
 // after oauth, it will redirect to the dashboard
 router.get("/callback", passport.authenticate("github", { failureRedirect: "/", session: false }), githubCallback);
 
-// test endpoint
-// router.get("/welcome", welcome)
-
 // profile section will have the authenticated username
 router.get("/profile", protect, profile);
 
 // logout button hit this endpoint
 router.get("/logout", logout);
 
-// endpoint to exchange the code ecnoded in the url in return of the github access token
+// endpoint to exchange the code encoded in the url in return of the github access token
 router.post("/exchange-code", async (req, res) => {
     try {
         const { code, redirect_uri } = req.body;
@@ -46,7 +50,6 @@ router.post("/exchange-code", async (req, res) => {
         });
 
         const tokenData = await response.json();
-        console.log(tokenData.access_token);
         if (!tokenData.access_token) {
             return res.status(400).json({ error: "Failed to get access token", details: tokenData });
         }
@@ -57,39 +60,49 @@ router.post("/exchange-code", async (req, res) => {
         });
         const ghUser = await userResponse.json();
 
-        // sign JWT
-        const jwtToken = jwt.sign(
-            {
-                sub: ghUser.id,
+        // Find or create user in database
+        let user = await User.findOne({ githubId: ghUser.id });
+        if (!user) {
+            user = await User.create({
+                githubId: ghUser.id,
                 username: ghUser.login,
-                avatarUrl: ghUser.avatar_url,
-                scopes: tokenData.scope,
-                accessToken: tokenData.access_token
-            },
+                email: ghUser.email,
+                avatar: ghUser.avatar_url,
+                bio: ghUser.bio
+            });
+        }
+
+        // sign JWT with user ID from database
+        const jwtToken = jwt.sign(
+            { userId: user._id },  // Use database user ID
             process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
 
+        // Set cookie with consistent settings
         res.cookie("jwt", jwtToken, {
-            httpOnly: true,      // prevents JavaScript from reading cookie
-            secure: process.env.NODE_ENV === "production", // use HTTPS in prod
-            sameSite: "lax",     // helps prevent CSRF
-            maxAge: 3600000      // 1 hour in ms
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',  // Match auth controller
+            sameSite: 'strict',  // Match auth controller
+            maxAge: 3600000  // 1 hour in ms
         });
 
-        //sends back everything to background.js
+        // Send response
         res.json({
-            repos: ghUser.repos,
-            accessToken: tokenData.access_token,
-            jwt: jwtToken,
-            username: ghUser.login,
-            avatarUrl: ghUser.avatar_url,
-            scopes: tokenData.scope
+            success: true,
+            message: "Authentication successful",
+            user: {
+                id: user._id,
+                username: ghUser.login,
+                avatarUrl: ghUser.avatar_url,
+                email: ghUser.email
+            },
+            jwt: jwtToken  // Include JWT in response for Postman
         });
 
     } catch (error) {
-        console.error("Error exchanging code:", error);
-        res.status(500).json({ error: error.message });
+        console.error('Exchange code error:', error);
+        res.status(500).json({ error: "Something went wrong!", message: error.message });
     }
 });
 
