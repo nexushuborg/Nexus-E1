@@ -9,8 +9,8 @@ const router = express.Router();
 
 // Health check endpoint
 router.get("/health", (req, res) => {
-    res.status(200).json({ 
-        status: "OK", 
+    res.status(200).json({
+        status: "OK",
         message: "Auth service is running",
         timestamp: new Date().toISOString()
     });
@@ -74,7 +74,7 @@ router.post("/exchange-code", async (req, res) => {
 
         // sign JWT with user ID from database
         const jwtToken = jwt.sign(
-            { userId: user._id },  // Use database user ID
+            { userId: user._id, accessToken: tokenData.access_token },  // Use database user ID
             process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
@@ -91,6 +91,7 @@ router.post("/exchange-code", async (req, res) => {
         res.json({
             success: true,
             message: "Authentication successful",
+            accessToken: tokenData.access_token,
             user: {
                 id: user._id,
                 username: ghUser.login,
