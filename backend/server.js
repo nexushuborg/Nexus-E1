@@ -1,19 +1,20 @@
+import dotenv from 'dotenv/config';
+// env variables validation
+if (!process.env.GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY is required but not set!');
+  process.exit(1);
+}
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import gitAuthRoutes from './routes/authRoutes.js';
 import path from 'path';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/connect.js';
-import authRoutes from './routes/authRoutes.js';
 import aiRoutes from './routes/ai.routes.js';
 
 // import passportConfig from './config/passport.js';
 import "./config/gitPassport.js"
-
-
-dotenv.config();
 
 const app = express();
 
@@ -36,7 +37,6 @@ app.use(passport.initialize());
 
 // Routes
 app.use('/api/auth', gitAuthRoutes);
-// app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 
 // Default route
@@ -58,5 +58,4 @@ app.use((err, req, res, next) => {
 const PORT = process.env.BACKEND_PORT || 3000;
 app.listen(PORT, () => {
   console.log(` Server running on http://localhost:${PORT}`);
-  console.log(` Gemini AI integration: ${process.env.GEMINI_API_KEY ? 'ENABLED' : 'DISABLED'}`);
 });
