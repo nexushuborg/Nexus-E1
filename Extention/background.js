@@ -80,7 +80,7 @@ class GitHubRepositoryManager {
 
   async ensureDirectoryStructure(owner, repo) {
     const token = await this.getAccessToken();
-    const platforms = ['LeetCode', 'GFG', 'HackerRank', "Codeforces"];
+    const platforms = ['LeetCode', 'GFG', 'HackerRank', "CodeChef"];
     const difficulties = ['Easy', 'Medium', 'Hard'];
 
     const results = [];
@@ -151,8 +151,10 @@ class GitHubRepositoryManager {
     const filePath = this.generateFilePath(problemData);
     const fileName = this.generateFileName(problemData);
     const fullPath = `${filePath}/${fileName}`;
+    const readmePath = `${filePath}/README.md`;
 
     try {
+      // ---------------Save code solutions------------------- 
       // First, check if file already exists and get its SHA
       let existingSha = null;
 
@@ -169,10 +171,19 @@ class GitHubRepositoryManager {
         console.log(`File exists, SHA: ${existingSha}`);
       }
 
+      function b64EncodeUnicode(str) {
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(str);
+        let binary = '';
+        bytes.forEach((b) => binary += String.fromCharCode(b));
+        return btoa(binary);
+      }
+
       // Prepare the request body
       const requestBody = {
-        message: `${existingSha ? 'Update' : 'Add'} solution: ${problemData.Problem_Title} (${problemData.platform})`,
-        content: btoa(solutionCode) // Base64 encode
+        message: `${existingSha ? 'Update' : 'Add'} solution: ${problemData.title} (${problemData.platform})`,
+        content: b64EncodeUnicode(solutionCode), // Base64 encode
+        sha: existingSha || undefined
       };
 
       // Include SHA if file exists (for updates)
@@ -194,12 +205,128 @@ class GitHubRepositoryManager {
       if (response.ok) {
         const responseData = await response.json();
         console.log(`Solution ${existingSha ? 'updated' : 'created'} successfully: ${fullPath}`);
-        return { success: true, path: fullPath, data: responseData };
       } else {
         const errorData = await response.json();
         console.error('Failed to save solution:', errorData);
         return { success: false, error: errorData.message };
       }
+
+      // ------------------Save README.md with problem statement----------------
+      let readmeSha = null;
+      const readmeCheck = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${readmePath}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (readmeCheck.ok) {
+        const existingReadme = await readmeCheck.json();
+        readmeSha = existingReadme.sha;
+      }
+
+      const readmeBody = {
+        message: `${readmeSha ? 'Update' : 'Add'} README: ${problemData.title} (${problemData.platform})`,
+        content: b64EncodeUnicode(problemData.readme)
+      };
+
+      if (readmeSha) {
+        readmeBody.sha = readmeSha;
+      }
+
+      const readmeResponse = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${readmePath}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(readmeBody)
+      });
+
+      if (readmeResponse.ok) {
+        console.log(`README ${readmeSha ? 'updated' : 'created'} successfully: ${readmePath}`);
+      } else {
+        const readmeError = await readmeResponse.json();
+        console.error('Failed to save README:', readmeError);
+      }
+
+      // ------------------Save README.md with ai notes----------------
+      const notesRes = await fetch("http://localhost:5000/api/ai/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          code: solutionCode,
+          language: problemData.language || "javascript",
+          title: problemData.title || "",
+          // repositoryUrl: `${repoConfig.owner}/${repoConfig.repo}`, // or full https url if required
+          // filePath: `${filePath}/${fileName}`
+        })
+      });
+
+      console.log(solutionCode);
+      console.log(problemData.language);
+      console.log(problemData.title);
+
+      if (!notesRes.ok) {
+        const err = await notesRes.json();
+        console.error("Failed to fetch AI notes:", err);
+      } else {
+        const notesData = await notesRes.json();
+        const notesContent = `
+          # ${notesData.data.title}
+
+          **Summary:** ${notesData.data.summary}
+
+          - Time Complexity: ${notesData.data.timeComplexity}
+          - Space Complexity: ${notesData.data.spaceComplexity}
+          `; // assuming API returns { notes: "..." }
+
+        const notesPath = `${filePath}/NOTES.md`;
+
+        // check if NOTES.md exists
+        let notesSha = null;
+        const notesCheck = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${notesPath}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (notesCheck.ok) {
+          const existingNotes = await notesCheck.json();
+          notesSha = existingNotes.sha;
+        }
+
+        const notesBody = {
+          message: `${notesSha ? 'Update' : 'Add'} NOTES: ${problemData.title} (${problemData.platform})`,
+          content: btoa(notesContent)
+        };
+
+        if (notesSha) {
+          notesBody.sha = notesSha;
+        }
+
+        const notesResponse = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${notesPath}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(notesBody)
+        });
+
+        if (notesResponse.ok) {
+          console.log(`NOTES ${notesSha ? 'updated' : 'created'} successfully: ${notesPath}`);
+        } else {
+          const notesError = await notesResponse.json();
+          console.error('Failed to save NOTES:', notesError);
+        }
+      }
+
+      return { success: true, path: filePath };
+
     } catch (error) {
       console.error('Error saving solution:', error);
       return { success: false, error: error.message };
@@ -216,8 +343,9 @@ class GitHubRepositoryManager {
 
     const platform = platformMap[problemData.platform] || 'GFG';
     const difficulty = this.capitalizeDifficulty(problemData.difficulty || 'Medium');
+    const ProblemTitle = problemData.title;
 
-    return `${platform}/${difficulty}`;
+    return `${platform}/${difficulty}/${ProblemTitle}`;
   }
 
   generateFileName(problemData) {
@@ -228,7 +356,6 @@ class GitHubRepositoryManager {
     // debug 
     console.log('Clean title:', cleanTitle);
     console.log('Final extension:', extension);
-    // console.log('Final filename:', fileName);
     console.log('=== End generateFileName Debug ===');
 
     return `${cleanTitle}.${extension}`;
@@ -245,7 +372,8 @@ class GitHubRepositoryManager {
       'Medium': 'Medium',
       'Hard': 'Hard',
       'Advanced': 'Hard',
-      'Expert': 'Hard'
+      'Expert': 'Hard',
+      "Intermediate": "Medium"
     };
     return diffMap[difficulty] || 'Medium';
   }
@@ -586,9 +714,11 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendRes) => {
     // Extract problem data from request.resData
     const problemData = {
       platform: 'GfgSoln',
+      fileName: request.resData.Problem_Title,
       title: request.resData.Problem_Title,
       difficulty: request.resData.Problem_Difficulty,
-      language: request.resData.Solution_Language
+      language: request.resData.Solution_Language,
+      readme: request.resData.Problem_Statement,
     };
 
     // Extract from DOM
@@ -613,9 +743,11 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendRes) => {
 
     const problemData = {
       platform: 'CfSoln',
+      fileName: request.resData.Problem_Title,
       title: request.resData.Problem_Title,
       difficulty: request.resData.Problem_Difficulty,
-      language: request.resData.Solution_Language
+      language: request.resData.Solution_Language,
+      readme: request.resData.Problem_Statement
     };
 
     // Extract from DOM
@@ -638,9 +770,11 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendRes) => {
 
     const problemData = {
       platform: 'HrSoln',
+      fileName: request.resData.Problem_Title,
       title: request.resData.Problem_Title,
       difficulty: request.resData.Problem_Difficulty,
-      language: request.resData.Solution_Language
+      language: request.resData.Solution_Language,
+      readme: request.resData.Problem_Statement
     };
 
     // Extract from DOM
@@ -663,9 +797,11 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendRes) => {
 
     const problemData = {
       platform: 'LcSoln',
+      fileName: request.resData.Problem_Title,
       title: request.resData.Problem_Title,
       difficulty: request.resData.Problem_Difficulty,
-      language: request.resData.Solution_Language
+      language: request.resData.Solution_Language,
+      readme: request.resData.Problem_Statement
     };
 
     // Extract from DOM

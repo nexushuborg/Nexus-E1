@@ -1,10 +1,6 @@
 console.log("Script Injecting....");
 
-// hold for the element to appear
-function waitForElement() {
-  const banner = document.querySelector('.text-green-s.dark\\:text-dark-green-s.flex.flex-1.items-center.gap-2.text-\\[16px\\].font-medium.leading-6 span').innerText;
-
-  if (banner === "Accepted") {
+  if (document.querySelector('.text-green-s.dark\\:text-dark-green-s.flex.flex-1.items-center.gap-2.text-\\[16px\\].font-medium.leading-6 span').innerText === "Accepted") {
     const code = window.monaco?.editor?.getModels?.()[0]?.getValue();
     const ps = document.querySelector(
       "div.flex.w-full.flex-1.flex-col.gap-4.overflow-y-auto.px-4.py-5"
@@ -18,7 +14,7 @@ function waitForElement() {
       
     const title = document.querySelector('.no-underline.hover\\:text-blue-s.dark\\:hover\\:text-dark-blue-s.truncate.cursor-text.whitespace-normal.hover\\:\\!text-\\[inherit\\]').innerText.replace(/^\d+\.\s/, '')
     
-      const diff = document.querySelector('.relative.inline-flex.items-center.justify-center.text-caption.px-2.py-1.gap-1.rounded-full.bg-fill-secondary.text-difficulty-easy.dark\\:text-difficulty-easy').innerText;
+      const diff = document.querySelector('.relative.inline-flex.items-center.justify-center.text-caption.px-2.py-1.gap-1.rounded-full.bg-fill-secondary').innerText;
 
       const resData = {
       Problem_Title: title,
@@ -39,20 +35,4 @@ function waitForElement() {
 
     window.dispatchEvent(event);
     console.log("Sending message Lc");
-
-    return true;
   }
-  return false;
-}
-
-// Try as soon as the element appears
-if (!waitForElement()) {
-  const interval = setInterval(() => {
-    if (waitForElement()) {
-      clearInterval(interval);
-    }
-  }, 500);
-
-  // Stop tryin
-  setTimeout(() => clearInterval(interval), 10000);
-}

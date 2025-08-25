@@ -4,7 +4,7 @@ class AIController {
   // Code Analysis
   async analyzeCode(req, res) {
     try {
-      const { code, language = 'javascript', title = '' } = req.body;
+      const { code, language, title  } = req.body;
       
       if (!code) {
         return res.status(400).json({ 
