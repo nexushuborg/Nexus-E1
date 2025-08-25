@@ -60,68 +60,6 @@ class AIController {
       });
     }
   }
-
-  // GitSync AI notes generation
-  async generateNotesForGitSync(req, res) {
-    try {
-      const { code, language, problemTitle, repositoryUrl, filePath } = req.body;
-      
-      if (!code || !language) {
-        return res.status(400).json({
-          success: false,
-          error: 'Code and language are required for AI notes generation'
-        });
-      }
-
-      // Checking code length
-      const lineCount = code.split('\n').length;
-      if (lineCount > 10000) {
-        return res.status(400).json({ 
-          success: false,
-          error: 'Code exceeds maximum limit of 10,000 lines' 
-        });
-      }
-
-      console.log(`Generating AI notes for GitSync - Repo: ${repositoryUrl}, File: ${filePath}`);
-      
-      // Using retry logic
-      const result = await aiService.analyzeCodeWithRetry(code, language, problemTitle);
-      
-      if (result.success) {
-        // Same response format plus GitSync metadata
-        res.json({
-          success: true,
-          data: {
-            aiNotes: result.data,
-            metadata: {
-              repositoryUrl,
-              filePath,
-              language,
-              problemTitle,
-              generatedAt: new Date().toISOString(),
-              attempts: result.attempts,
-              lineCount
-            }
-          }
-        });
-      } else {
-        res.status(503).json({
-          success: false,
-          error: result.error,
-          message: result.message,
-          attempts: result.attempts
-        });
-      }
-      
-    } catch (error) {
-      console.error('Error in GitSync AI notes generation:', error);
-      res.status(500).json({ 
-        success: false,
-        error: 'Failed to generate AI notes for GitSync',
-        details: error.message 
-      });
-    }
-  }
 }
 
 export default new AIController();
