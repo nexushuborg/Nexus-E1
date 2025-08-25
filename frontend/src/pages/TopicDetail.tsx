@@ -10,20 +10,20 @@ import { submissions } from "@/data/mock";
 import { getTagColor } from "@/lib/tagColors";
 import { getFlashcardsForTopic, type Flashcard } from "@/data/flashcards";
 import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Code, Calendar } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 const fetchTopicDetail = async (id: string): Promise<RevisionTopic | null> => {
   await new Promise(resolve => setTimeout(resolve, 300));
   return getTopicById(id) || null;
 };
 
+
+
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [topicStatus, setTopicStatus] = useState<RevisionStatus>('Not Started');
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: topic, isLoading, error } = useQuery({
     queryKey: ['topic-detail', id],
@@ -35,56 +35,8 @@ export default function TopicDetail() {
   const currentCard = flashcards[currentCardIndex];
 
   useEffect(() => {
-    if (topic) {
-      setTopicStatus(topic.status);
-    }
-  }, [topic]);
-
-  useEffect(() => {
     window.scrollTo(0, 0);
-
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-    }
-
-    requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-      }
-    });
   }, [topic?.id]);
-
-  useEffect(() => {
-    history.scrollRestoration = 'manual';
-
-    window.scrollTo(0, 0);
-
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-    }
-
-    const resetScroll = () => {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollTop = 0;
-      }
-    };
-
-    resetScroll();
-
-    setTimeout(resetScroll, 50);
-    setTimeout(resetScroll, 150);
-    setTimeout(resetScroll, 300);
-
-    requestAnimationFrame(resetScroll);
-
-    return () => {
-      history.scrollRestoration = 'auto';
-    };
-  }, []);
 
 
   useEffect(() => {
@@ -96,39 +48,9 @@ export default function TopicDetail() {
       }
     };
 
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.changedTouches[0].screenX;
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    };
-
-    const handleSwipe = () => {
-      const swipeThreshold = 50;
-      const diff = touchStartX - touchEndX;
-
-      if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-          setCurrentCardIndex(prev => prev < flashcards.length - 1 ? prev + 1 : prev);
-        } else {
-          setCurrentCardIndex(prev => prev > 0 ? prev - 1 : prev);
-        }
-      }
-    };
-
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [flashcards.length]);
 
@@ -148,15 +70,7 @@ export default function TopicDetail() {
     return (
       <div className="flex flex-col min-h-[100dvh] bg-gradient-to-br from-slate-50 via-white to-slate-100/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800/50">
         <main className="flex-1 overflow-hidden relative z-10">
-          <div
-            ref={scrollContainerRef}
-            className="h-full overflow-y-auto"
-            style={{
-              scrollBehavior: 'auto',
-              transform: 'translateZ(0)',
-              willChange: 'scroll-position'
-            }}
-          >
+          <div className="h-full overflow-y-auto">
             <div className="container mx-auto px-4 py-8 max-w-7xl">
               <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="text-center space-y-6">
@@ -228,30 +142,8 @@ export default function TopicDetail() {
   const handleStatusChange = (newStatus: RevisionStatus) => {
     if (!topic) return;
 
-    setTopicStatus(newStatus);
-
     updateTopicStatus(topic.id, newStatus);
-
     queryClient.invalidateQueries({ queryKey: ['revision-topics'] });
-
-    queryClient.invalidateQueries({
-      predicate: (query) =>
-        query.queryKey[0] === 'revision-topics' ||
-        query.queryKey[0] === 'topic-detail'
-    });
-
-    queryClient.setQueryData(['topic-detail', topic.id], {
-      ...topic,
-      status: newStatus
-    });
-
-    const selectTrigger = document.querySelector('[data-status-select]');
-    if (selectTrigger) {
-      selectTrigger.classList.add('animate-pulse');
-      setTimeout(() => {
-        selectTrigger.classList.remove('animate-pulse');
-      }, 1000);
-    }
   };
 
 
@@ -259,15 +151,7 @@ export default function TopicDetail() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-gradient-to-br from-slate-50 via-white to-slate-100/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800/50 text-foreground relative overflow-hidden">
       <main className="flex-1 overflow-hidden relative z-10">
-        <div
-          ref={scrollContainerRef}
-          className="h-full overflow-y-auto"
-          style={{
-            scrollBehavior: 'auto',
-            transform: 'translateZ(0)',
-            willChange: 'scroll-position'
-          }}
-        >
+        <div className="h-full overflow-y-auto">
           <Helmet>
             <title>{topic.name} – Topic Detail</title>
             <meta name="description" content={`Details for ${topic.name} revision topic.`} />
@@ -300,7 +184,7 @@ export default function TopicDetail() {
                     <Badge className={`${getTagColor(topic.difficulty)} text-sm px-2 py-1 font-medium mt-0`}>
                       {topic.difficulty}
                     </Badge>
-                    <Select value={topicStatus} onValueChange={handleStatusChange}>
+                    <Select value={topic.status} onValueChange={handleStatusChange}>
                       <SelectTrigger className="w-40 bg-white/70 dark:bg-slate-700/50 border-slate-300/70 dark:border-slate-600/50" data-status-select>
                         <SelectValue />
                       </SelectTrigger>
@@ -351,71 +235,45 @@ export default function TopicDetail() {
                   </div>
 
                   <div className="group relative">
-                    <div className="bg-white/95 dark:bg-slate-800/95 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-6 h-[550px] flex flex-col shadow-lg hover:shadow-xl transition-all duration-300">
+                    <Card className="w-full min-h-[430px] max-h-[430px] flex flex-col overflow-hidden bg-white/95 dark:bg-slate-800/95 border border-slate-200/50 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-all duration-300">
                       {currentCard ? (
                         <>
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
-                                <BookOpen className="h-2.5 w-2.5 text-slate-600 dark:text-slate-400" />
+                          {/* Header (fixed at top) */}
+                          <CardHeader className="p-4 pb-2 flex-shrink-0">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                                  <BookOpen className="h-2.5 w-2.5 text-slate-600 dark:text-slate-400" />
+                                </div>
+                                <span className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800/50 px-2 py-0.5 rounded-full">
+                                  {currentCard.category}
+                                </span>
                               </div>
-                              <span className="text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100/80 dark:bg-slate-800/50 px-2 py-0.5 rounded-full">
-                                {currentCard.category}
-                              </span>
-                            </div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                              Card {currentCardIndex + 1}
-                            </div>
-                          </div>
-
-                          <div className="text-slate-900 dark:text-slate-100 font-bold text-lg mb-2">
-                            {currentCard.type}
-                          </div>
-
-                          <div className="flex-1 overflow-y-auto">
-                            <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-base font-medium pr-2">
-                              {(() => {
-                                const lines = currentCard.content.split('\n');
-                                const result = [];
-                                let currentNumber = null;
-
-                                for (let i = 0; i < lines.length; i++) {
-                                  const line = lines[i];
-                                  const trimmedLine = line.trim();
-                                  if (!trimmedLine) continue;
-
-                                  const numberMatch = trimmedLine.match(/^(\d+)\.\s*(.*)/);
-                                  if (numberMatch) {
-                                    currentNumber = numberMatch[1];
-                                    result.push(
-                                      <div key={i} className="mb-1">
-                                        <div className="flex-1">
-                                          <span className="font-bold">{numberMatch[1]}.</span> {numberMatch[2]}
-                                        </div>
-                                      </div>
-                                    );
-                                  } else {
-                                    const cleanLine = trimmedLine.replace(/^-\s*/, '');
-                                    result.push(
-                                      <div key={i} className="mb-1">
-                                        <div className="flex-1 ml-4">{cleanLine}</div>
-                                      </div>
-                                    );
-                                  }
-                                }
-
-                                return result;
-                              })()}
-                            </div>
-                          </div>
-
-                          <div className="mt-4 p-2 bg-slate-50/80 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                              <div className="w-3 h-3 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                                <span className="text-xs">💡</span>
+                              <div className="text-xs text-slate-500 dark:text-slate-400">
+                                Card {currentCardIndex + 1} of {flashcards.length}
                               </div>
-                              {currentCard.studyTip || 'Study Tip: Take a moment to understand this concept before moving to the next card'}
                             </div>
+                            <CardTitle className="text-slate-900 dark:text-slate-100 font-bold text-lg">
+                              {currentCard.type}
+                            </CardTitle>
+                          </CardHeader>
+
+                          {/* 🔹 Scrollable content ONLY */}
+                          <div className="flex-1 overflow-y-auto px-4 pb-2">
+                            <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-base font-medium whitespace-pre-line">
+                              {currentCard.content}
+                            </div>
+                          </div>
+
+                          {/* 🔹 Idea box pinned at bottom */}
+                          <div className="p-3 bg-slate-50/80 dark:bg-slate-800/50 
+                                          border-t border-slate-200/50 dark:border-slate-700/50 
+                                          flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 font-medium flex-shrink-0">
+                            <div className="w-3 h-3 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                              <span className="text-xs">💡</span>
+                            </div>
+                            {currentCard.studyTip ||
+                              "Study Tip: Take a moment to understand this concept before moving to the next card"}
                           </div>
                         </>
                       ) : (
@@ -426,7 +284,7 @@ export default function TopicDetail() {
                           </div>
                         </div>
                       )}
-                    </div>
+                    </Card>
                   </div>
 
                   <div className="space-y-1 mt-2">
