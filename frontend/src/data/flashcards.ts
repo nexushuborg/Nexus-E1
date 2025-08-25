@@ -20,22 +20,40 @@ export const topicFlashcards: Record<string, Flashcard[]> = {
       studyTip: ' Together, these principles make DP efficient.'
     },
     { 
-      type: 'Popular Solution Techniques',
+      type: 'Popular Solution Techniques (Part 1)',
       category: 'DP Techniques',
-      content: '1. Memoization (Top-Down)\nRecursion + cache to store results.\nComputes only needed states.\nEasy when recursion is natural.\nExample: fib(50) with stored intermediate results.\n2. Tabulation (Bottom-Up)\nIterative; fill DP table from base case → target.\nOften more space-efficient than memoization.\nExample: iterative dp[] array for Fibonacci.\n3. Space Optimization\nMany problems need only a few previous states, not full table.\nReduces memory: O(n) → O(1) in some cases.\nExample: Fibonacci using 2 variables instead of array.',
-      studyTip: ' Start with Memoization, then switch to Tabulation/Space-Optimized for efficiency.'
+      content: '1. Memoization (Top-Down)\nRecursion + cache to store results.\nComputes only needed states.\nEasy when recursion is natural.\nExample: fib(50) with stored intermediate results.\n\n2. Tabulation (Bottom-Up)\nIterative; fill DP table from base case → target.\nOften more space-efficient than memoization.\nExample: iterative dp[] array for Fibonacci.',
+      studyTip: ' Start with Memoization, then switch to Tabulation for efficiency.'
     },
     { 
-      type: 'Common Use Cases of DP',
+      type: 'Popular Solution Techniques (Part 2)',
+      category: 'DP Techniques',
+      content: '3. Space Optimization\nMany problems need only a few previous states, not full table.\nReduces memory: O(n) → O(1) in some cases.\nExample: Fibonacci using 2 variables instead of array.',
+      studyTip: ' Use space optimization when you only need recent states, not the full DP table.'
+    },
+    { 
+      type: 'Common Use Cases of DP (Part 1)',
       category: 'Applications',
-      content: '1. Combinatorial Counting\n"How many ways" type problems.\nExample: Ways to climb stairs (Fibonacci-like).\n2. Sequence/String Problems\nSubsequence, substring, string matching.\nExample: LCS, Edit Distance.\n3. Optimization Problems\nFind min/max cost, value, profit, or distance.\nExample: Coin Change, Knapsack.\n4. Grid/Path Problems\nPaths with obstacles or min/max sums.\nExample: Unique Paths in a matrix.\n5. Partitioning Problems\nDivide array/string under constraints.\nExample: Palindrome Partitioning, Equal Subset Sum.',
-      studyTip: ' Rule of thumb: If it repeats, combines, or optimizes → think DP!'
+      content: '1. Combinatorial Counting\n"How many ways" type problems.\nExample: Ways to climb stairs (Fibonacci-like).\n\n2. Sequence/String Problems\nSubsequence, substring, string matching.\nExample: LCS, Edit Distance.\n\n3. Optimization Problems\nFind min/max cost, value, profit, or distance.\nExample: Coin Change, Knapsack.',
+      studyTip: ' These three categories cover most counting and optimization DP problems.'
     },
     { 
-      type: 'Question Identifiers (How to know it\'s a DP problem?)',
+      type: 'Common Use Cases of DP (Part 2)',
+      category: 'Applications',
+      content: '4. Grid/Path Problems\nPaths with obstacles or min/max sums.\nExample: Unique Paths in a matrix.\n\n5. Partitioning Problems\nDivide array/string under constraints.\nExample: Palindrome Partitioning, Equal Subset Sum.',
+      studyTip: ' Grid problems and partitioning are advanced DP applications that build on the basics.'
+    },
+    { 
+      type: 'Question Identifiers (How to know it\'s a DP problem?) (Part 1)',
       category: 'Problem Recognition',
-      content: '1. Overlapping Subproblems\nRecursive exploration with repeated subproblems.\nExample: Fibonacci, Climbing Stairs.\n2. Keywords: Max / Min / Count / Longest / Shortest\nOptimization or counting goals often → DP.\n3. Choice-based Problems\nMust choose/include or skip/exclude.\nExample: Knapsack.\n4. Sequential Dependency\nCurrent state depends on previous states (i, i-1, i-2).\nExample: House Robber.\n5. Subsequence / Partition Based\nDeals with sub-arrays, substrings, subsequences.\nExample: Longest Palindromic Subsequence.',
-      studyTip: ' Spotting Tip: If the problem repeats work, involves choices, or asks for extremes (min/max/longest/ways) → it\'s likely DP.'
+      content: '1. Overlapping Subproblems\nRecursive exploration with repeated subproblems.\nExample: Fibonacci, Climbing Stairs.\n\n2. Keywords: Max / Min / Count / Longest / Shortest\nOptimization or counting goals often → DP.\n\n3. Choice-based Problems\nMust choose/include or skip/exclude.\nExample: Knapsack.',
+      studyTip: ' Look for repeated work, optimization keywords, and choice-based decisions.'
+    },
+    { 
+      type: 'Question Identifiers (How to know it\'s a DP problem?) (Part 2)',
+      category: 'Problem Recognition',
+      content: '4. Sequential Dependency\nCurrent state depends on previous states (i, i-1, i-2).\nExample: House Robber.\n\n5. Subsequence / Partition Based\nDeals with sub-arrays, substrings, subsequences.\nExample: Longest Palindromic Subsequence.',
+      studyTip: ' Sequential dependencies and subsequence problems are strong DP indicators.'
     }
   ],
   'arrays': [
@@ -52,16 +70,28 @@ export const topicFlashcards: Record<string, Flashcard[]> = {
       studyTip: ' Use arrays when you need fast random access and know the size in advance.'
     },
     {
-      type: 'Array Solution Techniques',
+      type: 'Array Solution Techniques (Part 1)',
       category: 'Techniques',
-      content: '1. Sliding Window\nIdea: Maintain a moving "window" (subarray) to avoid recomputation.\nUse: Fixed/variable size subarray problems.\nTime: O(n) (instead of O(n²)).\nExamples: Max sum of subarray of size k, Longest substring/sequence with constraint\n\n2. Prefix Sum / Cumulative\nIdea: Precompute prefix sums (or aggregates) for fast range queries.\nUse: Subarray sums, difference arrays, range updates.\nTime: Preprocess O(n), Query O(1).\nExamples: Subarray sum between L and R queried multiple times, Is there a subarray with sum = K?\n\n3. Two-Pointer (Fast–Slow)\nIdea: Use two pointers with different speeds or directions.\nUse: Optimize nested loops, find pairs/subarrays, detect cycles.\nTime: O(n) (vs O(n²)).\nExamples: Two numbers in sorted array = target, Move zeros to end / partition arrays, Detect loop in linked list',
-      studyTip: ' Two pointers and sliding window are your go-to techniques for array problems.'
+      content: '1. Sliding Window\nIdea: Maintain a moving "window" (subarray) to avoid recomputation.\nUse: Fixed/variable size subarray problems.\nTime: O(n) (instead of O(n²)).\nExamples: Max sum of subarray of size k, Longest substring/sequence with constraint\n\n2. Prefix Sum / Cumulative\nIdea: Precompute prefix sums (or aggregates) for fast range queries.\nUse: Subarray sums, difference arrays, range updates.\nTime: Preprocess O(n), Query O(1).\nExamples: Subarray sum between L and R queried multiple times, Is there a subarray with sum = K?',
+      studyTip: ' Sliding window and prefix sums are essential for efficient array processing.'
     },
     {
-      type: 'Common Use Cases',
+      type: 'Array Solution Techniques (Part 2)',
+      category: 'Techniques',
+      content: '3. Two-Pointer (Fast–Slow)\nIdea: Use two pointers with different speeds or directions.\nUse: Optimize nested loops, find pairs/subarrays, detect cycles.\nTime: O(n) (vs O(n²)).\nExamples: Two numbers in sorted array = target, Move zeros to end / partition arrays, Detect loop in linked list',
+      studyTip: ' Two pointers are perfect for optimizing nested loops and finding pairs.'
+    },
+    {
+      type: 'Common Use Cases (Part 1)',
       category: 'Applications',
-      content: '1. Searching Elements\nLinear Search (unsorted): O(n)\nBinary Search (sorted): O(log n)\n2. Subarray / Interval Problems\nMax/Min sum subarray → Kadane\'s / Sliding Window\nRange queries → Prefix Sums\n3. Frequency-based Counting\nCounting occurrences of elements.\nOften use hashing + arrays.\n4. Sorting-based Challenges\nSort array to simplify pairs/triplet problems.\nFoundation for two-pointer problems.\n5. Simulation Problems\nUse arrays to model sequences/states (scores, heights, timestamps, etc.).',
-      studyTip: ' Arrays are fundamental for most algorithmic problems.'
+      content: '1. Searching Elements\nLinear Search (unsorted): O(n)\nBinary Search (sorted): O(log n)\n\n2. Subarray / Interval Problems\nMax/Min sum subarray → Kadane\'s / Sliding Window\nRange queries → Prefix Sums\n\n3. Frequency-based Counting\nCounting occurrences of elements.\nOften use hashing + arrays.',
+      studyTip: ' These three use cases cover most basic array operations and optimizations.'
+    },
+    {
+      type: 'Common Use Cases (Part 2)',
+      category: 'Applications',
+      content: '4. Sorting-based Challenges\nSort array to simplify pairs/triplet problems.\nFoundation for two-pointer problems.\n\n5. Simulation Problems\nUse arrays to model sequences/states (scores, heights, timestamps, etc.).',
+      studyTip: ' Sorting and simulation are advanced array applications that build on the basics.'
     },
     {
       type: 'Question Identifiers',
@@ -84,16 +114,28 @@ export const topicFlashcards: Record<string, Flashcard[]> = {
       studyTip: ' Use string manipulation libraries for complex operations to avoid reinventing the wheel.'
     },
     {
-      type: 'Popular Solution Techniques',
+      type: 'Popular Solution Techniques (Part 1)',
       category: 'String Algorithms',
-      content: 'These are staple string problem-solving techniques in competitive programming:\n1. Hashing (Rolling Hash, Rabin–Karp)\nUse: Pattern searching, substring comparisons.\nIdea: Convert string portions into numerical hashes to compare quickly.\nExample: Find all occurrences of a substring in a text.\n2. Two-pointer / Sliding Window Technique\nUse: Problems involving substrings with certain conditions (like "longest substring without repeating characters").\nIdea: Expand window to include, contract when condition breaks.\nExample: Longest substring with K distinct characters.\n3. KMP / Z-algorithm / Prefix-function\nUse: Efficient substring searching and prefix-suffix matching.\nKMP: Find pattern in O(n + m).\nZ-function: Works in O(n) to find occurrences and prefix matches.\nExample: Searching for words in the dictionary, string rotations.',
+      content: 'These are staple string problem-solving techniques in competitive programming:\n1. Hashing (Rolling Hash, Rabin–Karp)\nUse: Pattern searching, substring comparisons.\nIdea: Convert string portions into numerical hashes to compare quickly.\nExample: Find all occurrences of a substring in a text.\n\n2. Two-pointer / Sliding Window Technique\nUse: Problems involving substrings with certain conditions (like "longest substring without repeating characters").\nIdea: Expand window to include, contract when condition breaks.\nExample: Longest substring with K distinct characters.',
+      studyTip: ' Hashing is great for pattern matching, while sliding window handles substring constraints.'
+    },
+    {
+      type: 'Popular Solution Techniques (Part 2)',
+      category: 'String Algorithms',
+      content: '3. KMP / Z-algorithm / Prefix-function\nUse: Efficient substring searching and prefix-suffix matching.\nKMP: Find pattern in O(n + m).\nZ-function: Works in O(n) to find occurrences and prefix matches.\nExample: Searching for words in the dictionary, string rotations.',
       studyTip: ' For pattern matching, consider KMP or Boyer-Moore for large strings.'
     },
     {
-      type: 'Use Cases',
+      type: 'Use Cases (Part 1)',
       category: 'Applications',
-      content: 'You can often spot String-related problems by checking for these:\n1. Pattern Searching / Matching\ne.g., Find if a word appears in text, find occurrences of a substring.\n2. Palindrome / Reverse Checking\ne.g., Longest Palindromic Substring, Palindrome Partitioning.\n3. Frequency / Counting Characters\ne.g., Anagrams, Isomorphic strings, word counting.\n4. Substring / Subsequence Problems\ne.g., Longest Common Substring, Longest Common Subsequence (LCS).\n5. Encoding / Decoding / Compression\ne.g., Run-length encoding, String compression problems.\n6. Dynamic Programming on Strings\ne.g., Edit Distance, Minimum Insertions/Deletions to make palindromes.',
-      studyTip: ' String problems often involve pattern matching, manipulation, or transformation.'
+      content: 'You can often spot String-related problems by checking for these:\n1. Pattern Searching / Matching\ne.g., Find if a word appears in text, find occurrences of a substring.\n\n2. Palindrome / Reverse Checking\ne.g., Longest Palindromic Substring, Palindrome Partitioning.\n\n3. Frequency / Counting Characters\ne.g., Anagrams, Isomorphic strings, word counting.',
+      studyTip: ' These three categories cover most basic string manipulation and analysis.'
+    },
+    {
+      type: 'Use Cases (Part 2)',
+      category: 'Applications',
+      content: '4. Substring / Subsequence Problems\ne.g., Longest Common Substring, Longest Common Subsequence (LCS).\n\n5. Encoding / Decoding / Compression\ne.g., Run-length encoding, String compression problems.\n\n6. Dynamic Programming on Strings\ne.g., Edit Distance, Minimum Insertions/Deletions to make palindromes.',
+      studyTip: ' Advanced string problems involve subsequences, compression, and dynamic programming.'
     },
     {
       type: 'Question Identifiers',
@@ -116,22 +158,40 @@ export const topicFlashcards: Record<string, Flashcard[]> = {
       studyTip: ' Choose singly linked for simple traversal, doubly linked for bidirectional operations.'
     },
     {
-      type: 'Popular Techniques',
+      type: 'Popular Techniques (Part 1)',
       category: 'Linked List Algorithms',
-      content: '1. Slow & Fast Pointer (Tortoise & Hare)\nIdea: Two pointers, slow = 1 step, fast = 2 steps.\nUse Cases:\nDetect cycle / loop\nFind cycle start\nFind middle element\nTime: O(n)\n\n2. Reversing a Linked List\nIdea: Reverse node pointers (iterative/recursive).\nKey Steps: Use prev, current, next pointers and flip links.\nUse Cases:\nPalindrome check\nReorder/rotate list\nPartial reversal problems\nTime: O(n)\n\n3. Merging Two Sorted Linked Lists\nIdea: Like merge step in merge sort, rearranging pointers (no extra array).\nUse Cases:\nCombine sorted lists\nSorting via divide & conquer\nTime: O(n + m) (for lists of size n, m)',
+      content: '1. Slow & Fast Pointer (Tortoise & Hare)\nIdea: Two pointers, slow = 1 step, fast = 2 steps.\nUse Cases:\nDetect cycle / loop\nFind cycle start\nFind middle element\nTime: O(n)\n\n2. Reversing a Linked List\nIdea: Reverse node pointers (iterative/recursive).\nKey Steps: Use prev, current, next pointers and flip links.',
       studyTip: ' Fast and slow pointers are essential for cycle detection and finding middle elements.'
     },
     {
-      type: 'Common Use Cases',
-      category: 'Applications',
-      content: '1. Dynamic Insertions/Deletions\nAdd/remove nodes without shifting data (unlike arrays).\nExamples: Implement stacks, queues with dynamic size.\n2. Cycle Detection & Removal\nDetect infinite loops using slow/fast pointers.\nExamples: Prevent infinite traversal in cyclic structures.\n3. Middle / Nth Element from End\nUse slow fast pointer or two pointer to find element efficiently.\n4. Reversal & Reordering\nReverse full/partial list, reorder nodes by position/value.\nExamples: Palindrome check, rotate/reorder list.\n5. Merging & Sorting\nMerge two sorted lists, apply merge sort on linked list.\n6. Abstract Data Types\nBasis for Stacks, Queues, Deques, Graph adjacency lists.',
-      studyTip: ' Linked lists excel at dynamic operations and pointer manipulation.'
+      type: 'Popular Techniques (Part 2)',
+      category: 'Linked List Algorithms',
+      content: 'Use Cases:\nPalindrome check\nReorder/rotate list\nTime: O(n)\n\n3. Merging Two Sorted Linked Lists\nIdea: Like merge step in merge sort, rearranging pointers (no extra array).\nUse Cases:\nCombine sorted lists\nSorting via divide & conquer\nTime: O(n + m) (for lists of size n, m)',
+      studyTip: ' Reversing and merging are fundamental linked list manipulation techniques.'
     },
     {
-      type: 'Question Identifiers',
+      type: 'Common Use Cases (Part 1)',
+      category: 'Applications',
+      content: '1. Dynamic Insertions/Deletions\nAdd/remove nodes without shifting data (unlike arrays).\nExamples: Implement stacks, queues with dynamic size.\n\n2. Cycle Detection & Removal\nDetect infinite loops using slow/fast pointers.\nExamples: Prevent infinite traversal in cyclic structures.\n\n3. Middle / Nth Element from End\nUse slow fast pointer or two pointer to find element efficiently.',
+      studyTip: ' These three use cases cover the core advantages of linked lists over arrays.'
+    },
+    {
+      type: 'Common Use Cases (Part 2)',
+      category: 'Applications',
+      content: '4. Reversal & Reordering\nReverse full/partial list, reorder nodes by position/value.\nExamples: Palindrome check, rotate/reorder list.\n\n5. Merging & Sorting\nMerge two sorted lists, apply merge sort on linked list.\n\n6. Abstract Data Types\nBasis for Stacks, Queues, Deques, Graph adjacency lists.',
+      studyTip: ' Advanced linked list operations involve manipulation and building other data structures.'
+    },
+    {
+      type: 'Question Identifiers (Part 1)',
       category: 'Problem Recognition',
-      content: 'Explicit Statements:\n"Given the head of a linked list…"\n"Linked list node structure…"\nPointer-based Sequence:\nSequence defined with pointers/references, not array indices.\nFrequent Insertions/Deletions:\nProblem involves operations where shifting elements would be costly in arrays.\nCommon Tasks:\nDetect cycles\nFind middle or nth-from-end\nReverse list\nMerge two lists\nKeyword Hints:\n"Next pointer" / "Node reference" / "Head node"\n"Reverse linked list"\n"Detect cycle"\n"Merge two sorted lists"',
-      studyTip: ' Look for pointer-based data structures or dynamic operations keywords.'
+      content: 'Explicit Statements:\n"Given the head of a linked list…"\n"Linked list node structure…"\n\nPointer-based Sequence:\nSequence defined with pointers/references, not array indices.\n\nFrequent Insertions/Deletions:\nProblem involves operations where shifting elements would be costly in arrays.',
+      studyTip: ' Look for explicit linked list mentions and pointer-based operations.'
+    },
+    {
+      type: 'Question Identifiers (Part 2)',
+      category: 'Problem Recognition',
+      content: 'Common Tasks:\nDetect cycles\nFind middle or nth-from-end\nReverse list\nMerge two lists\n\nKeyword Hints:\n"Next pointer" / "Node reference" / "Head node"\n"Reverse linked list"\n"Detect cycle"\n"Merge two sorted lists"',
+      studyTip: ' Specific linked list operations and pointer manipulation keywords are strong indicators.'
     }
   ],
   'trees': [
@@ -148,30 +208,54 @@ export const topicFlashcards: Record<string, Flashcard[]> = {
       studyTip: ' Inorder traversal gives sorted order in Binary Search Trees.'
     },
     {
-      type: 'Popular Techniques',
+      type: 'Popular Techniques (Part 1)',
       category: 'Tree Algorithms',
-      content: '1. Depth-First Search (DFS)\nIdea: Recursive or stack-based; explore branch fully before backtracking.\nUses: Traversals (pre/in/post), subtree calculations, path & ancestor problems.\nTime: O(n) (n = no. of nodes).\n\n2. Breadth-First Search (BFS) / Level Order\nIdea: Queue-based; explore nodes level by level.\nUses: Shortest path (unweighted trees), level-wise queries, iterative traversals.\nTime: O(n)\n\n3. Binary Search Tree (BST) Operations\nIdea: Use BST property (Left < Node < Right) for search/insert/delete.\nOperations:\nSearch: Compare & move left/right.\nInsert/Delete: Adjust while preserving BST rules.\nTime: O(log n) (balanced), O(n) (skewed).',
+      content: '1. Depth-First Search (DFS)\nIdea: Recursive or stack-based; explore branch fully before backtracking.\nUses: Traversals (pre/in/post), subtree calculations, path & ancestor problems.\nTime: O(n) (n = no. of nodes).\n\n2. Breadth-First Search (BFS) / Level Order\nIdea: Queue-based; explore nodes level by level.\nUses: Shortest path (unweighted trees), level-wise queries, iterative traversals.\nTime: O(n)',
+      studyTip: ' DFS and BFS are fundamental tree traversal techniques with different use cases.'
+    },
+    {
+      type: 'Popular Techniques (Part 2)',
+      category: 'Tree Algorithms',
+      content: '3. Binary Search Tree (BST) Operations\nIdea: Use BST property (Left < Node < Right) for search/insert/delete.\nOperations:\nSearch: Compare & move left/right.\nInsert/Delete: Adjust while preserving BST rules.\nTime: O(log n) (balanced), O(n) (skewed).',
       studyTip: ' BST enables O(log n) search, insert, and delete operations.'
     },
     {
-      type: 'Common Use Cases',
+      type: 'Common Use Cases (Part 1)',
       category: 'Applications',
-      content: '1. Hierarchy Modelling\nRepresent organization charts, file systems, XML/JSON structures.\n2. Dynamic Searching/Sorting\nUse Binary Search Tree (BST) or Segment Trees for fast search/updates.\n3. Traversal-Based Computations\nCalculate sum of nodes, max depth, #leaves, path sums.\n4. Lowest Common Ancestor (LCA)\nFind shared ancestor of two nodes.\nKey in DP, graph/tree intersection problems.\n5. Balanced Tree Problems\nAVL, Red-Black Trees keep height ~ log(n).\nEnsure efficient insert/search/delete.\n6. Dynamic Range Queries\nSegment Trees / Fenwick Trees (BIT) for range sums, min/max, updates.',
-      studyTip: ' Trees are fundamental for hierarchical data representation and efficient searching.'
+      content: '1. Hierarchy Modelling\nRepresent organization charts, file systems, XML/JSON structures.\n\n2. Dynamic Searching/Sorting\nUse Binary Search Tree (BST) or Segment Trees for fast search/updates.\n\n3. Traversal-Based Computations\nCalculate sum of nodes, max depth, #leaves, path sums.',
+      studyTip: ' These three use cases cover the core applications of tree data structures.'
     },
     {
-      type: 'Question Identifiers',
+      type: 'Common Use Cases (Part 2)',
+      category: 'Applications',
+      content: '4. Lowest Common Ancestor (LCA)\nFind shared ancestor of two nodes.\nKey in DP, graph/tree intersection problems.\n\n5. Balanced Tree Problems\nAVL, Red-Black Trees keep height ~ log(n).\nEnsure efficient insert/search/delete.\n\n6. Dynamic Range Queries\nSegment Trees / Fenwick Trees (BIT) for range sums, min/max, updates.',
+      studyTip: ' Advanced tree applications involve complex algorithms and optimizations.'
+    },
+    {
+      type: 'Question Identifiers (Part 1)',
       category: 'Problem Recognition',
-      content: 'Hierarchical Dataset:\nProblem involves parent-child relations or starts from a root.\nKeyword Hints:\n"Tree", "Root", "Parent", "Child"\n"Binary Tree", "Binary Search Tree (BST)"\n"Subtree", "Depth", "Height"\n"Lowest Common Ancestor (LCA)"\nProblem Patterns:\nRequires node traversal (DFS/BFS).\nPath / Subtree queries (sum, max depth, #nodes, distances).\nStructural checks (is balanced, is BST, diameter, symmetry).\nModifications (insert, delete, rotate, reorder, restructure).\nEfficiency Hints:\nLarge input sizes with path/ancestor queries → expect O(n) or O(log n) tree solutions, not brute force.',
-      studyTip: ' Look for hierarchical relationships, traversal requirements, or tree structure keywords.'
+      content: 'Hierarchical Dataset:\nProblem involves parent-child relations or starts from a root.\n\nKeyword Hints:\n"Tree", "Root", "Parent", "Child"\n"Binary Tree", "Binary Search Tree (BST)"\n"Subtree", "Depth", "Height"\n"Lowest Common Ancestor (LCA)"',
+      studyTip: ' Look for hierarchical relationships and tree-specific keywords.'
+    },
+    {
+      type: 'Question Identifiers (Part 2)',
+      category: 'Problem Recognition',
+      content: 'Problem Patterns:\nRequires node traversal (DFS/BFS).\nPath / Subtree queries (sum, max depth, #nodes, distances).\nStructural checks (is balanced, is BST, diameter, symmetry).\nModifications (insert, delete, rotate, reorder, restructure).\n\nEfficiency Hints:\nLarge input sizes with path/ancestor queries → expect O(n) or O(log n) tree solutions, not brute force.',
+      studyTip: ' Tree problems typically involve traversal, queries, or structural modifications.'
     }
   ],
   'graphs': [
     {
-      type: 'Introduction / Definition',
+      type: 'Introduction / Definition (Part 1)',
       category: 'Graph Data Structure',
-      content: 'A Graph is a data structure consisting of:\nVertices (Nodes): The fundamental units.\nEdges: Connections between vertices (can be directional or bidirectional).\nGraphs are often represented as G(V, E):\nV → Set of vertices (nodes).\nE → Set of edges (connections: pairs of vertices).\nGraphs can be:\nDirected (Digraph): Edges have direction.\nUndirected: Edges are bidirectional.\nWeighted: Each edge has a cost/weight.\nUnweighted: Edges are considered equal.\nCyclic / Acyclic (DAG - Directed Acyclic Graph): Determines if a graph has cycles.\nIn short, a graph models relationships/connections between entities',
-      studyTip: ' Graphs can represent complex relationships between entities.'
+      content: 'A Graph is a data structure consisting of:\nVertices (Nodes): The fundamental units.\nEdges: Connections between vertices (can be directional or bidirectional).\n\nGraphs are often represented as G(V, E):\nV → Set of vertices (nodes).\nE → Set of edges (connections: pairs of vertices).',
+      studyTip: ' Graphs model relationships and connections between entities using vertices and edges.'
+    },
+    {
+      type: 'Introduction / Definition (Part 2)',
+      category: 'Graph Data Structure',
+      content: 'Graphs can be:\nDirected (Digraph): Edges have direction.\nUndirected: Edges are bidirectional.\nWeighted: Each edge has a cost/weight.\nUnweighted: Edges are considered equal.\nCyclic / Acyclic (DAG - Directed Acyclic Graph): Determines if a graph has cycles.\n\nIn short, a graph models relationships/connections between entities',
+      studyTip: ' Understanding graph types helps choose the right algorithms and representations.'
     },
     {
       type: 'Key Principles',
@@ -244,16 +328,28 @@ export const topicFlashcards: Record<string, Flashcard[]> = {
       studyTip: ' The key is deciding when and how to move each pointer based on the problem constraints.'
     },
     {
-      type: 'Popular Solution Techniques',
+      type: 'Popular Solution Techniques (Part 1)',
       category: 'Two Pointer Patterns',
-      content: '1. Opposite-direction Two Pointers (Start and End)\nUse case: Sorted arrays when searching for pairs/triplets.\nExample: Check if the array has two numbers that add up to the target sum.\nWorks well with sorted arrays.\n2. Same-direction Sliding Window (Expanding + Contracting)\nUse case: Subarray / substring problems (finding max/min length with conditions).\nExample: Longest substring without repeating characters.\nMinimum window substring containing all characters.\n3. Fast-Slow Pointers (a.k.a. Tortoise and Hare)\nUse case: Linked list cycle detection, finding middle of list.\nIdea: One pointer moves step by step, another moves faster (2x steps).\nExample: Detect cycle in linked list → if they meet, cycle exists.',
-      studyTip: ' Choose the pattern based on whether you need to search from both ends or expand/contract a window.'
+      content: '1. Opposite-direction Two Pointers (Start and End)\nUse case: Sorted arrays when searching for pairs/triplets.\nExample: Check if the array has two numbers that add up to the target sum.\nWorks well with sorted arrays.\n\n2. Same-direction Sliding Window (Expanding + Contracting)\nUse case: Subarray / substring problems (finding max/min length with conditions).\nExample: Longest substring without repeating characters.\nMinimum window substring containing all characters.',
+      studyTip: ' Opposite-direction pointers work well with sorted arrays, while same-direction handles subarray problems.'
     },
     {
-      type: 'Use Cases',
+      type: 'Popular Solution Techniques (Part 2)',
+      category: 'Two Pointer Patterns',
+      content: '3. Fast-Slow Pointers (a.k.a. Tortoise and Hare)\nUse case: Linked list cycle detection, finding middle of list.\nIdea: One pointer moves step by step, another moves faster (2x steps).\nExample: Detect cycle in linked list → if they meet, cycle exists.',
+      studyTip: ' Fast-slow pointers are perfect for cycle detection and finding middle elements in linked lists.'
+    },
+    {
+      type: 'Use Cases (Part 1)',
       category: 'Applications',
-      content: '1. Searching in Sorted Arrays\ne.g., 2-sum in sorted array, 3-sum.\n2. Substring / Subarray Problems\ne.g., Longest substring with at most K distinct characters.\n3. Merge-like Operations\ne.g., Merging two sorted arrays efficiently.\n4. Palindrome Checking\ne.g., Compare characters from both ends inward.\n5. Linked List Problems\ne.g., Cycle detection, middle element.\n6. Counting / Comparing Pairs\ne.g., Number of valid subarrays with sum less than target.',
-      studyTip: ' Two pointers excel at problems involving pairs, subarrays, or efficient traversal.'
+      content: '1. Searching in Sorted Arrays\ne.g., 2-sum in sorted array, 3-sum.\n\n2. Substring / Subarray Problems\ne.g., Longest substring with at most K distinct characters.\n\n3. Merge-like Operations\ne.g., Merging two sorted arrays efficiently.',
+      studyTip: ' Two pointers are excellent for searching, subarray problems, and merge operations.'
+    },
+    {
+      type: 'Use Cases (Part 2)',
+      category: 'Applications',
+      content: '4. Palindrome Checking\ne.g., Compare characters from both ends inward.\n\n5. Linked List Problems\ne.g., Cycle detection, middle element.\n\n6. Counting / Comparing Pairs\ne.g., Number of valid subarrays with sum less than target.',
+      studyTip: ' Two pointers handle palindrome checks, linked list operations, and pair counting efficiently.'
     },
     {
       type: 'Question Identifiers',
@@ -270,28 +366,58 @@ export const topicFlashcards: Record<string, Flashcard[]> = {
       studyTip: ' Sliding window is perfect for problems involving contiguous subarrays/substrings.'
     },
     {
-      type: 'Key Principles',
+      type: 'Key Principles (Part 1)',
       category: 'Core Concepts',
-      content: 'Two Pointers (L & R): Define current window boundaries.\n1. Fixed-Size Window\nStart with first k elements.\nSlide by removing leftmost & adding new rightmost element.\nUpdate result incrementally (not full recompute).\n2. Variable-Size Window\nExpand R while condition holds.\nShrink with L when condition breaks.\nBalances growth & shrinkage to meet constraints.\nPerformance:\nEach element processed at most twice → O(n) time.\nSpace: O(1) to O(n) depending on helpers (maps/sets).',
-      studyTip: ' Fixed size: maintain window size, Variable size: expand/contract based on conditions.'
+      content: 'Two Pointers (L & R): Define current window boundaries.\n\n1. Fixed-Size Window\nStart with first k elements.\nSlide by removing leftmost & adding new rightmost element.\nUpdate result incrementally (not full recompute).',
+      studyTip: ' Fixed-size windows maintain constant boundaries and update incrementally.'
     },
     {
-      type: 'Popular Techniques',
+      type: 'Key Principles (Part 2)',
+      category: 'Core Concepts',
+      content: '2. Variable-Size Window\nExpand R while condition holds.\nShrink with L when condition breaks.\nBalances growth & shrinkage to meet constraints.\n\nPerformance:\nEach element processed at most twice → O(n) time.\nSpace: O(1) to O(n) depending on helpers (maps/sets).',
+      studyTip: ' Variable-size windows dynamically adjust boundaries based on conditions.'
+    },
+    {
+      type: 'Popular Techniques (Part 1)',
       category: 'Implementation Patterns',
-      content: '1. Fixed-Size Window\nApproach:\nCompute result for first k elements.\nSlide: subtract leftmost, add new rightmost.\nUse Cases:\nMax/Min sum subarray of size k\nMoving averages\nComplexity: O(n)\n\n2. Variable-Size Window\nApproach:\nExpand R until constraint breaks.\nShrink with L to restore condition.\nUse Cases:\nLongest substring without repeats\nShortest subarray meeting condition\nComplexity: O(n)\n\n3. With Auxiliary Data Structures\nApproach:\nTrack frequencies/counts using hashmap/array inside window.\nUpdate dynamically during slide.\nUse Cases:\nCount distinct elements in each window\nLongest substring with ≤ k distinct chars\nComplexity: O(n), Space: O(k) or O(1) (if limited range)',
-      studyTip: ' Always think about when to expand and when to contract the window.'
+      content: '1. Fixed-Size Window\nApproach:\nCompute result for first k elements.\nSlide: subtract leftmost, add new rightmost.\nUse Cases:\nMax/Min sum subarray of size k\nMoving averages\nComplexity: O(n)',
+      studyTip: ' Fixed-size windows are perfect for problems with constant window size requirements.'
     },
     {
-      type: 'Common Use Cases',
+      type: 'Popular Techniques (Part 2)',
+      category: 'Implementation Patterns',
+      content: '2. Variable-Size Window\nApproach:\nExpand R until constraint breaks.\nShrink with L to restore condition.\nUse Cases:\nLongest substring without repeats\nShortest subarray meeting condition\nComplexity: O(n)',
+      studyTip: ' Variable-size windows dynamically adjust to find optimal solutions.'
+    },
+    {
+      type: 'Popular Techniques (Part 3)',
+      category: 'Implementation Patterns',
+      content: '3. With Auxiliary Data Structures\nApproach:\nTrack frequencies/counts using hashmap/array inside window.\nUpdate dynamically during slide.\nUse Cases:\nCount distinct elements in each window\nLongest substring with ≤ k distinct chars\nComplexity: O(n), Space: O(k) or O(1) (if limited range)',
+      studyTip: ' Auxiliary data structures help track complex conditions within the sliding window.'
+    },
+    {
+      type: 'Common Use Cases (Part 1)',
       category: 'Applications',
-      content: '1. Max/Min Sum or Average (Fixed Size k)\nExamples:\nMax sum of subarray of size k\nMoving average of data stream\n2. Longest/Shortest Substring or Subarray (Variable Size)\nExamples:\nLongest substring without repeating characters\nShortest subarray with sum ≥ S\n3. Distinct / Frequency Constraints\nExamples:\nNumber of subarrays with at most k distinct integers\nSubarray with exactly k different characters\n4. Pattern Detection in Strings/Arrays\nExamples:\nFind all anagrams of a pattern string in text\nLongest substring with at most 2 distinct characters',
-      studyTip: ' Sliding window excels at contiguous subarray/substring problems.'
+      content: '1. Max/Min Sum or Average (Fixed Size k)\nExamples:\nMax sum of subarray of size k\nMoving average of data stream\n\n2. Longest/Shortest Substring or Subarray (Variable Size)\nExamples:\nLongest substring without repeating characters\nShortest subarray with sum ≥ S',
+      studyTip: ' Fixed-size windows are great for sum/average problems, while variable-size handles length optimization.'
     },
     {
-      type: 'Question Identifiers',
+      type: 'Common Use Cases (Part 2)',
+      category: 'Applications',
+      content: '3. Distinct / Frequency Constraints\nExamples:\nNumber of subarrays with at most k distinct integers\nSubarray with exactly k different characters\n\n4. Pattern Detection in Strings/Arrays\nExamples:\nFind all anagrams of a pattern string in text\nLongest substring with at most 2 distinct characters',
+      studyTip: ' Sliding window with auxiliary data structures handles complex frequency and pattern problems.'
+    },
+    {
+      type: 'Question Identifiers (Part 1)',
       category: 'Problem Recognition',
-      content: 'Contiguous subsequence (subarrays/substrings), not arbitrary subsets.\nFixed window size k OR variable-size window based on conditions.\nTask requires:\nMax/Min value\nLongest/Shortest length\nCount of distinct/frequency in contiguous sequence\nNaive nested loops → O(n²), but problem expects O(n) / near-linear.\nKeyword Hints:\n"Longest substring/subarray"\n"Maximum sum subarray of size k"\n"Window of size k" / "Contiguous elements"\n"Expand/contract window" / "Move window"',
-      studyTip: ' Look for contiguous subarray/substring problems with size constraints.'
+      content: 'Contiguous subsequence (subarrays/substrings), not arbitrary subsets.\nFixed window size k OR variable-size window based on conditions.\n\nTask requires:\nMax/Min value\nLongest/Shortest length\nCount of distinct/frequency in contiguous sequence',
+      studyTip: ' Look for problems involving contiguous sequences with optimization goals.'
+    },
+    {
+      type: 'Question Identifiers (Part 2)',
+      category: 'Problem Recognition',
+      content: 'Naive nested loops → O(n²), but problem expects O(n) / near-linear.\n\nKeyword Hints:\n"Longest substring/subarray"\n"Maximum sum subarray of size k"\n"Window of size k" / "Contiguous elements"\n"Expand/contract window" / "Move window"',
+      studyTip: ' Sliding window keywords and efficiency requirements are strong indicators.'
     }
   ]
 };
