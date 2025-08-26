@@ -22,33 +22,44 @@ class AIService {
     while (attempts < maxRetries) {
       try {
         attempts++;
-        console.log(`AI Analysis - Attempt ${attempts}/${maxRetries}`);
         
-        const prompt = `Give me a brief conceptual summary of this ${language} code${problemTitle ? ` for "${problemTitle}"` : ''}, along with a single line title with time and space complexity.
-
-Code to analyze:
-\`\`\`${language}
-${code}
-\`\`\`
-
-Return your response in this exact JSON format:
-{
-  "title": "Single line title describing what the code does",
-  "summary": "Brief conceptual summary explaining the approach and logic (2-3 sentences)",
-  "timeComplexity": "O(n) or appropriate Big O notation",
-  "spaceComplexity": "O(1) or appropriate Big O notation"
-}
-
-Return ONLY valid JSON, no additional text.`;
-
+        const prompt = `Analyze this ${language} code and explain the execution flow step-by-step.
+        
+        Code to analyze:
+        \`\`\`${language}
+        ${code}
+        \`\`\`
+        
+        Provide a detailed summary that explains:
+        1. What data structures are used (arrays, hashmaps, etc.)
+        2. Step-by-step execution flow (how the algorithm works line by line)
+        3. Key operations and logic decisions
+        
+        Example good summary: "Uses a HashMap to store numbers as keys and indices as values. First, iterates through the array checking if (target - current_number) exists in the HashMap. If found, returns the stored index and current index. If not found, stores current number and index in HashMap and continues."
+        
+        Return your response in this exact JSON format:
+        {
+          "title": "${problemTitle ? problemTitle : 'Algorithmic Solution'}",
+          "summary": "Detailed step-by-step explanation of data structures used and execution flow (3-4 sentences)",
+          "timeComplexity": "O(n) with brief explanation",
+          "spaceComplexity": "O(n) with brief explanation"
+        }
+        
+        Return ONLY valid JSON, no markdown formatting, no additional text.`;
         const result = await this.model.generateContent(prompt);
-        const response = result.response.text();
+        let response = result.response.text();
+        
+        // Strip markdown code blocks if present
+        response = response.replace(/```json\s*|```\s*$/g, '').trim();
+        
         
         // Parse and validate JSON
         let parsedResponse;
         try {
           parsedResponse = JSON.parse(response);
         } catch (parseError) {
+          console.error(' AI Response parsing failed:', parseError.message);
+          console.error('Raw AI Response:', response);
           // Fallback if AI doesn't return valid JSON
           parsedResponse = this.generateFallbackAnalysis(code, language, problemTitle);
         }
@@ -59,7 +70,6 @@ Return ONLY valid JSON, no additional text.`;
           return parsedResponse;
         }
         
-        console.log(`Attempt ${attempts} returned null/empty result, retrying...`);
         
         // Wait before retry (exponential backoff)
         if (attempts < maxRetries) {
@@ -89,16 +99,27 @@ Return ONLY valid JSON, no additional text.`;
     throw new Error('AI model busy - please try again later. AI service failed after 5 attempts.');
   }
 
-  generateFallbackAnalysis(code, language, problemTitle = '') {
+  generateFallbackAnalysis(code, language, problemTitle = '') 
+  {
     const lines = code.split('\n').filter(line => line.trim());
     const hasLoops = /for\s*\(|while\s*\(|forEach/.test(code);
     const hasNestedLoops = (code.match(/for\s*\(|while\s*\(/g) || []).length > 1;
     
+    // Try to detect common patterns
+    const hasArrays = /\[|Array|List/.test(code);
+    const hasHashMap = /HashMap|Map|dict|{}/.test(code);
+    const hasRecursion = /return.*\(/.test(code) && code.includes(problemTitle.split(' ')[0]);
+    
+    let approach = 'iterative approach';
+    if (hasRecursion) approach = 'recursive approach';
+    else if (hasHashMap) approach = 'hash-based lookup';
+    else if (hasArrays && hasLoops) approach = 'array traversal';
+    
     return {
-      title: problemTitle || `${language} code solution`,
-      summary: `This code implements a solution using ${language}. It processes data through ${hasLoops ? 'iterative' : 'direct'} operations and appears to solve the given problem efficiently.`,
+      title: problemTitle || `${language} Solution`,
+      summary: `[FALLBACK] Implements ${approach} using ${hasHashMap ? 'hash maps' : hasArrays ? 'arrays' : 'basic data structures'}. ${hasNestedLoops ? 'Uses nested loops for comparison operations.' : hasLoops ? 'Single pass iteration through data.' : 'Direct computation without loops.'}`,
       timeComplexity: hasNestedLoops ? 'O(n²)' : hasLoops ? 'O(n)' : 'O(1)',
-      spaceComplexity: 'O(1)'
+      spaceComplexity: hasHashMap ? 'O(n)' : 'O(1)'
     };
   }
 
