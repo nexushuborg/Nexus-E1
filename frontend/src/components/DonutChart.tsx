@@ -1,37 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
 interface DonutChartProps {
   data: { name: string; value: number; color: string }[];
 }
 
-const isTouchDevice =
-  typeof window !== "undefined" &&
-  ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+const isTouchDevice = () => {
+  return (
+    typeof window !== "undefined" &&
+    ("ontouchstart" in window || navigator.maxTouchPoints > 0)
+  );
+};
 
-export default function DonutChart({ data }: DonutChartProps) {
+export function DonutChart({ data }: DonutChartProps) {
   const total = data.reduce((s, d) => s + d.value, 0);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const activeData =
     activeIndex !== null
       ? data[activeIndex]
       : { name: "Difficulty", value: total };
-
-  const handleClick = (index: number) => {
-    if (isTouchDevice) {
+  const handleInteraction = (index: number) => {
+    if (isMobile) {
       setActiveIndex(activeIndex === index ? null : index);
-    }
-  };
-
-  const handleMouseEnter = (index: number) => {
-    if (!isTouchDevice) {
+    } else {
       setActiveIndex(index);
     }
   };
 
   const handleMouseLeave = () => {
-    if (!isTouchDevice) {
+    if (!isMobile) {
       setActiveIndex(null);
     }
   };
@@ -53,8 +59,8 @@ export default function DonutChart({ data }: DonutChartProps) {
               <Cell
                 key={`cell-${index}`}
                 fill={entry.color}
-                onMouseEnter={() => handleMouseEnter(index)}
-                onClick={() => handleClick(index)}
+                onMouseEnter={() => handleInteraction(index)}
+                onClick={() => handleInteraction(index)}
                 cursor="pointer"
               />
             ))}
@@ -71,4 +77,71 @@ export default function DonutChart({ data }: DonutChartProps) {
       </div>
     </div>
   );
+}
+
+export default function DifficultyChartContainer() {
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const jsonData = await response.json();
+        const difficultyTotals = {
+          Easy: 0,
+          Medium: 0,
+          Hard: 0,
+        };
+        if (jsonData.metadata && jsonData.metadata.breakdown) {
+          Object.values(jsonData.metadata.breakdown).forEach((platform) => {
+            const p = platform as {
+              Easy?: number;
+              Medium?: number;
+              Hard?: number;
+            };
+            difficultyTotals.Easy += p.Easy || 0;
+            difficultyTotals.Medium += p.Medium || 0;
+            difficultyTotals.Hard += p.Hard || 0;
+          });
+        }
+        const data = [
+          {
+            name: "Easy",
+            value: difficultyTotals.Easy,
+            color: "#16a34a",
+          },
+          {
+            name: "Medium",
+            value: difficultyTotals.Medium,
+            color: "#f59e0b",
+          },
+          {
+            name: "Hard",
+            value: difficultyTotals.Hard,
+            color: "#ef4444",
+          },
+        ].filter((d) => d.value > 0);
+        setChartData(data);
+      } catch (e) {
+        setError(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  if (loading) {
+    return <div>Loading chart...</div>;
+  }
+  if (error) {
+    return <div>Error loading data.</div>;
+  }
+  return <DonutChart data={chartData} />;
 }

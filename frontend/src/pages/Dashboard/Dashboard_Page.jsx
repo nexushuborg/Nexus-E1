@@ -41,14 +41,14 @@ export default function Dashboard() {
       .slice(0, 10);
   }, []);
   return (
-    <div className="flex h-screen w-full bg-gradient-main font-body overflow-hidden relative">
+    <div className="flex h-screen bg-gradient-main font-body overflow-hidden relative">
       <div className="gradient-orb-center"></div>
       <div className="flex flex-1 max-w-[1300px] w-full mx-auto gap-6 px-6 py-4 h-full overflow-hidden">
         <aside className="hidden md:flex w-72 flex-col h-full flex-shrink-0">
           <Portfolio />
         </aside>
         <main
-          className="flex-1 h-full overflow-y-auto pb-6"
+          className="flex-1 h-full overflow-y-auto pb-6 overflow-x-hidden md:overflow-x-visible"
           style={{ scrollbarWidth: "none" }}
         >
           <style>

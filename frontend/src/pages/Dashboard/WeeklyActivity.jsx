@@ -9,40 +9,75 @@ import { Skeleton } from "../../components/ui/skeleton";
 
 export function WeeklyActivity() {
   const [days, setDays] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Define levels and colors
+  const levels = [0, 1, 3, 5, 8];
+  const colors = [
+    "bg-gray-300 dark:bg-gray-700",
+    "bg-green-200 dark:bg-green-900",
+    "bg-green-400 dark:bg-green-700",
+    "bg-green-500 dark:bg-green-500",
+    "bg-green-600 dark:bg-green-400",
+  ];
+
+  const getLevel = (count) => {
+    for (let i = levels.length - 1; i >= 0; i--) {
+      if (count >= levels[i]) return i;
+    }
+    return 0;
+  };
 
   useEffect(() => {
-    const totalDays = 220;
-    const extraBlanks = 100;
-    const end = new Date();
-    end.setHours(0, 0, 0, 0);
-    const start = new Date(end);
-    start.setDate(end.getDate() - (totalDays - 1));
+    const fetchData = async () => {
+      try {
+        const cacheBuster = new Date().getTime();
+        const url = `https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Network response was not ok");
+        const jsonData = await response.json();
 
-    const generated = [];
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      generated.push({
-        date: d.toISOString().slice(0, 10),
-        count: Math.floor(Math.random() * 5),
-      });
-    }
-
-    for (let i = 0; i < extraBlanks; i++) {
-      generated.push({ date: `blank-${i}`, count: -1 });
-    }
-
-    setDays(generated);
+        const submissionsByDay = {};
+        if (jsonData?.problems?.length > 0) {
+          jsonData.problems.forEach((problem) => {
+            if (problem?.lastUpdated) {
+              const date = problem.lastUpdated.split("T")[0];
+              submissionsByDay[date] = (submissionsByDay[date] || 0) + 1;
+            }
+          });
+        }
+        const totalDays = 235;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const start = new Date(today);
+        start.setDate(today.getDate() - (totalDays - 1));
+        const generatedDays = [];
+        for (let i = 0; i < totalDays; i++) {
+          const d = new Date(start);
+          d.setDate(start.getDate() + i);
+          const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+            2,
+            "0"
+          )}-${String(d.getDate()).padStart(2, "0")}`;
+          generatedDays.push({ date: iso, count: submissionsByDay[iso] || 0 });
+        }
+        setDays(generatedDays);
+      } catch (e) {
+        console.error("Error fetching data:", e);
+        setError(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
-
   const weeks = [];
   let week = [];
-
   if (days.length > 0) {
     const startDay = new Date(days[0].date).getDay();
-
-    for (let i = 0; i < startDay; i++) {
+    for (let i = 0; i < startDay; i++)
       week.push({ date: `pad-${i}`, count: -1 });
-    }
-
     days.forEach((day) => {
       week.push(day);
       if (week.length === 7) {
@@ -50,60 +85,22 @@ export function WeeklyActivity() {
         week = [];
       }
     });
-
     if (week.length) {
-      while (week.length < 7) {
+      while (week.length < 7)
         week.push({ date: `pad-${week.length}`, count: -1 });
-      }
       weeks.push(week);
     }
   }
 
-  const colors = [
-    "bg-gray-100 dark:bg-gray-800",
-    "bg-green-300 dark:bg-green-900",
-    "bg-green-500 dark:bg-green-700",
-    "bg-green-600 dark:bg-green-500",
-    "bg-green-700 dark:bg-green-400",
-  ];
-
-  return (
-    <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
-      <CardHeader>
-        <CardTitle className="text-base">Weekly Activity</CardTitle>
-      </CardHeader>
-      <CardContent className="overflow-x-auto">
-        {days.length > 0 ? (
-          <div className="flex gap-1 w-max pr-4">
-            {weeks.map((w, wi) => (
-              <div key={wi} className="grid grid-rows-7 gap-1">
-                {w.map((day, di) => {
-                  if (day.count < 0) {
-                    return (
-                      <div
-                        key={di}
-                        className="h-3 w-3 rounded-sm bg-transparent"
-                      />
-                    );
-                  }
-                  const level = Math.min(day.count, 4);
-                  const title = `${day.count} contributions on ${new Date(
-                    day.date
-                  ).toLocaleDateString()}`;
-                  return (
-                    <div
-                      key={di}
-                      title={title}
-                      className={`h-3 w-3 rounded-sm ${colors[level]}`}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        ) : (
+  if (loading)
+    return (
+      <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
+        <CardHeader>
+          <CardTitle className="text-base">Weekly Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
           <div className="flex gap-1 w-full">
-            {Array.from({ length: 46 }).map((_, wi) => (
+            {Array.from({ length: 53 }).map((_, wi) => (
               <div key={wi} className="grid grid-rows-7 gap-1">
                 {Array.from({ length: 7 }).map((_, di) => (
                   <Skeleton key={di} className="h-3 w-3 rounded-sm" />
@@ -111,8 +108,63 @@ export function WeeklyActivity() {
               </div>
             ))}
           </div>
-        )}
-      </CardContent>
+        </CardContent>
+      </Card>
+    );
+
+  if (error)
+    return (
+      <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
+        <CardHeader>
+          <CardTitle className="text-base">Weekly Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12 text-red-500">
+            Error fetching data. Check your console for details.
+          </div>
+        </CardContent>
+      </Card>
+    );
+
+  return (
+    <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
+      <CardHeader>
+        <CardTitle className="text-base">Weekly Activity</CardTitle>
+      </CardHeader>
+      <div className="mr-5 ml-5">
+        <CardContent className="relative -left-2.5 overflow-x-auto">
+          {days.length > 0 ? (
+            <div className="flex gap-1">
+              {weeks.map((w, wi) => (
+                <div key={wi} className="grid grid-rows-7 gap-1">
+                  {w.map((day, di) =>
+                    day.count < 0 ? (
+                      <div
+                        key={di}
+                        className="h-3 w-3 rounded-sm bg-transparent"
+                      />
+                    ) : (
+                      <div
+                        key={di}
+                        title={`${day.count} contributions on ${new Date(
+                          day.date
+                        ).toLocaleDateString()}`}
+                        className={`h-3 w-3 rounded-sm ${
+                          colors[getLevel(day.count)]
+                        }`}
+                      />
+                    )
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              No activity to display.
+            </div>
+          )}
+        </CardContent>
+      </div>
     </Card>
   );
 }

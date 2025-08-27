@@ -1,6 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
-import { solvedDays } from "../../lib/data";
 import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { format, getDay, isSameDay, isToday } from "date-fns";
@@ -57,8 +58,7 @@ const CustomCalendar = ({
     } else {
       cellClasses += " bg-transparent text-inherit";
     }
-    const noHoverFocus =
-      "hover:bg-transparent focus:bg-transparent focus:ring-0";
+    const noHoverFocus = "hover:bg-transparent focus:ring-0";
     return (
       <Button
         variant="ghost"
@@ -133,6 +133,31 @@ export function ActivityCalendar() {
   const [date, setDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [timeLeft, setTimeLeft] = useState("00:00:00");
+  const [solvedDays, setSolvedDays] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const jsonData = await response.json();
+        const dates = jsonData.problems.map((p) => new Date(p.lastUpdated));
+        setSolvedDays(dates);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -152,6 +177,45 @@ export function ActivityCalendar() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  if (loading) {
+    return (
+      <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
+        <CardContent className="flex items-center justify-center h-full">
+          <p>Loading calendar data...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
+        <CardContent className="flex items-center justify-center h-full">
+          <p>Error loading calendar data.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const sortedSolvedDays = solvedDays.sort((a, b) => a - b);
+  let streak = 0;
+  if (sortedSolvedDays.length > 0) {
+    const today = new Date();
+    if (isSameDay(sortedSolvedDays[sortedSolvedDays.length - 1], today)) {
+      streak = 1;
+    }
+    for (let i = sortedSolvedDays.length - 2; i >= 0; i--) {
+      const dayBefore = new Date(sortedSolvedDays[i + 1]);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      if (isSameDay(sortedSolvedDays[i], dayBefore)) {
+        streak++;
+      } else if (!isSameDay(sortedSolvedDays[i], sortedSolvedDays[i + 1])) {
+        break;
+      }
+    }
+  }
+
   return (
     <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
       <div className="absolute top-4 right-4 z-10 hidden sm:block">
@@ -175,7 +239,7 @@ export function ActivityCalendar() {
       <CardHeader className="pt-2 pb-2">
         <div className="flex items-center justify-between sm:justify-start gap-2">
           <div className="flex flex-col">
-            <span className="text-lg font-semibold">Day 11</span>
+            <span className="text-lg font-semibold">Day {streak}</span>
             <span className="text-xs text-muted-foreground">
               {timeLeft} left
             </span>
