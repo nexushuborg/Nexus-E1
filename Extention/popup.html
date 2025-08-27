@@ -1,50 +1,355 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  <title>Current Tab</title>
+  <title>Authorize with GitHub</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial;
-      padding: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #ffffff;
+      width: 320px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    #loginBtn {
-      background-color: #24292e;
-      color: white;
+    /* Theme toggle button */
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
     }
 
-    #logoutBtn {
-      background-color: #24292e;
-      color: white;
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
-    #output {
-      color: rgb(12, 163, 7);
+    .theme-toggle svg {
+      width: 16px;
+      height: 16px;
+      fill: #60a5fa;
     }
 
-    #repoSection {
+    /* Logo */
+    .logo {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Main content */
+    .content {
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .description {
+      font-size: 13px;
+      color: #9ca3af;
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+
+    /* GitHub login button */
+    .github-btn {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 0 auto 14px;
+      transition: all 0.3s ease;
+      min-width: 180px;
+    }
+
+    .github-btn:hover {
+      background: #f3f4f6;
+      transform: translateY(-1px);
+    }
+
+    .github-btn:active {
+      transform: translateY(0);
+    }
+
+    .github-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Additional info */
+    .info-text {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    .support-link {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .support-link a {
+      color: #60a5fa;
+      text-decoration: none;
+      margin-left: 4px;
+    }
+
+    .support-link a:hover {
+      text-decoration: underline;
+    }
+
+    /* Hidden elements for logged in state */
+    .logged-in-content {
       display: none;
-      margin-top: 15px;
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .user-info {
+      margin-bottom: 20px;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      border: 2px solid #60a5fa;
+    }
+
+    .username {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .logout-btn {
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .logout-btn:hover {
+      background: #b91c1c;
+    }
+
+    /* Repository section */
+    .repo-section {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .repo-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #ffffff;
+    }
+
+    .repo-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .repo-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .repo-btn {
+      background: #60a5fa;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    .repo-btn:hover {
+      background: #3b82f6;
+    }
+
+    .repo-btn.danger {
+      background: #dc2626;
+    }
+
+    .repo-btn.danger:hover {
+      background: #b91c1c;
+    }
+
+    .repo-status {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .repo-status.success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .repo-status.warning {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+    }
+
+    .repo-status.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    /* Loading state */
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* Fade animations */
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 
-<body style="width: 300px;">
-  <button id="loginBtn">Login with GitHub</button>
-  <button id="logoutBtn">Logout</button>
-  <p id="output"></p>
-  <div id="repoSection">
-    <h3>Link Your GitHub Repo</h3>
-    <input type="text" id="repoUrl" placeholder="Paste your repo URL (e.g. https://github.com/user/repo)">
-    <button id="linkBtn">Link Repo</button>
-    <button id="disconnectBtn">Unlink Repo</button>
+<body>
+  <!-- Theme toggle -->
+  <button class="theme-toggle" id="themeToggle">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+    </svg>
+  </button>
+
+  <!-- Welcome state content -->
+  <div id="welcomeContent" class="content fade-in">
+    <div class="logo">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Replace this SVG content with your custom logo -->
+        <circle cx="40" cy="40" r="40" fill="#374151"/>
+        <circle cx="40" cy="30" r="12" fill="#60a5fa"/>
+        <path d="M40 50 C 25 50 15 60 15 75 L 65 75 C 65 60 55 50 40 50 Z" fill="#60a5fa"/>
+      </svg>
+    </div>
+    
+    <h1 class="title">WELCOME !!</h1>
+    <p class="description">Seamlessly sync your DSA Progress with GitHub</p>
+    
+    <button class="github-btn" id="completeSetupBtn">
+      Complete Setup
+    </button>
+    
+    <p class="support-link">Having issues? <a href="#" id="reportBug">Report Bug</a></p>
   </div>
-  <div id="repoStatus"></div>
-  <h1>Current Tab URL:</h1>
-  <p id="url-display">Loading...</p>
+
+  <!-- Login state content -->
+  <div id="loginContent" class="content fade-in" style="display: none;">
+    <div class="logo">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Replace this SVG content with your custom logo -->
+        <circle cx="40" cy="40" r="40" fill="#374151"/>
+        <circle cx="40" cy="30" r="12" fill="#60a5fa"/>
+        <path d="M40 50 C 25 50 15 60 15 75 L 65 75 C 65 60 55 50 40 50 Z" fill="#60a5fa"/>
+      </svg>
+    </div>
+    
+    <h1 class="title">Authorize with GitHub</h1>
+    <p class="description">Before we can push code to your selected repository, we need to get your GitHub account.</p>
+    
+    <button class="github-btn" id="loginBtn">
+      <svg class="github-icon" viewBox="0 0 24 24">
+        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+      </svg>
+      Login with GitHub
+    </button>
+    
+    <p class="info-text">You can revoke access at anytime</p>
+    <p class="support-link">Having issues? <a href="#" id="reportBug">Report Bug</a></p>
+  </div>
+
+  <!-- Logged in state content -->
+  <div id="loggedInContent" class="logged-in-content">
+    <div class="user-info">
+      <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
+      <div class="username" id="username">Welcome!</div>
+    </div>
+    
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+    
+    <div class="repo-section">
+      <div class="repo-title">Link Your GitHub Repository</div>
+      <input type="text" id="repoUrl" class="repo-input" placeholder="https://github.com/user/repo">
+      <button class="repo-btn" id="linkBtn">Link Repository</button>
+      <button class="repo-btn danger" id="disconnectBtn" style="display: none;">Unlink</button>
+      <div id="repoStatus" class="repo-status"></div>
+    </div>
+  </div>
+
   <script src="background.js"></script>
   <script src="popup.js"></script>
 </body>
-
 </html>
