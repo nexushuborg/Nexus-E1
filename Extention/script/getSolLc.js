@@ -3,7 +3,7 @@ console.log("Script Injecting....");
   if (document.querySelector('.text-green-s.dark\\:text-dark-green-s.flex.flex-1.items-center.gap-2.text-\\[16px\\].font-medium.leading-6 span').innerText === "Accepted") {
     const code = window.monaco?.editor?.getModels?.()[0]?.getValue();
     const ps = document.querySelector(
-      "div.flex.w-full.flex-1.flex-col.gap-4.overflow-y-auto.px-4.py-5"
+      ".elfjS"
     ).innerText;
     const langButton = document
       .querySelector(
