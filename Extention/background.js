@@ -274,13 +274,13 @@ class GitHubRepositoryManager {
       } else {
         const notesData = await notesRes.json();
         const notesContent = `
-          # ${notesData.data.title}
+          ${notesData.data.title}
 
-          **Summary:** ${notesData.data.summary}
+          - Summary: ${notesData.data.summary}
 
           - Time Complexity: ${notesData.data.timeComplexity}
           - Space Complexity: ${notesData.data.spaceComplexity}
-          `; // assuming API returns { notes: "..." }
+          `;
 
         const notesPath = `${filePath}/NOTES.md`;
 
@@ -323,6 +323,353 @@ class GitHubRepositoryManager {
           const notesError = await notesResponse.json();
           console.error('Failed to save NOTES:', notesError);
         }
+      }
+
+      // ------------------Save .github/workflow/aggregate-data.yml----------------
+      const ymlPath = `.github/workflows/aggregate-data.yml`;
+      const ymlContent = `name: Aggregate Problem Data
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: \${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Run aggregation script
+      run: node scripts/aggregate.js
+      
+    - name: Commit and push if changed
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add dashboard.json
+        git diff --staged --quiet || (git commit -m "Update dashboard.json [skip ci]" && git push)`;
+
+      let ymlSha = null;
+
+      // to check if the file exists
+      const ymlCheck = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${ymlPath}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (ymlCheck.ok) {
+        const existingYml = await ymlCheck.json();
+        ymlSha = existingYml.sha;
+      }
+
+      const ymlBody = {
+        message: `${ymlSha ? 'Update' : 'Add'} workflow: aggregate-data.yml`,
+        content: b64EncodeUnicode(ymlContent),
+        sha: ymlSha || undefined,
+        branch: "main"
+      };
+
+      // create or update the file with the provided content
+      const ymlResponse = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${ymlPath}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(ymlBody)
+      });
+
+      console.log("Request URL:", `${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${ymlPath}`);
+      console.log("Request Body:", ymlBody);
+
+      if (ymlResponse.ok) {
+        console.log(`Workflow ${ymlSha ? 'updated' : 'created'} successfully: ${ymlPath}`);
+      } else {
+        const ymlError = await ymlResponse.json();
+        console.error('Failed to save workflow:', ymlError);
+      }
+
+
+      // ------------------Save scripts/aggregate.js------------------
+      const aggregatePath = `scripts/aggregate.js`
+      const aggregateContent = `const fs = require('fs').promises;
+const path = require('path');
+
+// Configuration - now case-insensitive
+const PLATFORMS = ['Codechef', 'Gfg', 'Leetcode', 'Hackerrank'];
+const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
+const OUTPUT_FILE = 'dashboard.json';
+
+// Helper function to find directories case-insensitively
+async function findDirectory(parentPath, targetName) {
+    try {
+        const items = await fs.readdir(parentPath);
+        const found = items.find(item => 
+            item.toLowerCase() === targetName.toLowerCase()
+        );
+        return found ? path.join(parentPath, found) : null;
+    } catch {
+        return null;
+    }
+}
+
+// Helper function to find files with specific patterns
+async function findFile(dir, patterns) {
+    try {
+        const files = await fs.readdir(dir);
+        for (const pattern of patterns) {
+            const file = files.find(f => {
+                const lower = f.toLowerCase();
+                return lower.includes(pattern) || lower.endsWith(pattern);
+            });
+            if (file) return path.join(dir, file);
+        }
+        return null;
+    } catch (error) {
+        return null;
+    }
+}
+
+// Helper function to read file content safely
+async function readFileSafe(filePath) {
+    try {
+        if (!filePath) return '';
+        const content = await fs.readFile(filePath, 'utf8');
+        return content.trim();
+    } catch (error) {
+        console.warn(\`Warning: Could not read file \${filePath}\`);
+        return '';
+    }
+}
+
+// Helper function to generate a unique ID for each problem
+function generateProblemId(platform, difficulty, problemName) {
+    return \`\${platform.toLowerCase()}-\${difficulty.toLowerCase()}-\${problemName.toLowerCase().replace(/[^a-z0-9]/g, '-')}\`;
+}
+
+// Main aggregation function
+async function aggregateData() {
+    const dashboard = [];
+    console.log('Starting aggregation...');
+    console.log('Current working directory:', process.cwd());
+    
+    // First, let's see what directories exist in the root
+    const rootItems = await fs.readdir(process.cwd());
+    console.log('Root directory contents:', rootItems);
+    
+    for (const platform of PLATFORMS) {
+        const platformPath = await findDirectory(process.cwd(), platform);
+        
+        if (!platformPath) {
+            console.log(\`Platform directory \${platform} not found, skipping...\`);
+            continue;
+        }
+        
+        console.log(\`Found platform directory: \${platformPath}\`);
+        
+        for (const difficulty of DIFFICULTIES) {
+            const difficultyPath = await findDirectory(platformPath, difficulty);
+            
+            if (!difficultyPath) {
+                console.log(\`Difficulty directory \${platform}/\${difficulty} not found, skipping...\`);
+                continue;
+            }
+            
+            console.log(\`Found difficulty directory: \${difficultyPath}\`);
+            
+            // Get all problem directories
+            const problemDirs = await fs.readdir(difficultyPath);
+            console.log(\`Problems in \${platform}/\${difficulty}:\`, problemDirs);
+            
+            for (const problemName of problemDirs) {
+                const problemPath = path.join(difficultyPath, problemName);
+                
+                // Check if it's a directory
+                const stat = await fs.stat(problemPath);
+                if (!stat.isDirectory()) continue;
+                
+                console.log(\`Processing: \${platform}/\${difficulty}/\${problemName}\`);
+                
+                // Find the files - expanded patterns
+                const codeFile = await findFile(problemPath, [
+                    '.js', '.py', '.java', '.cpp', '.c', '.go', '.rs', '.ts',
+                    'solution', 'code', 'main', 'answer', 'program'
+                ]);
+                
+                const readmeFile = await findFile(problemPath, [
+                    'readme.md', 'question.md', 'problem.md', 'readme',
+                    'README.md', 'QUESTION.md', 'PROBLEM.md', 'README'
+                ]);
+                
+                const notesFile = await findFile(problemPath, [
+                    'notes.md', 'ai-notes.md', 'ai_notes.md', 'ainotes.md',
+                    'NOTES.md', 'AI-NOTES.md', 'AI_NOTES.md', 'AINOTES.md',
+                    'note.md', 'NOTE.md'
+                ]);
+                
+                console.log(\`Found files - Code: \${codeFile ? 'Yes' : 'No'}, Readme: \${readmeFile ? 'Yes' : 'No'}, Notes: \${notesFile ? 'Yes' : 'No'}\`);
+                
+                // Read file contents
+                const codeContent = await readFileSafe(codeFile);
+                const readmeContent = await readFileSafe(readmeFile);
+                const notesContent = await readFileSafe(notesFile);
+                
+                // Determine code language from file extension
+                let language = 'unknown';
+                if (codeFile) {
+                    const ext = path.extname(codeFile).toLowerCase();
+                    const langMap = {
+                        '.js': 'javascript',
+                        '.ts': 'typescript',
+                        '.py': 'python',
+                        '.java': 'java',
+                        '.cpp': 'cpp',
+                        '.c': 'c',
+                        '.go': 'go',
+                        '.rs': 'rust'
+                    };
+                    language = langMap[ext] || 'unknown';
+                }
+                
+                // Create the problem object with unique ID
+                const problemData = {
+                    id: generateProblemId(platform, difficulty, problemName),
+                    platform,
+                    difficulty,
+                    problemName,
+                    language,
+                    files: {
+                        code: codeContent,
+                        readme: readmeContent,
+                        notes: notesContent
+                    },
+                    hasCode: !!codeContent,
+                    hasReadme: !!readmeContent,
+                    hasNotes: !!notesContent,
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                dashboard.push(problemData);
+            }
+        }
+    }
+    
+    // Sort the dashboard for consistent output
+    dashboard.sort((a, b) => {
+        if (a.platform !== b.platform) return a.platform.localeCompare(b.platform);
+        if (a.difficulty !== b.difficulty) {
+            const diffOrder = { 'Easy': 0, 'Medium': 1, 'Hard': 2 };
+            return diffOrder[a.difficulty] - diffOrder[b.difficulty];
+        }
+        return a.problemName.localeCompare(b.problemName);
+    });
+    
+    // Write the dashboard file
+    const output = {
+        metadata: {
+            totalProblems: dashboard.length,
+            lastUpdated: new Date().toISOString(),
+            breakdown: {}
+        },
+        problems: dashboard
+    };
+    
+    // Calculate breakdown statistics
+    for (const platform of PLATFORMS) {
+        output.metadata.breakdown[platform] = {
+            total: 0,
+            Easy: 0,
+            Medium: 0,
+            Hard: 0
+        };
+    }
+    
+    for (const problem of dashboard) {
+        output.metadata.breakdown[problem.platform].total++;
+        output.metadata.breakdown[problem.platform][problem.difficulty]++;
+    }
+    
+    await fs.writeFile(
+        path.join(process.cwd(), OUTPUT_FILE),
+        JSON.stringify(output, null, 2)
+    );
+    
+    console.log(\`\\nAggregation complete! Written to \${OUTPUT_FILE}\`);
+    console.log(\`Total problems processed: \${dashboard.length}\`);
+    
+    // Show summary
+    if (dashboard.length === 0) {
+        console.log('\\nNo problems found. Please check:');
+        console.log('1. Directory structure matches: Platform/Difficulty/ProblemName/');
+        console.log('2. Platform names (case-insensitive): Codechef, Gfg, Leetcode, Hackerrank');
+        console.log('3. Difficulty names (case-insensitive): Easy, Medium, Hard');
+    }
+}
+
+// Run the aggregation
+aggregateData().catch(error => {
+    console.error('Error during aggregation:', error);
+    process.exit(1);
+});`;
+      let aggregateSha = null;
+
+      // to check if the file exists
+      const aggregateCheck = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${aggregatePath}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      if (aggregateCheck.ok) {
+        const existingaggregate = await aggregateCheck.json();
+        aggregateSha = existingaggregate.sha;
+      }
+
+      const aggregateBody = {
+        message: `${aggregateSha ? 'Update' : 'Add'} Script: aggregate.js`,
+        content: b64EncodeUnicode(aggregateContent),
+        sha: aggregateSha || undefined,
+        branch: "main"
+      };
+
+      // create or update the file with the provided content
+      const aggregateResponse = await fetch(`${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${aggregatePath}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(aggregateBody)
+      });
+
+      console.log("Request URL:", `${this.baseURL}/repos/${repoConfig.owner}/${repoConfig.repo}/contents/${aggregatePath}`);
+      console.log("Request Body:", aggregateBody);
+
+      if (aggregateResponse.ok) {
+        console.log(`Scripts ${aggregateSha ? 'updated' : 'created'} successfully: ${aggregatePath}`);
+      } else {
+        const aggregateError = await aggregateResponse.json();
+        console.error('Failed to save script:', aggregateError);
       }
 
       return { success: true, path: filePath };
@@ -492,7 +839,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     console.log("redirect url is " + redirectURL);
 
     chrome.identity.launchWebAuthFlow({
-      url: `https://github.com/login/oauth/authorize?client_id=Ov23limgwxLHCgCu5kmJ&redirect_uri=${redirectURL}&state=${state}&scope=${encodeURIComponent("read:user repo")}`,
+      url: `https://github.com/login/oauth/authorize?client_id=Ov23limgwxLHCgCu5kmJ&redirect_uri=${redirectURL}&state=${state}&scope=${encodeURIComponent("read:user repo workflow")}`,
       interactive: true
     }, async (responseUrl) => {
       if (chrome.runtime.lastError) {
