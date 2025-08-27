@@ -5,6 +5,8 @@ console.log("Script Injecting....");
     const ps = document.querySelector(
       ".elfjS"
     ).innerText;
+    const tags = window.location.href.match('/course\/([^\/]+)/')[1];
+    const psWithTag = tags + "\n\n" + ps;
     const langButton = document
       .querySelector(
         'button[aria-haspopup="dialog"][data-state="closed"] svg[data-icon="chevron-down"]'
@@ -18,7 +20,7 @@ console.log("Script Injecting....");
 
       const resData = {
       Problem_Title: title,
-      Problem_Statement: ps || "N/A",
+      Problem_Statement: psWithTag || "N/A",
       Solution_Language: lang || "N/A",
       Solution_Code: code,
       Problem_Difficulty: diff,
