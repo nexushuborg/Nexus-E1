@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Stats } from "./Stats";
 import { ActivityCalendar } from "./ActivityCalender";
-import { WeeklyActivity } from "./WeeklyActivity";
+import { DailyActivity } from "./DailyActivity";
 import { ProblemList } from "./ProblemList";
 import { problems } from "../../lib/data";
 import ProgressChart from "../../components/ProgressChart";
@@ -64,7 +64,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6 items-start">
             <div className="xl:col-span-2 flex flex-col gap-6">
               <Stats />
-              <WeeklyActivity />
+              <DailyActivity />
             </div>
             <div className="xl:col-start-3 xl:row-start-1">
               <ActivityCalendar />

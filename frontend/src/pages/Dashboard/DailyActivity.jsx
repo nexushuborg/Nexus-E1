@@ -7,7 +7,7 @@ import {
 } from "../../components/ui/card";
 import { Skeleton } from "../../components/ui/skeleton";
 
-export function WeeklyActivity() {
+export function DailyActivity() {
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -96,7 +96,7 @@ export function WeeklyActivity() {
     return (
       <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
         <CardHeader>
-          <CardTitle className="text-base">Weekly Activity</CardTitle>
+          <CardTitle className="text-base">Daily Activity</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-1 w-full">
@@ -116,7 +116,7 @@ export function WeeklyActivity() {
     return (
       <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
         <CardHeader>
-          <CardTitle className="text-base">Weekly Activity</CardTitle>
+          <CardTitle className="text-base">Daily Activity</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-red-500">
@@ -129,7 +129,7 @@ export function WeeklyActivity() {
   return (
     <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
       <CardHeader>
-        <CardTitle className="text-base">Weekly Activity</CardTitle>
+        <CardTitle className="text-base">Daily Activity</CardTitle>
       </CardHeader>
       <div className="mr-5 ml-5">
         <CardContent className="relative -left-2.5 overflow-x-auto">
