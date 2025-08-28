@@ -169,6 +169,14 @@ const PLATFORM_LOGOS = {
     geeksforgeeks: 'images/gfg-logo.png'
 };
 
+//Maps platform names to the URLs we need to detect 
+const PLATFORM_URLS = {
+    leetcode: 'leetcode.com',
+    hackerrank: 'hackerrank.com',
+    codechef: 'codechef.com',
+    geeksforgeeks: 'geeksforgeeks.org'
+};
+
 // Current state tracking
 let currentPlatform = null;
 
@@ -198,6 +206,17 @@ function showContent(contentId) {
             updatePlatformSelectionLayout();
         }
     }
+}
+
+//Detects which platform the user is on from a URL
+function getPlatformFromUrl(url) {
+    if (!url) return null;
+    for (const [platform, platformUrl] of Object.entries(PLATFORM_URLS)) {
+        if (url.includes(platformUrl)) {
+            return platform; // returns 'leetcode', 'hackerrank', etc.
+        }
+    }
+    return null; // return null if no match is found
 }
 
 function showError(message, containerId = 'repoStatus') {
@@ -305,6 +324,47 @@ function initLogin() {
                 showError('Connection error! Please try again.', 'loginError');
             }
         });
+    }
+}
+
+// Initialize the popup based on login state
+async function initializePopup() {
+    // Check for user and repo config in storage
+    const { username, repoConfig } = await chrome.storage.local.get(['username', 'repoConfig']);
+
+    // Case 1: User is not logged in
+    if (!username) {
+        showContent('loginContent');
+        return;
+    }
+
+    // Case 2: User is logged in but has NOT linked a repository
+    if (!repoConfig || !repoConfig.connected) {
+        showContent('welcomeContent'); // Start them at the welcome-repo linking flow
+        return;
+    }
+
+    // Case 3: User is logged in AND has linked a repository
+    // Now we detect the current tab's URL
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const detectedPlatform = getPlatformFromUrl(tab.url);
+
+    if (detectedPlatform) {
+        // A supported platform was detected, show the specific sync page
+        showSyncingContent(detectedPlatform);
+    } else {
+        // No supported platform detected, show the general selection page
+        showContent('platformSelectionContent');
+    }
+}
+
+// This function now just updates the user info on various pages
+async function updateAllUserInfo() {
+    const { username, avatarUrl } = await chrome.storage.local.get(['username', 'avatarUrl']);
+    if (username) {
+        // Update Logged In / Repo Link page
+        document.getElementById('userAvatar').src = avatarUrl || DEFAULT_AVATAR;
+        document.getElementById('username').textContent = `Welcome, ${username}!`;
     }
 }
 
@@ -454,7 +514,8 @@ function initContinueButton() {
     const continueBtn = document.getElementById('continueToPlatformsBtn');
     if (continueBtn) {
         continueBtn.addEventListener('click', () => {
-            showContent('platformSelectionContent');
+            // This now runs the main logic to check the URL and show the correct page.
+            initializePopup();
         });
     }
 }
@@ -634,7 +695,8 @@ function initSuccessBackButton() {
     const successBackBtn = document.getElementById('successBackBtn');
     if (successBackBtn) {
         successBackBtn.addEventListener('click', () => {
-            showContent('platformSelectionContent');
+            // This line takes you to the page with the "Continue" button
+            showContent('loggedInContent');
         });
     }
 }
@@ -651,31 +713,12 @@ function initSyncNowButton() {
             // Simulate a sync delay
             setTimeout(() => {
                 showContent('successContent');
-                
+
                 // Reset button for the next time it's shown
                 syncBtn.textContent = 'Sync Now';
                 syncBtn.disabled = false;
             }, 1000);
         });
-    }
-}
-
-// Initialize the popup based on login state
-async function initializePopup() {
-    try {
-        const result = await chrome.storage.local.get(['username']);
-        const { username } = result;
-
-        if (username) {
-            // User is logged in - show welcome page
-            await showWelcomeState();
-        } else {
-            // User is not logged in - show login page
-            showContent('loginContent');
-        }
-    } catch (error) {
-        // Default to login page if there's an error
-        showContent('loginContent');
     }
 }
 
