@@ -640,16 +640,22 @@ function initSuccessBackButton() {
 }
 
 // Syncing content click to simulate sync
-function initSyncingClick() {
-    const syncingContent = document.getElementById('syncingContent');
-    if (syncingContent) {
-        syncingContent.addEventListener('click', (e) => {
-            // Only trigger if clicking on the main content area, not buttons
-            if (e.target === syncingContent || e.target.closest('.platform-logo') || e.target.closest('.description')) {
-                setTimeout(() => {
-                    showContent('successContent');
-                }, 1000);
-            }
+function initSyncNowButton() {
+    const syncBtn = document.getElementById('syncNowBtn');
+    if (syncBtn) {
+        syncBtn.addEventListener('click', () => {
+            // Optional: Show a temporary "Syncing..." state
+            syncBtn.textContent = 'Syncing...';
+            syncBtn.disabled = true;
+
+            // Simulate a sync delay
+            setTimeout(() => {
+                showContent('successContent');
+                
+                // Reset button for the next time it's shown
+                syncBtn.textContent = 'Sync Now';
+                syncBtn.disabled = false;
+            }, 1000);
         });
     }
 }
@@ -687,7 +693,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initPlatformSelection();
     initBackButton();
     initSuccessBackButton();
-    initSyncingClick();
+    initSyncNowButton();
 
     // Initialize the popup state
     await initializePopup();
