@@ -1,23 +1,77 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ProblemCard } from "./ProblemCard";
 import { Button } from "../../components/ui/button";
-import { UploadCodeDialog } from "./UploadPopup";
-import SearchBar from "../../components/SearchBar";
 import { useNavigate } from "react-router-dom";
-export function ProblemList({ problems }) {
+
+export function ProblemList() {
+  const [problems, setProblems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  const filteredProblems = useMemo(() => {
-    if (!searchQuery) return problems;
-    return problems.filter((problem) =>
-      problem.title.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        const response = await fetch(
+          "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const hardcodedTags = [
+          ["Array", "Binary Search"],
+          ["String", "DP"],
+          ["Math", "Hash Table"],
+          ["Array", "Stack", "Greedy"],
+          ["List","Tree","Red Black Tree"],
+        ];
+
+        const updatedProblems = data.problems.map((problem, index) => ({
+          ...problem,
+          tags: hardcodedTags[index] || ["General"], // fallback
+        }));
+
+        setProblems(updatedProblems);
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProblems();
+  }, []);
+
+  const latestProblems = useMemo(() => {
+    const sorted = [...problems].sort(
+      (a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated)
     );
+    const filtered = sorted.filter((problem) =>
+      problem.problemName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    return filtered.slice(0, 5);
   }, [problems, searchQuery]);
 
   const handleViewAllClick = () => {
     navigate("/submissions");
   };
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        Loading problems...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-500">
+        Error fetching data: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="pb-1">
@@ -25,17 +79,10 @@ export function ProblemList({ problems }) {
         <h2 className="text-lg sm:text-xl font-bold text-foreground pl-1">
           Recent Activity
         </h2>
-        {/* Future buttons (commented for now) */}
-        {/* <div className="flex gap-2">
-          <Button variant="outline" className="rounded-lg text-foreground">
-            Start Session
-          </Button>
-          <UploadCodeDialog />
-        </div> */}
       </div>
-      {filteredProblems.length > 0 ? (
+      {latestProblems.length > 0 ? (
         <div className="space-y-3">
-          {filteredProblems.map((problem) => (
+          {latestProblems.map((problem) => (
             <ProblemCard key={problem.id} problem={problem} />
           ))}
         </div>
