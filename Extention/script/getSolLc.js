@@ -5,7 +5,7 @@ console.log("Script Injecting....");
     const ps = document.querySelector(
       ".elfjS"
     ).innerText;
-    const tags = window.location.href.match('/course\/([^\/]+)/')[1];
+    const tags = document.querySelector('.overflow-hidden.transition-all').innerText.replace(/\n/g, ',').replace(/ /g, '');
     const psWithTag = tags + "\n\n" + ps;
     const langButton = document
       .querySelector(
