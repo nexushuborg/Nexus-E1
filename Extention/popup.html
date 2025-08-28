@@ -274,6 +274,81 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Platform Selection Styles */
+    .platform-selection {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .platform-card {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .platform-card:hover {
+      transform: scale(1.1);
+    }
+
+    .platform-card img {
+      width: 50px;
+      height: 50px;
+    }
+
+    /* Platform Specific Syncing Styles */
+    .syncing-content {
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .platform-logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+    }
+
+    .platform-logo img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .back-btn {
+      background: #60a5fa;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .back-btn:hover {
+      background: #3b82f6;
+    }
+
+    /* Success Page Styles */
+    .success-content {
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .success-icon {
+      font-size: 40px;
+      color: #22c55e;
+      margin-bottom: 20px;
+    }
+
   </style>
 </head>
 
@@ -347,6 +422,45 @@
       <button class="repo-btn danger" id="disconnectBtn" style="display: none;">Unlink</button>
       <div id="repoStatus" class="repo-status"></div>
     </div>
+  </div>
+
+  <!-- Platform Selection Page -->
+  <div id="platformSelectionContent" class="content fade-in" style="display: none;">
+    <h1 class="title">Select a Platform</h1>
+    <p class="description">Choose a platform to sync your solutions</p>
+    <div class="platform-selection">
+      <div class="platform-card" data-platform="leetcode">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png" alt="LeetCode">
+      </div>
+      <div class="platform-card" data-platform="hackerrank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/61/HackerRank_logo.png" alt="HackerRank">
+      </div>
+      <div class="platform-card" data-platform="codechef">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/CodeChef_logo.png" alt="CodeChef">
+      </div>
+      <div class="platform-card" data-platform="geeksforgeeks">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/GeeksforGeeks_%28emblem%29.png" alt="GeeksforGeeks">
+      </div>
+    </div>
+  </div>
+
+  <!-- Platform-Specific Syncing Page -->
+  <div id="syncingContent" class="syncing-content fade-in" style="display: none;">
+    <div class="user-info">
+      <img id="syncUserAvatar" class="user-avatar" src="" alt="User Avatar">
+      <div class="username" id="syncUsername">Username</div>
+    </div>
+    <div class="platform-logo" id="platformLogo"></div>
+    <p class="description" id="syncDescription">Syncing your solution to your GitHub</p>
+    <button class="back-btn" id="backBtn">Back</button>
+  </div>
+
+  <!-- Success Page -->
+  <div id="successContent" class="success-content fade-in" style="display: none;">
+    <div class="success-icon">✅</div>
+    <h1 class="title">Sync Successful!</h1>
+    <p class="description">Your solution has been successfully synced to your GitHub repository.</p>
+    <button class="back-btn" id="successBackBtn">Back</button>
   </div>
 
   <script src="background.js"></script>
