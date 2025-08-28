@@ -1,9 +1,10 @@
+import React from "react";
 import { Badge } from "../../components/ui/badge";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
 const tagCategories = {
-  "Array|String|Hash Table|Hash Set|Vector|List|Tree|Binary Tree|Graph|BST|AVL|Red Black Tree|B Tree|Stack|Queue|Linked List|Deque|Priority Queue|Circular Queue|Heap|Trie|Union Find|Disjoint Set|Segment Tree|Fenwick Tree|Dynamic Programming|Greedy|Backtracking|Memoization|Tabulation|Binary Search|Sorting|Topological Sort|Quick Sort|Merge Sort|Heap Sort|DFS|BFS|Dijkstra|Floyd Warshall|Bellman Ford|Kruskal|Prim|Recursion|Divide and Conquer|Branch and Bound|Two Pointers|Sliding Window|Fast and Slow Pointers|Bit Manipulation|Prefix Sum|Suffix Sum|Difference Array|Monotonic Stack|Monotonic Queue|Kadane|KMP|Rabin Karp|Math|Geometry|Number Theory|Combinatorics|Probability|Design|Simulation|System Design|OOP|Design Patterns|Game Theory|Minimax|Alpha Beta Pruning|Machine Learning|AI|Neural Networks|Deep Learning|ML|Architecture|Microservices|Distributed Systems|Database|SQL|NoSQL|MongoDB|PostgreSQL|MySQL|Redis|Web Development|Frontend|Backend|API|REST|GraphQL|Mobile Development|iOS|Android|React Native|Flutter|DevOps|Docker|Kubernetes|CI/CD|AWS|Azure|GCP|Cybersecurity|Cryptography|Encryption|Hashing|Security|Algorithm|Data Structure|DS|Algo|Pattern|Technique|Method|Approach":
+  "Array|String|Hash Table|Hash Set|Vector|List|Tree|DP|Binary Tree|Graph|BST|AVL|Red Black Tree|B Tree|Stack|Queue|Linked List|Deque|Priority Queue|Circular Queue|Heap|Trie|Union Find|Disjoint Set|Segment Tree|Fenwick Tree|Dynamic Programming|Greedy|Backtracking|Memoization|Tabulation|Binary Search|Sorting|Topological Sort|Quick Sort|Merge Sort|Heap Sort|DFS|BFS|Dijkstra|Floyd Warshall|Bellman Ford|Kruskal|Prim|Recursion|Divide and Conquer|Branch and Bound|Two Pointers|Sliding Window|Fast and Slow Pointers|Bit Manipulation|Prefix Sum|Suffix Sum|Difference Array|Monotonic Stack|Monotonic Queue|Kadane|KMP|Rabin Karp|Math|Geometry|Number Theory|Combinatorics|Probability|Design|Simulation|System Design|OOP|Design Patterns|Game Theory|Minimax|Alpha Beta Pruning|Machine Learning|AI|Neural Networks|Deep Learning|ML|Architecture|Microservices|Distributed Systems|Database|SQL|NoSQL|MongoDB|PostgreSQL|MySQL|Redis|Web Development|Frontend|Backend|API|REST|GraphQL|Mobile Development|iOS|Android|React Native|Flutter|DevOps|Docker|Kubernetes|CI/CD|AWS|Azure|GCP|Cybersecurity|Cryptography|Encryption|Hashing|Security|Algorithm|Data Structure|DS|Algo|Pattern|Technique|Method|Approach":
     "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30",
   "Easy|Beginner|Basic":
     "bg-emerald-50 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-400 border border-emerald-400 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900",
@@ -14,9 +15,10 @@ const tagCategories = {
 };
 
 const sourceColors = {
-  LeetCode: "text-blue-500",
-  HackerRank: "text-green-500",
-  Other: "text-purple-500",
+  Leetcode: "text-blue-500",
+  Codechef: "text-red-500",
+  Gfg: "text-green-500",
+  Hackerrank: "text-teal-500",
 };
 
 const getTagClass = (tag) => {
@@ -45,7 +47,7 @@ export function ProblemCard({ problem }) {
       <div className="flex flex-col flex-1 min-w-[150px]">
         <div className="flex items-center justify-between sm:justify-start">
           <span className="font-medium text-sm text-foreground">
-            {problem.title}
+            {problem.problemName}
           </span>
           <div className="sm:hidden">
             <Badge
@@ -59,10 +61,10 @@ export function ProblemCard({ problem }) {
         </div>
         <span
           className={`text-xs font-semibold ${
-            sourceColors[problem.source] || ""
+            sourceColors[problem.platform] || ""
           }`}
         >
-          {problem.source}
+          {problem.platform}
         </span>
       </div>
       <div className="hidden sm:flex sm:flex-1 justify-center">
@@ -75,10 +77,10 @@ export function ProblemCard({ problem }) {
         </Badge>
       </div>
       <div className="sm:flex-1 text-xs text-muted-foreground text-left sm:text-center">
-        <div>{format(parseISO(problem.date), "MMM d, yyyy")}</div>
+        <div>{format(parseISO(problem.lastUpdated), "MMM d, yyyy")}</div>
       </div>
       <div className="sm:flex-1 flex gap-1 justify-start sm:justify-end flex-wrap">
-        {problem.tags.slice(0, 2).map((tag) => (
+        {(problem.tags || []).map((tag) => (
           <Badge
             key={tag}
             className={`${getTagClass(

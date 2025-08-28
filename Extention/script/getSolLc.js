@@ -3,8 +3,10 @@ console.log("Script Injecting....");
   if (document.querySelector('.text-green-s.dark\\:text-dark-green-s.flex.flex-1.items-center.gap-2.text-\\[16px\\].font-medium.leading-6 span').innerText === "Accepted") {
     const code = window.monaco?.editor?.getModels?.()[0]?.getValue();
     const ps = document.querySelector(
-      "div.flex.w-full.flex-1.flex-col.gap-4.overflow-y-auto.px-4.py-5"
+      ".elfjS"
     ).innerText;
+    const tags = document.querySelector('.overflow-hidden.transition-all').innerText.replace(/\n/g, ',').replace(/ /g, '');
+    const psWithTag = tags + "\n\n" + ps;
     const langButton = document
       .querySelector(
         'button[aria-haspopup="dialog"][data-state="closed"] svg[data-icon="chevron-down"]'
@@ -18,7 +20,7 @@ console.log("Script Injecting....");
 
       const resData = {
       Problem_Title: title,
-      Problem_Statement: ps || "N/A",
+      Problem_Statement: psWithTag || "N/A",
       Solution_Language: lang || "N/A",
       Solution_Code: code,
       Problem_Difficulty: diff,
