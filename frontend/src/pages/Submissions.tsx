@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { submissions, type Submission } from "@/data/mock";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -99,6 +99,57 @@ const SubmissionCard = ({ submission }: { submission: Submission }) => (
 );
 
 export default function Submissions() {
+  const [dataSubmissions, setDataSubmissions] = useState<Submission[]>(submissions);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+        const cacheBuster = new Date().getTime();
+        const res = await fetch(`https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (Array.isArray(data?.problems)) {
+          const mapped: Submission[] = data.problems.map((p: any, idx: number) => {
+            const rawPlatform = (p.platform || "").toString();
+            const platform: Submission["platform"] =
+              rawPlatform.toLowerCase() === "leetcode" ? "LeetCode" :
+              rawPlatform.toLowerCase() === "gfg" ? "GFG" :
+              "CodeStudio";
+            const difficulty = ((p.difficulty || "").toString().toLowerCase());
+            const normalizedDifficulty = difficulty === "easy" ? "Easy" : difficulty === "medium" ? "Medium" : "Hard";
+            const title = p.problemName || p.id || `Problem ${idx + 1}`;
+            const code = p.files?.code || "";
+            const readme = (p.files?.readme || "").toString();
+            const summary = readme.slice(0, 220).replace(/\s+/g, " ").trim();
+            const tags: string[] = [];
+            return {
+              id: p.id || `${platform}-${idx}`,
+              title,
+              platform,
+              difficulty: normalizedDifficulty,
+              date: p.lastUpdated || new Date().toISOString(),
+              tags,
+              description: readme,
+              code,
+              language: (p.language || "javascript").toString().toLowerCase(),
+              summary: summary || title,
+            } as Submission;
+          });
+          if (mapped.length) setDataSubmissions(mapped);
+        }
+      } catch (e) {
+        setLoadError(e instanceof Error ? e.message : "Failed to load dashboard.json");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
   const [filters, setFilters] = useState<FilterState>({
     query: "",
     difficulty: "All",
@@ -107,21 +158,21 @@ export default function Submissions() {
 
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    submissions.forEach(submission => 
+    dataSubmissions.forEach(submission => 
       submission.tags.forEach(tag => tagSet.add(tag))
     );
     return Array.from(tagSet).sort();
-  }, []);
+  }, [dataSubmissions]);
 
   const submissionStats = useMemo(() => ({
-    total: submissions.length,
-    easy: submissions.filter(s => s.difficulty === 'Easy').length,
-    medium: submissions.filter(s => s.difficulty === 'Medium').length,
-    hard: submissions.filter(s => s.difficulty === 'Hard').length,
-  }), []);
+    total: dataSubmissions.length,
+    easy: dataSubmissions.filter(s => s.difficulty === 'Easy').length,
+    medium: dataSubmissions.filter(s => s.difficulty === 'Medium').length,
+    hard: dataSubmissions.filter(s => s.difficulty === 'Hard').length,
+  }), [dataSubmissions]);
 
   const filteredSubmissions = useMemo(() => {
-    return submissions.filter((submission) => {
+    return dataSubmissions.filter((submission) => {
       const matchesQuery = submission.title.toLowerCase().includes(filters.query.toLowerCase());
       const matchesDifficulty = filters.difficulty === "All" || submission.difficulty === filters.difficulty;
       const matchesTags = filters.selectedTags.length === 0 || 
@@ -129,7 +180,7 @@ export default function Submissions() {
       
       return matchesQuery && matchesDifficulty && matchesTags;
     });
-  }, [filters.query, filters.difficulty, filters.selectedTags]);
+  }, [filters.query, filters.difficulty, filters.selectedTags, dataSubmissions]);
 
   const updateFilter = useCallback(<K extends keyof FilterState>(
     key: K,

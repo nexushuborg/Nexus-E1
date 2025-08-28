@@ -434,8 +434,60 @@ const useSubmissionData = (submissionId: string | undefined) => {
     null
   );
   const [resetCounter, setResetCounter] = useState(0);
+  const [sub, setSub] = useState<Submission | undefined>(
+    submissionId ? submissions.find((s) => s.id === submissionId) : undefined
+  );
 
-  const sub = submissions.find((s) => s.id === submissionId);
+  useEffect(() => {
+    if (!submissionId) return;
+    // Try local first
+    const local = submissions.find((s) => s.id === submissionId);
+    if (local) {
+      setSub(local);
+      return;
+    }
+    // Fallback: fetch from dashboard.json and map one item by id
+    const fetchById = async () => {
+      try {
+        const cacheBuster = new Date().getTime();
+        const res = await fetch(`https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data?.problems)) return;
+        const mapProblemToSubmission = (p: any, idx: number): Submission => {
+          const rawPlatform = (p.platform || "").toString();
+          const platform: Submission["platform"] =
+            rawPlatform.toLowerCase() === "leetcode" ? "LeetCode" :
+            rawPlatform.toLowerCase() === "gfg" ? "GFG" :
+            "CodeStudio";
+          const difficultyRaw = (p.difficulty || "").toString().toLowerCase();
+          const difficulty = difficultyRaw === "easy" ? "Easy" : difficultyRaw === "medium" ? "Medium" : "Hard";
+          const title = p.problemName || p.id || `Problem ${idx + 1}`;
+          const codeVal = p.files?.code || "";
+          const readme = (p.files?.readme || "").toString();
+          const summary = readme.slice(0, 220).replace(/\s+/g, " ").trim() || title;
+          return {
+            id: p.id || `${platform}-${idx}`,
+            title,
+            platform,
+            difficulty,
+            date: p.lastUpdated || new Date().toISOString(),
+            tags: [],
+            description: readme,
+            code: codeVal,
+            language: (p.language || "javascript").toString().toLowerCase(),
+            summary,
+          } as Submission;
+        };
+        const all: Submission[] = data.problems.map(mapProblemToSubmission);
+        const found = all.find((s) => s.id === submissionId);
+        if (found) setSub(found);
+      } catch {
+        // silent fallback to not disturb UI
+      }
+    };
+    fetchById();
+  }, [submissionId]);
 
   useEffect(() => {
     if (!sub || loadedSubmissionId === sub.id) return;
@@ -658,7 +710,7 @@ const AnalysisContent = ({ sub }: { sub: Submission }) => {
     try {
       const cacheBuster = new Date().getTime();
       const response = await fetch(
-        `https://raw.githubusercontent.com/decodewidwaiz/dsa/main/dashboard.json?_t=${cacheBuster}`
+        `https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`
       );
       
       if (!response.ok) {
