@@ -412,14 +412,16 @@
       <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
       <div class="username" id="username">Welcome!</div>
     </div>
-    
     <button class="logout-btn" id="logoutBtn">Logout</button>
-    
     <div class="repo-section">
       <div class="repo-title">Link Your GitHub Repository</div>
       <input type="text" id="repoUrl" class="repo-input" placeholder="https://github.com/user/repo">
-      <button class="repo-btn" id="linkBtn">Link Repository</button>
-      <button class="repo-btn danger" id="disconnectBtn" style="display: none;">Unlink</button>
+      <div>
+          <button class="repo-btn" id="linkBtn">Link Repository</button>
+          <button class="repo-btn danger" id="disconnectBtn" style="display: none;">Unlink</button>
+          <button class="repo-btn continue" id="continueToPlatformsBtn" style="display: none;">
+              Continue &#8594; </button>
+      </div>
       <div id="repoStatus" class="repo-status"></div>
     </div>
   </div>
@@ -430,16 +432,16 @@
     <p class="description">Choose a platform to sync your solutions</p>
     <div class="platform-selection">
       <div class="platform-card" data-platform="leetcode">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png" alt="LeetCode">
+        <img src="images/Leetcode-logo.png" alt="LeetCode">
       </div>
       <div class="platform-card" data-platform="hackerrank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/6/61/HackerRank_logo.png" alt="HackerRank">
+        <img src="images/HackerRank-logo.png" alt="HackerRank">
       </div>
       <div class="platform-card" data-platform="codechef">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/CodeChef_logo.png" alt="CodeChef">
+        <img src="images/codechef-logo.png" alt="CodeChef">
       </div>
       <div class="platform-card" data-platform="geeksforgeeks">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/GeeksforGeeks_%28emblem%29.png" alt="GeeksforGeeks">
+        <img src="images/gfg-logo.png" alt="GeeksforGeeks">
       </div>
     </div>
   </div>
@@ -457,7 +459,6 @@
 
   <!-- Success Page -->
   <div id="successContent" class="success-content fade-in" style="display: none;">
-    <div class="success-icon">✅</div>
     <h1 class="title">Sync Successful!</h1>
     <p class="description">Your solution has been successfully synced to your GitHub repository.</p>
     <button class="back-btn" id="successBackBtn">Back</button>

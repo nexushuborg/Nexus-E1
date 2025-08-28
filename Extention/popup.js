@@ -163,10 +163,10 @@ const DEFAULT_AVATAR = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD
 
 // Platform logos mapping
 const PLATFORM_LOGOS = {
-    leetcode: '<img src="https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png" alt="LeetCode">',
-    hackerrank: '<img src="https://upload.wikimedia.org/wikipedia/commons/6/61/HackerRank_logo.png" alt="HackerRank">',
-    codechef: '<img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/CodeChef_logo.png" alt="CodeChef">',
-    geeksforgeeks: '<img src="https://upload.wikimedia.org/wikipedia/commons/4/43/GeeksforGeeks_%28emblem%29.png" alt="GeeksforGeeks">'
+    leetcode: 'images/Leetcode-logo.png',
+    hackerrank: 'images/HackerRank-logo.png',
+    codechef: 'images/codechef-logo.png',
+    geeksforgeeks: 'images/gfg-logo.png'
 };
 
 // Current state tracking
@@ -175,7 +175,7 @@ let currentPlatform = null;
 // Utility functions
 function hideAllContent() {
     const contents = [
-        'welcomeContent', 'loginContent', 'loggedInContent', 
+        'welcomeContent', 'loginContent', 'loggedInContent',
         'platformSelectionContent', 'syncingContent', 'successContent'
     ];
     contents.forEach(id => {
@@ -192,7 +192,7 @@ function showContent(contentId) {
     if (element) {
         element.style.display = 'block';
         element.classList.add('fade-in');
-        
+
         // If showing platform selection, update its layout
         if (contentId === 'platformSelectionContent') {
             updatePlatformSelectionLayout();
@@ -205,7 +205,7 @@ function showError(message, containerId = 'repoStatus') {
     if (statusDiv) {
         statusDiv.innerHTML = `
             <div class="repo-status error">
-                ❌ ${message}
+                 ${message}
             </div>
         `;
     }
@@ -216,7 +216,7 @@ function showSuccess(message, containerId = 'repoStatus') {
     if (statusDiv) {
         statusDiv.innerHTML = `
             <div class="repo-status success">
-                ✅ ${message}
+                 ${message}
             </div>
         `;
     }
@@ -227,7 +227,7 @@ function showWarning(message, containerId = 'repoStatus') {
     if (statusDiv) {
         statusDiv.innerHTML = `
             <div class="repo-status warning">
-                ⚠️ ${message}
+                 ${message}
             </div>
         `;
     }
@@ -240,7 +240,7 @@ function initThemeToggle() {
         themeToggle.addEventListener('click', () => {
             const body = document.body;
             const isLight = body.classList.contains('light-theme');
-            
+
             if (isLight) {
                 body.classList.remove('light-theme');
                 body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
@@ -313,19 +313,19 @@ async function showWelcomeState() {
     try {
         const result = await chrome.storage.local.get(['username', 'avatarUrl']);
         const { username, avatarUrl } = result;
-        
+
         if (username) {
             // Update welcome page with user info
             const userAvatar = document.getElementById('userAvatar');
             const usernameElement = document.getElementById('username');
-            
+
             if (userAvatar) {
                 userAvatar.src = avatarUrl || DEFAULT_AVATAR;
             }
             if (usernameElement) {
                 usernameElement.textContent = `Welcome, ${username}!`;
             }
-            
+
             showContent('welcomeContent');
         } else {
             showError('Failed to load user information.');
@@ -350,19 +350,19 @@ async function showLoggedInState() {
     try {
         const result = await chrome.storage.local.get(['username', 'avatarUrl']);
         const { username, avatarUrl } = result;
-        
+
         if (username) {
             // Update logged in page with user info
             const userAvatar = document.getElementById('userAvatar');
             const usernameElement = document.getElementById('username');
-            
+
             if (userAvatar) {
                 userAvatar.src = avatarUrl || DEFAULT_AVATAR;
             }
             if (usernameElement) {
                 usernameElement.textContent = `Welcome, ${username}!`;
             }
-            
+
             showContent('loggedInContent');
             await checkRepoStatus();
         } else {
@@ -374,46 +374,27 @@ async function showLoggedInState() {
 }
 
 // Check repository status
-async function checkRepoStatus() {
+function checkRepoStatus() {
     try {
         chrome.runtime.sendMessage({ action: 'getRepoConfig' }, (response) => {
-            const repoStatusDiv = document.getElementById('repoStatus');
             const repoUrlInput = document.getElementById('repoUrl');
             const linkBtn = document.getElementById('linkBtn');
             const disconnectBtn = document.getElementById('disconnectBtn');
+            const continueBtn = document.getElementById('continueToPlatformsBtn'); // Get the new button
 
-            if (response && response.success && response.config && response.config.connected) {
-                // Repository is connected
+            if (response?.success && response.config?.connected) {
                 const config = response.config;
-                if (repoStatusDiv) {
-                    repoStatusDiv.innerHTML = `
-                        <div class="repo-status success">
-                            ✅ Connected to: <strong>${config.owner}/${config.repo}</strong>
-                            <br><small>Connected on: ${new Date(config.connectedAt).toLocaleDateString()}</small>
-                        </div>
-                    `;
-                }
-
+                showSuccess(`Connected to: <strong>${config.owner}/${config.repo}</strong>`);
                 if (repoUrlInput) repoUrlInput.style.display = 'none';
                 if (linkBtn) linkBtn.style.display = 'none';
                 if (disconnectBtn) disconnectBtn.style.display = 'inline-block';
-                
-                // Auto-transition to platform selection after successful repo linking
-                setTimeout(() => {
-                    showContent('platformSelectionContent');
-                }, 1500);
+                if (continueBtn) continueBtn.style.display = 'inline-block'; // Show the continue button
             } else {
-                // No repository connected
-                if (repoStatusDiv) {
-                    repoStatusDiv.innerHTML = `
-                        <div class="repo-status warning">
-                            ⚠️ No repository linked. Please connect a repository to auto-save solutions.
-                        </div>
-                    `;
-                }
+                showWarning('No repository linked.');
                 if (repoUrlInput) repoUrlInput.style.display = 'block';
                 if (linkBtn) linkBtn.style.display = 'inline-block';
                 if (disconnectBtn) disconnectBtn.style.display = 'none';
+                if (continueBtn) continueBtn.style.display = 'none'; // Hide the continue button
             }
         });
     } catch (error) {
@@ -427,90 +408,28 @@ function initRepositoryLinking() {
     if (linkBtn) {
         linkBtn.addEventListener('click', async () => {
             const repoUrl = document.getElementById('repoUrl')?.value.trim();
-            const statusDiv = document.getElementById('repoStatus');
+            if (!repoUrl) return showError('Please enter a repository URL.');
+            if (!repoUrl.startsWith('https://github.com/')) return showError('Invalid GitHub repository URL.');
 
-            if (!repoUrl) {
-                showError('Please enter a repository URL.');
-                return;
-            }
+            const parts = repoUrl.replace('https://github.com/', '').split('/');
+            if (parts.length < 2 || !parts[0] || !parts[1]) return showError('Invalid URL format.');
 
-            // Validate GitHub URL format
-            if (!repoUrl.startsWith('https://github.com/')) {
-                showError('Please enter a valid GitHub repository URL (https://github.com/owner/repo)');
-                return;
-            }
+            const [owner, repo] = parts;
 
-            // Parse owner and repo from URL
-            const urlPath = repoUrl.replace('https://github.com/', '').replace(/\/$/, '');
-            const parts = urlPath.split('/');
-
-            if (parts.length < 2 || !parts[0] || !parts[1]) {
-                showError('Invalid repository URL format. Expected: https://github.com/owner/repo');
-                return;
-            }
-
-            const owner = parts[0];
-            const repo = parts[1];
-
-            // Show loading state
             linkBtn.disabled = true;
             linkBtn.textContent = 'Connecting...';
-            linkBtn.classList.add('loading');
-            if (statusDiv) {
-                statusDiv.innerHTML = '<div class="repo-status warning">🔄 Validating repository...</div>';
-            }
+            showWarning('Validating repository...');
 
-            try {
-                // First validate the repository
-                chrome.runtime.sendMessage(
-                    {
-                        action: 'validateRepository',
-                        owner: owner,
-                        repo: repo
-                    },
-                    (response) => {
-                        if (response && response.success) {
-                            // Repository is valid, now connect it
-                            if (statusDiv) {
-                                statusDiv.innerHTML = '<div class="repo-status warning">🔄 Setting up directory structure...</div>';
-                            }
-
-                            chrome.runtime.sendMessage(
-                                {
-                                    action: 'connectRepository',
-                                    owner: owner,
-                                    repo: repo
-                                },
-                                (connectResponse) => {
-                                    linkBtn.disabled = false;
-                                    linkBtn.textContent = 'Link Repository';
-                                    linkBtn.classList.remove('loading');
-
-                                    if (connectResponse && connectResponse.success) {
-                                        showSuccess(`Repository ${owner}/${repo} linked successfully!`);
-                                        checkRepoStatus();
-                                        const repoUrlInput = document.getElementById('repoUrl');
-                                        if (repoUrlInput) repoUrlInput.value = '';
-                                    } else {
-                                        showError(`Failed to connect repository: ${connectResponse?.error || 'Unknown error'}`);
-                                    }
-                                }
-                            );
-                        } else {
-                            // Repository validation failed
-                            linkBtn.disabled = false;
-                            linkBtn.textContent = 'Link Repository';
-                            linkBtn.classList.remove('loading');
-                            showError(`Repository validation failed: ${response?.error || 'Unknown error'}`);
-                        }
-                    }
-                );
-            } catch (error) {
+            chrome.runtime.sendMessage({ action: 'connectRepository', owner, repo }, (response) => {
                 linkBtn.disabled = false;
                 linkBtn.textContent = 'Link Repository';
-                linkBtn.classList.remove('loading');
-                showError(`Connection error: ${error.message}`);
-            }
+                if (response?.success) {
+                    showSuccess(`Repository ${owner}/${repo} linked!`);
+                    checkRepoStatus();
+                } else {
+                    showError(response?.error || 'Failed to connect repository.');
+                }
+            });
         });
     }
 }
@@ -526,6 +445,16 @@ function initRepositoryDisconnect() {
                     checkRepoStatus();
                 });
             }
+        });
+    }
+}
+
+//Initialize the continue button
+function initContinueButton() {
+    const continueBtn = document.getElementById('continueToPlatformsBtn');
+    if (continueBtn) {
+        continueBtn.addEventListener('click', () => {
+            showContent('platformSelectionContent');
         });
     }
 }
@@ -566,7 +495,7 @@ async function updatePlatformSelectionLayout() {
         try {
             const result = await chrome.storage.local.get(['username', 'avatarUrl']);
             const { username, avatarUrl } = result;
-            
+
             // Create new layout HTML
             platformContent.innerHTML = `
                 <!-- Header with theme toggle and logout -->
@@ -588,16 +517,16 @@ async function updatePlatformSelectionLayout() {
                 <!-- Platform Icons Row -->
                 <div class="platform-icons-row">
                     <div class="platform-icon" data-platform="leetcode">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png" alt="LeetCode">
+                        <img src="images/Leetcode-logo.png" alt="LeetCode">
                     </div>
                     <div class="platform-icon" data-platform="geeksforgeeks">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/43/GeeksforGeeks.svg" alt="GeeksforGeeks">
+                        <img src="images/gfg-logo.png" alt="GeeksforGeeks">
                     </div>
                     <div class="platform-icon" data-platform="hackerrank">
-                        <img src="https://hrcdn.net/fcore/assets/brand/h_mark_sm-966d2b45e3.svg" alt="HackerRank">
+                        <img src="images/HackerRank-logo.png" alt="HackerRank">
                     </div>
                     <div class="platform-icon" data-platform="codechef">
-                        <img src="https://cdn.codechef.com/images/cc-logo.svg" alt="CodeChef">
+                        <img src="images/CodeChef-logo.png" alt="CodeChef">
                     </div>
                 </div>
                 
@@ -606,10 +535,10 @@ async function updatePlatformSelectionLayout() {
                     We currently support following websites for this extension
                 </div>
             `;
-            
+
             // Re-attach event listeners for the new layout
             attachPlatformEventListeners();
-            
+
         } catch (error) {
             console.error('Failed to update platform selection layout:', error);
         }
@@ -629,14 +558,14 @@ function attachPlatformEventListeners() {
             }
         });
     });
-    
+
     // Theme toggle for platform page
     const platformThemeToggle = document.getElementById('platformThemeToggle');
     if (platformThemeToggle) {
         platformThemeToggle.addEventListener('click', () => {
             const body = document.body;
             const isLight = body.classList.contains('light-theme');
-            
+
             if (isLight) {
                 body.classList.remove('light-theme');
                 body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
@@ -646,7 +575,7 @@ function attachPlatformEventListeners() {
             }
         });
     }
-    
+
     // Logout button for platform page
     const platformLogoutBtn = document.getElementById('platformLogoutBtn');
     if (platformLogoutBtn) {
@@ -663,13 +592,13 @@ async function showSyncingContent(platform) {
     try {
         const result = await chrome.storage.local.get(['username', 'avatarUrl']);
         const { username, avatarUrl } = result;
-        
+
         // Update syncing page with user info
         const syncUserAvatar = document.getElementById('syncUserAvatar');
         const syncUsername = document.getElementById('syncUsername');
         const platformLogo = document.getElementById('platformLogo');
         const syncDescription = document.getElementById('syncDescription');
-        
+
         if (syncUserAvatar) {
             syncUserAvatar.src = avatarUrl || DEFAULT_AVATAR;
         }
@@ -677,12 +606,13 @@ async function showSyncingContent(platform) {
             syncUsername.textContent = username || 'User';
         }
         if (platformLogo && PLATFORM_LOGOS[platform]) {
-            platformLogo.innerHTML = PLATFORM_LOGOS[platform];
+            // Create the image tag dynamically using the local path
+            platformLogo.innerHTML = `<img src="${PLATFORM_LOGOS[platform]}" alt="${platform} logo">`;
         }
         if (syncDescription) {
             syncDescription.textContent = `Syncing your ${platform.charAt(0).toUpperCase() + platform.slice(1)} solutions to your GitHub`;
         }
-        
+
         showContent('syncingContent');
     } catch (error) {
         showError('Failed to load syncing page.');
@@ -752,12 +682,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCompleteSetup();
     initRepositoryLinking();
     initRepositoryDisconnect();
+    initContinueButton();
     initLogout();
     initPlatformSelection();
     initBackButton();
     initSuccessBackButton();
     initSyncingClick();
-    
+
     // Initialize the popup state
     await initializePopup();
 });
