@@ -14,15 +14,27 @@ export default function Profile() {
 
   const [repo, setRepo] = useState("");
   const [gemini, setGemini] = useState("");
+  const [gmailLink, setGmailLink] = useState("");
+  const [gfgLink, setGfgLink] = useState("");
+  const [leetcodeLink, setLeetcodeLink] = useState("");
+  const [linkedinLink, setLinkedinLink] = useState("");
 
   useEffect(() => {
     setRepo(localStorage.getItem("github-repo") ?? "");
     setGemini(localStorage.getItem("gemini-key") ?? "");
+    setGmailLink(localStorage.getItem("gmail-link") ?? "");
+    setGfgLink(localStorage.getItem("gfg-link") ?? "");
+    setLeetcodeLink(localStorage.getItem("leetcode-link") ?? "");
+    setLinkedinLink(localStorage.getItem("linkedin-link") ?? "");
   }, []);
 
   const save = () => {
     localStorage.setItem("github-repo", repo);
     localStorage.setItem("gemini-key", gemini);
+    localStorage.setItem("gmail-link", gmailLink);
+    localStorage.setItem("gfg-link", gfgLink);
+    localStorage.setItem("leetcode-link", leetcodeLink);
+    localStorage.setItem("linkedin-link", linkedinLink);
     toast({ title: "Saved", description: "Profile settings updated." });
   };
 
@@ -66,6 +78,61 @@ export default function Profile() {
           <Input className="form-input-profile" placeholder="Paste your key" value={gemini} onChange={(e) => setGemini(e.target.value)} />
           <p className="text-xs text-muted-foreground mt-1">Used by the extension to generate summaries.</p>
         </div>
+        
+        {/* Social/Platform Links Section */}
+        <div className="border-t pt-4 mt-2">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Social & Platform Links</h3>
+          <div className="grid gap-4">
+            <div>
+              <label className="text-sm block mb-2 text-foreground flex items-center gap-2">
+               Gmail Address
+              </label>
+              <Input 
+                className="form-input-profile" 
+                placeholder="username@gmail.com" 
+                value={gmailLink} 
+                onChange={(e) => setGmailLink(e.target.value)} 
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm block mb-2 text-foreground flex items-center gap-2">
+               GeeksforGeeks Profile
+              </label>
+              <Input 
+                className="form-input-profile" 
+                placeholder="https://auth.geeksforgeeks.org/user/username" 
+                value={gfgLink} 
+                onChange={(e) => setGfgLink(e.target.value)} 
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm block mb-2 text-foreground flex items-center gap-2">
+                LeetCode Profile
+              </label>
+              <Input 
+                className="form-input-profile" 
+                placeholder="https://leetcode.com/username" 
+                value={leetcodeLink} 
+                onChange={(e) => setLeetcodeLink(e.target.value)} 
+              />
+            </div>
+            
+            <div>
+              <label className="text-sm block mb-2 text-foreground flex items-center gap-2">
+                LinkedIn Profile
+              </label>
+              <Input 
+                className="form-input-profile" 
+                placeholder="https://linkedin.com/in/username" 
+                value={linkedinLink} 
+                onChange={(e) => setLinkedinLink(e.target.value)} 
+              />
+            </div>
+          </div>
+        </div>
+        
         <div>
           <button
             onClick={save}
