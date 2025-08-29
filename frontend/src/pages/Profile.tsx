@@ -130,7 +130,7 @@ export default function Profile() {
             Used by the extension to generate summaries.
           </p>
         </div>
-        {/* <div className="border-t pt-4 mt-2">
+        <div className="border-t pt-4 mt-2">
           <h3 className="text-lg font-semibold mb-4 text-foreground">
             Social & Platform Links
           </h3>
@@ -183,7 +183,7 @@ export default function Profile() {
               />
             </div>
           </div>
-        </div> */}
+        </div>
         
         {/* Social/Platform Links Section */}
         <div className="border-t pt-4 mt-2">
