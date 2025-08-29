@@ -1,7 +1,23 @@
 import { Helmet } from "react-helmet-async";
-import { submissions, type Submission } from "@/data/mock";
 import { useMemo, useState, useCallback, useEffect } from "react";
+
+// Local type definitions (no longer dependent on mock.ts)
+type Difficulty = "Easy" | "Medium" | "Hard";
+
+interface Submission {
+  id: string;
+  title: string;
+  platform: "LeetCode" | "GFG" | "CodeStudio";
+  difficulty: Difficulty;
+  date: string; // ISO
+  tags: string[];
+  description: string;
+  code: string;
+  language: string;
+  summary: string;
+}
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
@@ -99,19 +115,147 @@ const SubmissionCard = ({ submission }: { submission: Submission }) => (
 );
 
 export default function Submissions() {
-  const [dataSubmissions, setDataSubmissions] = useState<Submission[]>(submissions);
-  const [isLoading, setIsLoading] = useState(false);
+  const [dataSubmissions, setDataSubmissions] = useState<Submission[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [repo, setRepo] = useState<string>("");
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => { setHasMounted(true); }, []);
 
   useEffect(() => {
+    // Split a concatenated/capitalized string into tokens (e.g., "ArrayHashTable" -> ["Array","Hash","Table"]).
+    const tokenizeCapitalized = (text: string): string[] => {
+      return text.match(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])/g) || [];
+    };
+
+    // Recombine tokenized LeetCode topic words into known multi-word tags (preferring 3-word > 2-word > single).
+    const mapLeetCodeTokensToTags = (tokens: string[]): string[] => {
+      const twoWordCombos: Record<string, string> = {
+        "Hash Table": "Hash Table",
+        "Two Pointers": "Two Pointers",
+        "Binary Search": "Binary Search",
+        "Linked List": "Linked List",
+        "Dynamic Programming": "Dynamic Programming",
+        "Sliding Window": "Sliding Window",
+        "Bit Manipulation": "Bit Manipulation",
+        "Greedy Algorithm": "Greedy",
+        "Breadth First": "Breadth First",
+        "Depth First": "Depth First",
+      };
+      const threeWordCombos: Record<string, string> = {
+        "Breadth First Search": "Breadth First Search",
+        "Depth First Search": "Depth First Search",
+        "Divide And Conquer": "Divide and Conquer",
+      };
+
+      const normalizeSingle = (t: string): string => {
+        const dict: Record<string, string> = {
+          Array: "Array",
+          String: "String",
+          Strings: "String",
+          Stack: "Stack",
+          Queue: "Queue",
+          Graph: "Graph",
+          Tree: "Tree",
+          Trees: "Tree",
+          Trie: "Trie",
+          Heaps: "Heap",
+          Heap: "Heap",
+          Math: "Math",
+          Number: "Math",
+          Greedy: "Greedy",
+          DP: "Dynamic Programming",
+          Bit: "Bit",
+          Manipulation: "Manipulation",
+          Binary: "Binary",
+          Search: "Search",
+          Sliding: "Sliding",
+          Window: "Window",
+          Two: "Two",
+          Pointers: "Pointers",
+          Linked: "Linked",
+          List: "List",
+          Dynamic: "Dynamic",
+          Programming: "Programming",
+          Breadth: "Breadth",
+          Depth: "Depth",
+          First: "First",
+          Divide: "Divide",
+          And: "And",
+          Conquer: "Conquer",
+        };
+        return dict[t] || (t.length <= 3 ? t.toUpperCase() : (t[0].toUpperCase() + t.slice(1)));
+      };
+
+      const result: string[] = [];
+      for (let i = 0; i < tokens.length; ) {
+        // Try 3-token combos first
+        if (i + 2 < tokens.length) {
+          const tri = `${tokens[i]} ${tokens[i + 1]} ${tokens[i + 2]}`;
+          if (threeWordCombos[tri]) {
+            result.push(threeWordCombos[tri]);
+            i += 3;
+            continue;
+          }
+        }
+        // Then try 2-token combos
+        if (i + 1 < tokens.length) {
+          const duo = `${tokens[i]} ${tokens[i + 1]}`;
+          if (twoWordCombos[duo]) {
+            result.push(twoWordCombos[duo]);
+            i += 2;
+            continue;
+          }
+        }
+        // Fallback to normalized single token
+        result.push(normalizeSingle(tokens[i]));
+        i += 1;
+      }
+      return Array.from(new Set(result));
+    };
+
     const fetchDashboard = async () => {
       try {
         setIsLoading(true);
         setLoadError(null);
+        const configuredRepo = (localStorage.getItem("github-repo") || "").trim();
+        // Normalize repo: accept either "owner/repo" or full GitHub URL and convert to "owner/repo".
+        let repoSlug = configuredRepo;
+        const ghMatch = configuredRepo.match(/^https?:\/\/github\.com\/(?<owner>[^\/#\s]+)\/(?<name>[^\/#\s]+)(?:\.git)?\/?/i);
+        if (ghMatch && ghMatch.groups) {
+          repoSlug = `${ghMatch.groups.owner}/${ghMatch.groups.name.replace(/\.git$/i, "")}`;
+        }
+        repoSlug = repoSlug.replace(/^\/+|\/+$/g, "");
+        setRepo(repoSlug);
+        if (!repoSlug || !/^[-A-Za-z0-9_.]+\/[-A-Za-z0-9_.]+$/.test(repoSlug)) {
+          setLoadError("GitHub repository not configured. Set it in Profile.");
+          toast({ title: "Repo missing", description: "Set your GitHub repo in Profile to load your submissions." });
+          return;
+        }
         const cacheBuster = new Date().getTime();
-        const res = await fetch(`https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        // Fallback strategy: attempt common branches and locations for dashboard.json.
+        const branches = ["main", "master"];
+        const paths = ["dashboard.json", "data/dashboard.json"];
+        const tried: string[] = [];
+        let data: any | null = null;
+        for (const branch of branches) {
+          for (const path of paths) {
+            const url = `https://raw.githubusercontent.com/${repoSlug}/${branch}/${path}?_t=${cacheBuster}`;
+            tried.push(url);
+            try {
+              const res = await fetch(url);
+              if (!res.ok) continue;
+              data = await res.json();
+              if (data) break;
+            } catch (_) {
+              // ignore and try next
+            }
+          }
+          if (data) break;
+        }
+        if (!data) {
+          throw new Error(`Could not find dashboard.json in ${repoSlug}.`);
+        }
         if (Array.isArray(data?.problems)) {
           const mapped: Submission[] = data.problems.map((p: any, idx: number) => {
             const rawPlatform = (p.platform || "").toString();
@@ -124,8 +268,42 @@ export default function Submissions() {
             const title = p.problemName || p.id || `Problem ${idx + 1}`;
             const code = p.files?.code || "";
             const readme = (p.files?.readme || "").toString();
-            const summary = readme.slice(0, 220).replace(/\s+/g, " ").trim();
-            const tags: string[] = [];
+            let descriptionText = readme;
+            let summary = "";
+            // Extract tags from explicit array or derive from README first line/paragraph.
+            let tags: string[] = Array.isArray(p.tags) ? p.tags : [];
+            if (tags.length === 0 && readme) {
+              // Prefer the first paragraph's first line as the tag source.
+              const firstBlock = readme.split(/\n\s*\n/)[0] || readme;
+              const firstLine = (firstBlock.split(/\n/)[0] || "").trim();
+              if (firstLine) {
+                if (firstLine.includes(",")) {
+                  tags = firstLine.split(",").map((t: string) => t.trim()).filter(Boolean);
+                } else {
+                  const camelParts = tokenizeCapitalized(firstLine).filter(Boolean).map((t) => t.trim());
+                  if (platform === "LeetCode") {
+                    tags = mapLeetCodeTokensToTags(camelParts);
+                  } else {
+                    tags = camelParts;
+                  }
+                }
+                // Remove the first line used for tags from the description so tags don't appear in description
+                if (tags.length > 0) {
+                  const lines = readme.split(/\n/);
+                  lines.shift();
+                  descriptionText = lines.join("\n").replace(/^\s*\n/, "");
+                }
+              }
+              // Cleanup and normalize tags (replace underscores/dashes, trim, and title-case).
+              tags = tags
+                .map((t) => t.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim())
+                .filter((t) => t.length > 0)
+                .map((t) => t.length <= 3 ? t.toUpperCase() : (t[0].toUpperCase() + t.slice(1)));
+              // Deduplicate and limit to top N to keep UI tidy.
+              tags = Array.from(new Set(tags)).slice(0, 8);
+            }
+            // Build summary from cleaned description (fallback to title)
+            summary = (descriptionText || readme).slice(0, 220).replace(/\s+/g, " ").trim();
             return {
               id: p.id || `${platform}-${idx}`,
               title,
@@ -133,16 +311,17 @@ export default function Submissions() {
               difficulty: normalizedDifficulty,
               date: p.lastUpdated || new Date().toISOString(),
               tags,
-              description: readme,
+              description: descriptionText,
               code,
               language: (p.language || "javascript").toString().toLowerCase(),
               summary: summary || title,
             } as Submission;
           });
-          if (mapped.length) setDataSubmissions(mapped);
+          setDataSubmissions(mapped);
         }
       } catch (e) {
-        setLoadError(e instanceof Error ? e.message : "Failed to load dashboard.json");
+        const hint = repo ? " Ensure the repo is public and contains 'dashboard.json' on main/master (root or data/)." : "";
+        setLoadError((e instanceof Error ? e.message : "Failed to load dashboard.json") + hint);
       } finally {
         setIsLoading(false);
       }
@@ -158,21 +337,21 @@ export default function Submissions() {
 
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    dataSubmissions.forEach(submission => 
+    (dataSubmissions || []).forEach(submission => 
       submission.tags.forEach(tag => tagSet.add(tag))
     );
     return Array.from(tagSet).sort();
   }, [dataSubmissions]);
 
   const submissionStats = useMemo(() => ({
-    total: dataSubmissions.length,
-    easy: dataSubmissions.filter(s => s.difficulty === 'Easy').length,
-    medium: dataSubmissions.filter(s => s.difficulty === 'Medium').length,
-    hard: dataSubmissions.filter(s => s.difficulty === 'Hard').length,
+    total: (dataSubmissions || []).length,
+    easy: (dataSubmissions || []).filter(s => s.difficulty === 'Easy').length,
+    medium: (dataSubmissions || []).filter(s => s.difficulty === 'Medium').length,
+    hard: (dataSubmissions || []).filter(s => s.difficulty === 'Hard').length,
   }), [dataSubmissions]);
 
   const filteredSubmissions = useMemo(() => {
-    return dataSubmissions.filter((submission) => {
+    return (dataSubmissions || []).filter((submission) => {
       const matchesQuery = submission.title.toLowerCase().includes(filters.query.toLowerCase());
       const matchesDifficulty = filters.difficulty === "All" || submission.difficulty === filters.difficulty;
       const matchesTags = filters.selectedTags.length === 0 || 
@@ -211,23 +390,10 @@ export default function Submissions() {
 
   return (
     <div 
-      className="flex flex-col min-h-[100dvh] bg-gradient-to-br from-slate-50 via-white to-slate-100/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800/50 text-foreground relative overflow-hidden"
+      className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800/50 text-foreground relative"
     >
-      <div className="absolute inset-0 pointer-events-none will-change-transform" style={{ transform: 'translateZ(0)' }}>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-slate-200/30 to-slate-300/30 dark:from-blue-900/15 dark:to-cyan-900/15 rounded-full blur-2xl opacity-60"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-transparent to-transparent dark:from-emerald-900/8 dark:to-teal-900/8 rounded-full blur-2xl opacity-70"></div>
-        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-gradient-to-br from-transparent to-transparent dark:from-amber-900/10 dark:to-orange-900/10 rounded-full blur-xl opacity-50"></div>
-      </div>
-
-      <main className="flex-1 overflow-hidden relative z-10">
-        <div 
-          className="h-full overflow-y-auto"
-          style={{ 
-            scrollBehavior: 'smooth',
-            transform: 'translateZ(0)',
-            willChange: 'scroll-position'
-          }}
-        >
+      
+      <main className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
           <Helmet>
             <title>All Submissions – DSA Tracker</title>
             <meta name="description" content="Browse and filter all your coding submissions and solutions." />
@@ -310,7 +476,7 @@ export default function Submissions() {
                   </SelectContent>
                 </Select>
 
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="h-8 text-sm justify-between bg-white/70 dark:bg-slate-700/50 border-slate-300/70 dark:border-slate-600/50 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 rounded-md w-full shadow-sm hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-purple-50/80 dark:hover:from-blue-900/30 dark:hover:to-purple-900/30 hover:shadow-lg hover:shadow-blue-200/50 dark:hover:shadow-blue-900/20 transition-all duration-300">
                       <div className="flex items-center gap-1.5">
@@ -344,13 +510,9 @@ export default function Submissions() {
 
               <div className={`mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-700/50 transition-all duration-300 ease-in-out ${
                 (filters.difficulty !== "All" || filters.selectedTags.length > 0) ? 'opacity-100 max-h-32' : 'opacity-0 max-h-0 overflow-hidden'
-              }`}
-              style={{ 
-                contain: 'layout style paint',
-                transform: 'translateZ(0)'
-              }}>
+              }`}>
                 {(filters.difficulty !== "All" || filters.selectedTags.length > 0) && (
-                  <div className="flex flex-wrap items-center gap-1" style={{ transform: 'translateZ(0)' }}>
+                  <div className="flex flex-wrap items-center gap-1">
                     {filters.difficulty !== "All" && (
                       <span className={`px-1.5 py-0.5 rounded-md text-xs font-medium border ${getTagColor(filters.difficulty)} backdrop-blur-sm flex items-center gap-1`}>
                         {filters.difficulty}
@@ -398,53 +560,42 @@ export default function Submissions() {
             <div className="mb-4">
               <p className="text-xs text-slate-700 dark:text-slate-400 flex items-center gap-2">
                 <Eye className="w-3.5 h-3.5" />
-                Showing {filteredSubmissions.length} of {submissions.length} submissions
+                Showing {filteredSubmissions.length} of {(dataSubmissions || []).length} submissions
               </p>
+              {isLoading && (
+                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Loading submissions{repo ? ` from ${repo}` : ""}...</p>
+              )}
+              {loadError && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">{loadError}</p>
+              )}
             </div>
 
             <div className="min-h-[600px] relative">
-              <div 
-                className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 transition-all duration-300 ease-in-out ${
-                  filteredSubmissions.length === 0 ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-                }`}
-                style={{ 
-                  contain: 'layout style paint',
-                  transform: 'translateZ(0)'
-                }}
-              >
-                {filteredSubmissions.map((submission: Submission) => (
-                  <SubmissionCard
-                    key={submission.id}
-                    submission={submission}
-                  />
-                ))}
-              </div>
-
-              <div 
-                className={`absolute inset-0 flex items-start justify-center pt-16 transition-all duration-300 ease-in-out ${
-                  filteredSubmissions.length === 0 ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-                }`}
-              >
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Search className="w-8 h-8 text-slate-600 dark:text-purple-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">No submissions found</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 max-w-md mx-auto leading-relaxed">
-                    Try adjusting your search criteria or filters to find what you're looking for
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={clearFilters}
-                    className="bg-white/50 dark:bg-slate-700/50 border-slate-200/50 dark:border-slate-600/50 hover:bg-white/70 dark:hover:bg-slate-700/70 rounded-lg"
-                  >
-                    Clear all filters
-                  </Button>
+              {isLoading && (
+                <p className="text-xs text-slate-500 mt-1">Loading submissions{repo ? ` from ${repo}` : ""}...</p>
+              )}
+              {loadError && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">{loadError}</p>
+              )}
+              {dataSubmissions && !isLoading && !loadError && (
+                <div 
+                  className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 transition-all duration-300 ease-in-out ${hasMounted ? 'opacity-100 scale-100' : ''}`}
+                >
+                  {filteredSubmissions.map((submission: Submission) => (
+                    <SubmissionCard
+                      key={submission.id}
+                      submission={submission}
+                    />
+                  ))}
                 </div>
-              </div>
+              )}
+              {!isLoading && !loadError && (dataSubmissions?.length === 0) && (
+                <div className="absolute inset-0 flex items-start justify-center pt-16">
+                  <p className="text-xs text-slate-500">No submissions found</p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
       </main>
     </div>
   );
