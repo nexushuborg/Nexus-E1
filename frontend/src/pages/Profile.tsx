@@ -16,8 +16,15 @@ export default function Profile() {
   const [gemini, setGemini] = useState("");
 
   useEffect(() => {
-    setRepo(localStorage.getItem("github-repo") ?? "");
-    setGemini(localStorage.getItem("gemini-key") ?? "");
+    (async () => {
+      const repoData: any = await fetchRepoConfig();
+      if (repoData && repoData.config) {
+        setRepo(`${repoData.config.owner}/${repoData.config.repo}`);
+      } else {
+        setRepo(localStorage.getItem("github-repo") ?? "");
+      }
+      setGemini(localStorage.getItem("gemini-key") ?? "");
+    })();
   }, []);
 
   const save = () => {
@@ -29,6 +36,30 @@ export default function Profile() {
   const avatarFallback = user?.name ? user.name.charAt(0).toUpperCase() : "U";
   const avatarUrl = user?.name ? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random` : "";
 
+  const EXT_ID = "pblmdkojblocbhkmfpgldkmfedgdflaj"; // replace with actual ID
+
+  function fetchRepoConfig() {
+    return new Promise((resolve, reject) => {
+      if (!chrome || !chrome.runtime) {
+        console.warn("Chrome extension API not available in this context");
+        resolve(null);
+        return;
+      }
+
+      chrome.runtime.sendMessage(
+        "pblmdkojblocbhkmfpgldkmfedgdflaj",
+        { action: "getRepoConfig" },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError.message);
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(response);
+          }
+        }
+      );
+    });
+  }
 
   return (
     <main className="container py-8">

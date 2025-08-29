@@ -2,7 +2,7 @@
 document.getElementById("themeToggle").addEventListener("click", () => {
     const body = document.body;
     const isDark = body.classList.contains("light-theme");
-    
+
     if (isDark) {
         body.classList.remove("light-theme");
         body.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)";
@@ -53,7 +53,7 @@ document.getElementById("loginBtn").addEventListener("click", () => {
             if (username) {
                 document.getElementById("userAvatar").src = avatarUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiM2MGE1ZmEiLz4KPHN2ZyB4PSIxNSIgeT0iMTUiIHdpZHRoPSIzMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyLjI1YS43NS43NSAwIDAxLjc1Ljc1djIuMjVhLjc1Ljc1IDAgMDEtMS41IDBWM3EuNzUuNzUgMCAwMS43NS0uNzV6TTcuNSAxMmE0LjUgNC41IDAgMTE5IDAgNC41IDQuNSAwIDAxLTkgMHpNMTguODk0IDYuMTY2YS43NS43NSAwIDAwLTEuMDYtMS4wNmwtMS41OTEgMS41OWEuNzUuNzUgMCAxMDEuMDYgMS4wNmwxLjU5MS0xLjU5ek0yMS43NSAxMmEuNzUuNzUgMCAwMS0uNzUuNzVoLTIuMjVhLjc1Ljc1IDAgMDEwLTEuNUgyMWEuNzUuNzUgMCAwMS43NS43NXpNMTcuODM0IDE4Ljg5NGEuNzUuNzUgMCAwMDEuMDYtMS4wNmwtMS41OS0xLjU5MWEuNzUuNzUgMCAxMC0xLjA2MSAxLjA2bDEuNTkgMS41OTF6TTEyIDE4YS43NS43NSAwIDAxLjc1Ljc1VjIxYS43NS43NSAwIDAxLTEuNSAwdi0yLjI1QS43NS43NSAwIDAxMTIgMTh6TTcuNzU4IDE3LjMwM2EuNzUuNzUgMCAwMC0xLjA2MS0xLjA2bC0xLjU5MSAxLjU5YS43NS43NSAwIDAwMS4wNiAxLjA2MWwxLjU5MS0xLjU5ek02IDEyYS43NS43NSAwIDAxLS43NS43NUgzYS43NS43NSAwIDAxMC0xLjVoMi4yNUEuNzUuNzUgMCAwMTYgMTJ6TTYuNjk3IDcuNzU3YS43NS43NSAwIDAwMS4wNi0xLjA2bC0xLjU5LTEuNTkxYS43NS43NSAwIDAwLTEuMDYxIDEuMDZsMS41OSAxLjU5MXoiLz4KPC9zdmc+Cjwvc3ZnPgo=";
                 document.getElementById("username").textContent = `Welcome, ${username}!`;
-                
+
                 document.getElementById("loginContent").style.display = "none";
                 document.getElementById("welcomeContent").style.display = "block";
                 document.getElementById("welcomeContent").classList.add("fade-in");
@@ -67,11 +67,11 @@ document.getElementById("loginBtn").addEventListener("click", () => {
 // Show logged in state
 async function showLoggedInState() {
     const { username, avatarUrl } = await chrome.storage.local.get(["username", "avatarUrl"]);
-    
+
     if (username) {
         document.getElementById("userAvatar").src = avatarUrl || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMzAiIGZpbGw9IiM2MGE1ZmEiLz4KPHN2ZyB4PSIxNSIgeT0iMTUiIHdpZHRoPSIzMCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyLjI1YS43NS43NSAwIDAxLjc1Ljc1djIuMjVhLjc1Ljc1IDAgMDEtMS41IDBWM3EuNzUuNzUgMCAwMS43NS0uNzV6TTcuNSAxMmE0LjUgNC41IDAgMTE5IDAgNC41IDQuNSAwIDAxLTkgMHpNMTguODk0IDYuMTY2YS43NS43NSAwIDAwLTEuMDYtMS4wNmwtMS41OTEgMS41OWEuNzUuNzUgMCAxMDEuMDYgMS4wNmwxLjU5MS0xLjU5ek0yMS43NSAxMmEuNzUuNzUgMCAwMS0uNzUuNzVoLTIuMjVhLjc1Ljc1IDAgMDEwLTEuNUgyMWEuNzUuNzUgMCAwMS43NS43NXpNMTcuODM0IDE4Ljg5NGEuNzUuNzUgMCAwMDEuMDYtMS4wNmwtMS41OS0xLjU5MWEuNzUuNzUgMCAxMC0xLjA2MSAxLjA2bDEuNTkgMS41OTF6TTEyIDE4YS43NS43NSAwIDAxLjc1Ljc1VjIxYS43NS43NSAwIDAxLTEuNSAwdi0yLjI1QS43NS43NSAwIDAxMTIgMTh6TTcuNzU4IDE3LjMwM2EuNzUuNzUgMCAwMC0xLjA2MS0xLjA2bC0xLjU5MSAxLjU5YS43NS43NSAwIDAwMS4wNiAxLjA2MWwxLjU5MS0xLjU5ek02IDEyYS43NS43NSAwIDAxLS43NS43NUgzYS43NS43NSAwIDAxMC0xLjVoMi4yNUEuNzUuNzUgMCAwMTYgMTJ6TTYuNjk3IDcuNzU3YS43NS43NSAwIDAwMS4wNi0xLjA2bC0xLjU5LTEuNTkxYS43NS43NSAwIDAwLTEuMDYxIDEuMDZsMS41OSAxLjU5MXoiLz4KPC9zdmc+Cjwvc3ZnPgo=";
         document.getElementById("username").textContent = `Welcome, ${username}!`;
-        
+
         // Show welcome page first, then user can proceed to repo linking
         document.getElementById("loginContent").style.display = "none";
         document.getElementById("welcomeContent").style.display = "block";
@@ -187,6 +187,18 @@ document.getElementById("linkBtn").addEventListener("click", async () => {
                                 showSuccess(`Repository ${owner}/${repo} linked successfully!`);
                                 checkRepoStatus(); // Refresh the status display
                                 document.getElementById("repoUrl").value = ""; // Clear input
+                                chrome.tabs.query({ url: "http://localhost:8080/*" }, (tabs) => {
+                                    if (tabs.length > 0) {
+                                        chrome.scripting.executeScript({
+                                            target: { tabId: tabs[0].id },
+                                            func: (owner, repo) => {
+                                                console.log("Injected into page with", owner, repo);
+                                                localStorage.setItem("github-repo", `${owner}/${repo}`);
+                                            },
+                                            args: [owner, repo]
+                                        });
+                                    }
+                                });
                             } else {
                                 showError(`Failed to connect repository: ${connectResponse.error}`);
                             }

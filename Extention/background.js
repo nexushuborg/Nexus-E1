@@ -18,17 +18,19 @@ class GitHubRepositoryManager {
   }
 
   async getRepoConfig() {
-    return new Promise((resolve) => {
-      chrome.storage.local.get(['repoConfig'], (result) => {
+    return new Promise((resolve, reject) => {
+      chrome.storage.local.get(["repoConfig"], (result) => {
         resolve(result.repoConfig || null);
       });
     });
   }
 
   async saveRepoConfig(owner, repo) {
+    console.log("saveRepoConfig called with:", owner, repo);
     const config = {
       owner,
       repo,
+      repositoryUrl: `https://github.com/${owner}/${repo}`, // Add full repository URL
       connected: true,
       connectedAt: new Date().toISOString()
     };
@@ -39,6 +41,25 @@ class GitHubRepositoryManager {
         resolve(config);
       });
     });
+  }
+
+  async getRepositoryUrl() {
+    const config = await this.getRepoConfig();
+    if (config && config.owner && config.repo) {
+      return `https://github.com/${config.owner}/${config.repo}`;
+    }
+    return null;
+  }
+
+  async getRepoConfigWithUrl() {
+    const config = await this.getRepoConfig();
+    if (config) {
+      if (!config.repositoryUrl && config.owner && config.repo) {
+        config.repositoryUrl = `https://github.com/${config.owner}/${config.repo}`;
+      }
+      return config;
+    }
+    return null;
   }
 
   async validateRepository(owner, repo) {
@@ -839,7 +860,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     console.log("redirect url is " + redirectURL);
 
     chrome.identity.launchWebAuthFlow({
-      url: `https://github.com/login/oauth/authorize?client_id=Ov23liNzggKQgZVHA2AG&redirect_uri=${redirectURL}&state=${state}&scope=${encodeURIComponent("read:user repo workflow")}`,
+      url: `https://github.com/login/oauth/authorize?client_id=Ov23limgwxLHCgCu5kmJ&redirect_uri=${redirectURL}&state=${state}&scope=${encodeURIComponent("read:user repo workflow")}`,
       interactive: true
     }, async (responseUrl) => {
       if (chrome.runtime.lastError) {
@@ -909,11 +930,32 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   }
 });
 
-// New message listeners for repository management
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+// New message listeners for repository management outside of the extension
+chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
   if (request.action === "validateRepository") {
     repoManager.validateRepository(request.owner, request.repo)
       .then(result => sendResponse(result))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (request.action === "getRepoConfig") {
+    repoManager.getRepoConfigWithUrl() // Use the modified method
+      .then(config => sendResponse({
+        success: true,
+        config,
+        repositoryUrl: config ? config.repositoryUrl : null // Explicitly include URL
+      }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (request.action === "getRepositoryUrl") {
+    repoManager.getRepositoryUrl()
+      .then(url => sendResponse({
+        success: true,
+        repositoryUrl: url
+      }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
@@ -937,6 +979,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({
           success: true,
           config: config,
+          repositoryUrl: config.repositoryUrl,
           structure: structureResult,
           repoData: validation.data
         });
@@ -947,12 +990,80 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
-  if (request.action === "getRepoConfig") {
-    repoManager.getRepoConfig()
-      .then(config => sendResponse({ success: true, config }))
+  // if (request.action === "getRepoConfig") {
+  //   repoManager.getRepoConfig()
+  //     .then(config => sendResponse({ success: true, config }))
+  //     .catch(error => sendResponse({ success: false, error: error.message }));
+  //   return true;
+  // }
+});
+
+// New message listeners for repository management in the extension
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "validateRepository") {
+    repoManager.validateRepository(request.owner, request.repo)
+      .then(result => sendResponse(result))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
+
+  if (request.action === "getRepoConfig") {
+    repoManager.getRepoConfigWithUrl() // Use the modified method
+      .then(config => sendResponse({
+        success: true,
+        config,
+        repositoryUrl: config ? config.repositoryUrl : null // Explicitly include URL
+      }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (request.action === "getRepositoryUrl") {
+    repoManager.getRepositoryUrl()
+      .then(url => sendResponse({
+        success: true,
+        repositoryUrl: url
+      }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (request.action === "connectRepository") {
+    (async () => {
+      try {
+        // First validate the repository
+        const validation = await repoManager.validateRepository(request.owner, request.repo);
+        if (!validation.success) {
+          sendResponse(validation);
+          return;
+        }
+
+        // Save repository configuration
+        const config = await repoManager.saveRepoConfig(request.owner, request.repo);
+
+        // Ensure directory structure
+        const structureResult = await repoManager.ensureDirectoryStructure(request.owner, request.repo);
+
+        sendResponse({
+          success: true,
+          config: config,
+          repositoryUrl: config.repositoryUrl,
+          structure: structureResult,
+          repoData: validation.data
+        });
+      } catch (error) {
+        sendResponse({ success: false, error: error.message });
+      }
+    })();
+    return true;
+  }
+
+  // if (request.action === "getRepoConfig") {
+  //   repoManager.getRepoConfig()
+  //     .then(config => sendResponse({ success: true, config }))
+  //     .catch(error => sendResponse({ success: false, error: error.message }));
+  //   return true;
+  // }
 });
 
 //logout:just clear the local storage
