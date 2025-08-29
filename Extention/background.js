@@ -990,8 +990,6 @@ function checkEvent() {
       id: e.detail.id,
       resData: e.detail.resData
     })
-
-
   })
 }
 
@@ -1171,7 +1169,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendRes) => {
   setInterval(() => {
     isProcessing = false;
     console.log(isProcessing);
-    clearInterval()
+    // clearInterval()
   },
     5000
   )

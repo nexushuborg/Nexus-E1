@@ -132,15 +132,14 @@ style.textContent = `
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
         transition: all 0.3s ease;
         border: 2px solid transparent;
     }
     
-    .platform-icon:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-    }
+    // .platform-icon:hover {
+    //     background: rgba(255, 255, 255, 0.2);
+    //     transform: translateY(-2px);
+    // }
     
     .platform-icon img {
         width: 35px;
@@ -609,16 +608,16 @@ async function updatePlatformSelectionLayout() {
 // Attach event listeners for platform selection page
 function attachPlatformEventListeners() {
     // Platform icon click handlers
-    const platformIcons = document.querySelectorAll('.platform-icon');
-    platformIcons.forEach(icon => {
-        icon.addEventListener('click', () => {
-            const platform = icon.getAttribute('data-platform');
-            if (platform) {
-                currentPlatform = platform;
-                showSyncingContent(platform);
-            }
-        });
-    });
+    // const platformIcons = document.querySelectorAll('.platform-icon');
+    // platformIcons.forEach(icon => {
+    //     icon.addEventListener('click', () => {
+    //         const platform = icon.getAttribute('data-platform');
+    //         if (platform) {
+    //             currentPlatform = platform;
+    //             showSyncingContent(platform);
+    //         }
+    //     });
+    // });
 
     // Theme toggle for platform page
     const platformThemeToggle = document.getElementById('platformThemeToggle');
@@ -647,7 +646,6 @@ function attachPlatformEventListeners() {
         });
     }
 }
-
 // Show syncing content for selected platform
 async function showSyncingContent(platform) {
     try {
@@ -681,46 +679,47 @@ async function showSyncingContent(platform) {
 }
 
 // Back button functionality from syncing to platform selection
-function initBackButton() {
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            showContent('platformSelectionContent');
-        });
-    }
-}
+// function initBackButton() {
+//     const backBtn = document.getElementById('backBtn');
+//     if (backBtn) {
+//         backBtn.addEventListener('click', () => {
+//             showContent('platformSelectionContent');
+//         });
+//     }
+// }
 
 // Success page back button
-function initSuccessBackButton() {
-    const successBackBtn = document.getElementById('successBackBtn');
-    if (successBackBtn) {
-        successBackBtn.addEventListener('click', () => {
-            // This line takes you to the page with the "Continue" button
-            showContent('loggedInContent');
-        });
-    }
-}
+// function initSuccessBackButton() {
+//     const successBackBtn = document.getElementById('successBackBtn');
+//     if (successBackBtn) {
+//         successBackBtn.addEventListener('click', () => {
+//             // This line takes you to the page with the "Continue" button
+//             showContent('loggedInContent');
+//         });
+//     }
+// }
 
 // Syncing content click to simulate sync
-function initSyncNowButton() {
-    const syncBtn = document.getElementById('syncNowBtn');
-    if (syncBtn) {
-        syncBtn.addEventListener('click', () => {
-            // Optional: Show a temporary "Syncing..." state
-            syncBtn.textContent = 'Syncing...';
-            syncBtn.disabled = true;
+// function initSyncNowButton() {
+//     const syncBtn = document.getElementById('syncNowBtn');
+//     if (syncBtn) {
+//         syncBtn.addEventListener('click', () => {
+//             // Optional: Show a temporary "Syncing..." state
+//             syncBtn.textContent = 'Syncing...';
+//             syncBtn.disabled = true;
 
-            // Simulate a sync delay
-            setTimeout(() => {
-                showContent('successContent');
+//             // Simulate a sync delay
+//             setTimeout(() => {
+//                 showContent('successContent');
 
-                // Reset button for the next time it's shown
-                syncBtn.textContent = 'Sync Now';
-                syncBtn.disabled = false;
-            }, 1000);
-        });
-    }
-}
+//                 // Reset button for the next time it's shown
+//                 syncBtn.textContent = 'Sync Now';
+//                 syncBtn.disabled = false;
+//             }, 1000);
+//         });
+//     }
+// }
+
 
 // Initialize all functionality when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -734,9 +733,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     initContinueButton();
     initLogout();
     initPlatformSelection();
-    initBackButton();
-    initSuccessBackButton();
-    initSyncNowButton();
+    // initBackButton();
+    // initSuccessBackButton();
+    // initSyncNowButton();
 
     // Initialize the popup state
     await initializePopup();
