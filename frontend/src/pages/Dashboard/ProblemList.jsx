@@ -13,8 +13,14 @@ export function ProblemList() {
   useEffect(() => {
     const fetchProblems = async () => {
       try {
+        const repoUrl = localStorage.getItem("github-repo") || "";
+        if (!repoUrl) throw new Error("GitHub repo not set in localStorage");
+        const match = repoUrl.match(/https:\/\/github\.com\/([^/]+)\/([^/]+)/);
+        if (!match) throw new Error("Invalid GitHub repo URL");
+        const username = match[1];
+        const reponame = match[2];
         const response = await fetch(
-          "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+          `https://raw.githubusercontent.com/${username}/${reponame}/main/dashboard.json`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -25,12 +31,12 @@ export function ProblemList() {
           ["String", "DP"],
           ["Math", "Hash Table"],
           ["Array", "Stack", "Greedy"],
-          ["List","Tree","Red Black Tree"],
+          ["List", "Tree", "Red Black Tree"],
         ];
 
         const updatedProblems = data.problems.map((problem, index) => ({
           ...problem,
-          tags: hardcodedTags[index] || ["General"], // fallback
+          tags: hardcodedTags[index] || ["DSA"], // fallback
         }));
 
         setProblems(updatedProblems);
@@ -67,7 +73,7 @@ export function ProblemList() {
 
   if (error) {
     return (
-      <div className="text-center py-12 text-red-500">
+      <div className="text-center py-12 text-foreground">
         Error fetching data: {error}
       </div>
     );

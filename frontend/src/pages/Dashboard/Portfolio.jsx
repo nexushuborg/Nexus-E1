@@ -14,18 +14,36 @@ export default function Portfolio() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tags, setTags] = useState([]);
+  const [links, setLinks] = useState({
+    gmail: "",
+    gfg: "",
+    leetcode: "",
+    linkedin: "",
+  });
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const repoUrl = localStorage.getItem("github-repo") || "";
+        if (!repoUrl) throw new Error("GitHub repo not set in localStorage");
+        const match = repoUrl.match(/https:\/\/github\.com\/([^/]+)\/([^/]+)/);
+        if (!match) throw new Error("Invalid GitHub repo URL");
+        const username = match[1];
+        const reponame = match[2];
+        setLinks({
+          gmail: localStorage.getItem("gmail-link") || "",
+          gfg: localStorage.getItem("gfg-link") || "",
+          leetcode: localStorage.getItem("leetcode-link") || "",
+          linkedin: localStorage.getItem("linkedin-link") || "",
+        });
         const [dashboardResponse, githubResponse] = await Promise.all([
           fetch(
-            "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+            `https://raw.githubusercontent.com/${username}/${reponame}/main/dashboard.json`
           ),
-          fetch("https://api.github.com/users/nexushuborg"),
+          fetch(`https://api.github.com/users/${username}`),
         ]);
-        if (!dashboardResponse.ok || !githubResponse.ok) {
+        if (!dashboardResponse.ok || !githubResponse.ok)
           throw new Error("Network response was not ok");
-        }
+
         const dashboardJson = await dashboardResponse.json();
         const githubJson = await githubResponse.json();
         setDashboardData(dashboardJson);
@@ -37,8 +55,8 @@ export default function Portfolio() {
           (lang) => `#${lang.toUpperCase()}`
         );
         setTags(dynamicTags);
-      } catch (error) {
-        setError(error);
+      } catch (err) {
+        setError(err);
       } finally {
         setLoading(false);
       }
@@ -63,28 +81,18 @@ export default function Portfolio() {
       </Card>
     );
   }
-  const getProblemCountForPlatform = (platform) => {
-    return dashboardData?.metadata?.breakdown?.[platform]?.total || 0;
-  };
+
   const totalSolved = Object.values(
     dashboardData?.metadata?.breakdown || {}
-  ).reduce((sum, platform) => sum + platform.total, 0);
+  ).reduce((sum, platform) => sum + (platform.total || 0), 0);
+
   const calculateActiveDays = () => {
-    if (
-      !dashboardData ||
-      !dashboardData.metadata ||
-      !dashboardData.metadata.lastUpdated
-    ) {
-      return 0;
-    }
+    if (!dashboardData?.metadata?.lastUpdated) return 0;
     const lastUpdatedDate = new Date(dashboardData.metadata.lastUpdated);
     const currentDate = new Date();
-    if (lastUpdatedDate.toDateString() === currentDate.toDateString()) {
-      return 1;
-    }
+    if (lastUpdatedDate.toDateString() === currentDate.toDateString()) return 1;
     const differenceInTime = currentDate.getTime() - lastUpdatedDate.getTime();
-    const differenceInDays = Math.floor(differenceInTime / (1000 * 3600 * 24));
-    return differenceInDays + 1;
+    return Math.floor(differenceInTime / (1000 * 3600 * 24)) + 1;
   };
   const activeDays = calculateActiveDays();
   const profileName = githubData?.name || githubData?.login || "Nexus Hub";
@@ -126,27 +134,42 @@ export default function Portfolio() {
         </p>
         <div className="mt-2 w-full overflow-x-auto">
           <div className="flex gap-4 flex-nowrap justify-center">
-            <SiGmail className="text-success cursor-pointer" title="Gmail" />
-            <SiGeeksforgeeks
-              className={`${
-                getProblemCountForPlatform("Gfg") > 0
-                  ? "text-success"
-                  : "text-muted-foreground"
-              } cursor-pointer`}
-              title="GeeksforGeeks"
-            />
-            <SiLeetcode
-              className={`${
-                getProblemCountForPlatform("Leetcode") > 0
-                  ? "text-warning"
-                  : "text-muted-foreground"
-              } cursor-pointer`}
-              title="LeetCode"
-            />
-            <SiLinkedin
-              className="text-success cursor-pointer"
-              title="LinkedIn"
-            />
+            {links.gmail && (
+              <a
+                href={`mailto:${links.gmail}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <SiGmail
+                  className="text-success cursor-pointer"
+                  title="Gmail"
+                />
+              </a>
+            )}
+            {links.gfg && (
+              <a href={links.gfg} target="_blank" rel="noreferrer">
+                <SiGeeksforgeeks
+                  className="text-success cursor-pointer"
+                  title="GeeksforGeeks"
+                />
+              </a>
+            )}
+            {links.leetcode && (
+              <a href={links.leetcode} target="_blank" rel="noreferrer">
+                <SiLeetcode
+                  className="text-warning cursor-pointer"
+                  title="LeetCode"
+                />
+              </a>
+            )}
+            {links.linkedin && (
+              <a href={links.linkedin} target="_blank" rel="noreferrer">
+                <SiLinkedin
+                  className="text-success cursor-pointer"
+                  title="LinkedIn"
+                />
+              </a>
+            )}
           </div>
         </div>
         <div className="mt-6 w-full flex flex-wrap justify-center gap-2 select-none">

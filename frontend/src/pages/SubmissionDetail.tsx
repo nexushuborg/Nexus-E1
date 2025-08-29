@@ -989,7 +989,7 @@ export default function SubmissionDetail() {
       <main className="container py-12">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold mb-2">Submission not found</h1>
+          <h1 className="text-2xl font-semibold mb-2 text-foreground">Submission not found</h1>
           <p className="text-muted-foreground">
             The requested submission could not be loaded.
           </p>

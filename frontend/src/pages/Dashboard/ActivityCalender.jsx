@@ -25,39 +25,27 @@ const CustomCalendar = ({
   );
   const daysInMonth = [];
   const startDayOfWeek = getDay(startDay);
-  for (let i = 0; i < startDayOfWeek; i++) {
-    daysInMonth.push(null);
-  }
-  for (let i = 1; i <= endDay.getDate(); i++) {
+  for (let i = 0; i < startDayOfWeek; i++) daysInMonth.push(null);
+  for (let i = 1; i <= endDay.getDate(); i++)
     daysInMonth.push(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i)
     );
-  }
-
   const handleDayClick = (day) => {
     if (day) onDateChange(day);
   };
-
   const isSolved = (day) =>
     solvedDays.some((solvedDay) => isSameDay(solvedDay, day));
-
   const DayCell = ({ day }) => {
     if (!day) return <div className="h-8 w-8"></div>;
     const today = isToday(day);
     const solved = isSolved(day);
     const isSelected = selectedDate && isSameDay(selectedDate, day);
-
     let cellClasses =
-      "h-8 w-8 flex items-center justify-center text-sm rounded-full transition-colors duration-200 hover:text-foreground";
-    if (isSelected) {
-      cellClasses += " text-primary-foreground";
-    } else if (solved) {
-      cellClasses += " bg-purple-100 text-purple-600";
-    } else if (today) {
-      cellClasses += " bg-accent text-accent-foreground";
-    } else {
-      cellClasses += " bg-transparent text-inherit";
-    }
+      "h-8 w-8 flex items-center justify-center text-sm rounded-full duration-200 hover:text-foreground";
+    if (isSelected) cellClasses += " text-foreground";
+    else if (solved) cellClasses += " bg-purple-100 text-purple-600";
+    else if (today) cellClasses += " text-accent-foreground";
+    else cellClasses += " bg-transparent text-inherit";
     const noHoverFocus = "hover:bg-transparent focus:ring-0";
     return (
       <Button
@@ -140,17 +128,21 @@ export function ActivityCalendar() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const repoUrl = localStorage.getItem("github-repo") ?? "";
+        if (!repoUrl) throw new Error("GitHub repo not found in localStorage");
+        const match = repoUrl.match(/https:\/\/github\.com\/([^/]+)\/([^/]+)/);
+        if (!match) throw new Error("Invalid GitHub repo URL");
+        const username = match[1];
+        const reponame = match[2];
         const response = await fetch(
-          "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+          `https://raw.githubusercontent.com/${username}/${reponame}/main/dashboard.json`
         );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network response was not ok");
         const jsonData = await response.json();
         const dates = jsonData.problems.map((p) => new Date(p.lastUpdated));
         setSolvedDays(dates);
-      } catch (error) {
-        setError(error);
+      } catch (err) {
+        setError(err);
       } finally {
         setLoading(false);
       }
@@ -178,7 +170,7 @@ export function ActivityCalendar() {
     return () => clearInterval(timer);
   }, []);
 
-  if (loading) {
+  if (loading)
     return (
       <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
         <CardContent className="flex items-center justify-center h-full">
@@ -186,35 +178,15 @@ export function ActivityCalendar() {
         </CardContent>
       </Card>
     );
-  }
-
-  if (error) {
+  if (error)
     return (
       <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
-        <CardContent className="flex items-center justify-center h-full">
+        <CardContent className="flex items-center justify-center h-full py-2">
           <p>Error loading calendar data.</p>
         </CardContent>
       </Card>
     );
-  }
-
-  const sortedSolvedDays = solvedDays.sort((a, b) => a - b);
-  let streak = 0;
-  if (sortedSolvedDays.length > 0) {
-    const today = new Date();
-    if (isSameDay(sortedSolvedDays[sortedSolvedDays.length - 1], today)) {
-      streak = 1;
-    }
-    for (let i = sortedSolvedDays.length - 2; i >= 0; i--) {
-      const dayBefore = new Date(sortedSolvedDays[i + 1]);
-      dayBefore.setDate(dayBefore.getDate() - 1);
-      if (isSameDay(sortedSolvedDays[i], dayBefore)) {
-        streak++;
-      } else if (!isSameDay(sortedSolvedDays[i], sortedSolvedDays[i + 1])) {
-        break;
-      }
-    }
-  }
+  const today = new Date();
 
   return (
     <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
@@ -229,9 +201,9 @@ export function ActivityCalendar() {
             />
           </svg>
           <div className="relative z-10 mb-4 flex flex-col items-center justify-center h-full text-foreground">
-            <div className="text-2xl font-bold">{format(new Date(), "d")}</div>
+            <div className="text-2xl font-bold">{format(today, "d")}</div>
             <div className="text-xs font-medium uppercase">
-              {format(new Date(), "MMM")}
+              {format(today, "MMM")}
             </div>
           </div>
         </div>
@@ -239,13 +211,13 @@ export function ActivityCalendar() {
       <CardHeader className="pt-2 pb-2">
         <div className="flex items-center justify-between sm:justify-start gap-2">
           <div className="flex flex-col">
-            <span className="text-lg font-semibold">Day {streak}</span>
+            <span className="text-lg font-semibold">Day {today.getDate()}</span>
             <span className="text-xs text-muted-foreground">
               {timeLeft} left
             </span>
           </div>
           <div className="sm:hidden text-center text-sm font-semibold p-2 bg-muted rounded-full">
-            {format(new Date(), "d MMM")}
+            {format(today, "d MMM")}
           </div>
         </div>
       </CardHeader>
