@@ -1,6 +1,21 @@
 import { Helmet } from "react-helmet-async";
-import type { Submission } from "@/data/mock";
 import { useMemo, useState, useCallback, useEffect } from "react";
+
+// Local type definitions (no longer dependent on mock.ts)
+type Difficulty = "Easy" | "Medium" | "Hard";
+
+interface Submission {
+  id: string;
+  title: string;
+  platform: "LeetCode" | "GFG" | "CodeStudio";
+  difficulty: Difficulty;
+  date: string; // ISO
+  tags: string[];
+  description: string;
+  code: string;
+  language: string;
+  summary: string;
+}
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

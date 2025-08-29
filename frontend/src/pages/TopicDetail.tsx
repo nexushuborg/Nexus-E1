@@ -6,24 +6,42 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTopicById, updateTopicStatus, type RevisionTopic, type RevisionStatus } from "@/data/revisionTopics";
-import { submissions } from "@/data/mock";
 import { getTagColor } from "@/lib/tagColors";
 import { getFlashcardsForTopic, type Flashcard } from "@/data/flashcards";
 import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Code, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
+
+// Local type definitions (no longer dependent on mock.ts)
+type Difficulty = "Easy" | "Medium" | "Hard";
+
+interface Submission {
+  id: string;
+  title: string;
+  platform: "LeetCode" | "GFG" | "CodeStudio";
+  difficulty: Difficulty;
+  date: string; // ISO
+  tags: string[];
+  description: string;
+  code: string;
+  language: string;
+  summary: string;
+}
 
 const fetchTopicDetail = async (id: string): Promise<RevisionTopic | null> => {
   await new Promise(resolve => setTimeout(resolve, 300));
   return getTopicById(id) || null;
 };
 
-
-
 export default function TopicDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [dataSubmissions, setDataSubmissions] = useState<Submission[] | null>(null);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [repo, setRepo] = useState<string>("");
 
   const { data: topic, isLoading, error } = useQuery({
     queryKey: ['topic-detail', id],
@@ -38,6 +56,223 @@ export default function TopicDetail() {
     window.scrollTo(0, 0);
   }, [topic?.id]);
 
+  // Fetch submissions from GitHub repository
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        setIsLoadingSubmissions(true);
+        setLoadError(null);
+        const configuredRepo = (localStorage.getItem("github-repo") || "").trim();
+        
+        // Normalize repo: accept either "owner/repo" or full GitHub URL and convert to "owner/repo".
+        let repoSlug = configuredRepo;
+        const ghMatch = configuredRepo.match(/^https?:\/\/github\.com\/(?<owner>[^\/#\s]+)\/(?<name>[^\/#\s]+)(?:\.git)?\/?/i);
+        if (ghMatch && ghMatch.groups) {
+          repoSlug = `${ghMatch.groups.owner}/${ghMatch.groups.name.replace(/\.git$/i, "")}`;
+        }
+        repoSlug = repoSlug.replace(/^\/+|\/+$/g, "");
+        setRepo(repoSlug);
+        
+        if (!repoSlug || !/^[-A-Za-z0-9_.]+\/[-A-Za-z0-9_.]+$/.test(repoSlug)) {
+          setLoadError("GitHub repository not configured. Set it in Profile.");
+          toast({ title: "Repo missing", description: "Set your GitHub repo in Profile to load your submissions." });
+          return;
+        }
+
+        const cacheBuster = new Date().getTime();
+        // Fallback strategy: attempt common branches and locations for dashboard.json.
+        const branches = ["main", "master"];
+        const paths = ["dashboard.json", "data/dashboard.json"];
+        let data: any | null = null;
+        
+        for (const branch of branches) {
+          for (const path of paths) {
+            const url = `https://raw.githubusercontent.com/${repoSlug}/${branch}/${path}?_t=${cacheBuster}`;
+            try {
+              const res = await fetch(url);
+              if (!res.ok) continue;
+              data = await res.json();
+              if (data) break;
+            } catch (_) {
+              // ignore and try next
+            }
+          }
+          if (data) break;
+        }
+        
+        if (!data) {
+          throw new Error(`Could not find dashboard.json in ${repoSlug}.`);
+        }
+
+        if (Array.isArray(data?.problems)) {
+          const mapped: Submission[] = data.problems.map((p: any, idx: number) => {
+            const rawPlatform = (p.platform || "").toString();
+            const platform: Submission["platform"] =
+              rawPlatform.toLowerCase() === "leetcode" ? "LeetCode" :
+              rawPlatform.toLowerCase() === "gfg" ? "GFG" :
+              "CodeStudio";
+            const difficulty = ((p.difficulty || "").toString().toLowerCase());
+            const normalizedDifficulty = difficulty === "easy" ? "Easy" : difficulty === "medium" ? "Medium" : "Hard";
+            const title = p.problemName || p.id || `Problem ${idx + 1}`;
+            const code = p.files?.code || "";
+            const readme = (p.files?.readme || "").toString();
+            let descriptionText = readme;
+            let summary = "";
+            
+            // Extract tags from explicit array or derive from README first line/paragraph.
+            let tags: string[] = Array.isArray(p.tags) ? p.tags : [];
+            if (tags.length === 0 && readme) {
+              // Prefer the first paragraph's first line as the tag source.
+              const firstBlock = readme.split(/\n\s*\n/)[0] || readme;
+              const firstLine = (firstBlock.split(/\n/)[0] || "").trim();
+              if (firstLine) {
+                if (firstLine.includes(",")) {
+                  tags = firstLine.split(",").map((t: string) => t.trim()).filter(Boolean);
+                } else {
+                  // Split a concatenated/capitalized string into tokens (e.g., "ArrayHashTable" -> ["Array","Hash","Table"]).
+                  const tokenizeCapitalized = (text: string): string[] => {
+                    return text.match(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])/g) || [];
+                  };
+
+                  // Recombine tokenized LeetCode topic words into known multi-word tags (preferring 3-word > 2-word > single).
+                  const mapLeetCodeTokensToTags = (tokens: string[]): string[] => {
+                    const twoWordCombos: Record<string, string> = {
+                      "Hash Table": "Hash Table",
+                      "Two Pointers": "Two Pointers",
+                      "Binary Search": "Binary Search",
+                      "Linked List": "Linked List",
+                      "Dynamic Programming": "Dynamic Programming",
+                      "Sliding Window": "Sliding Window",
+                      "Bit Manipulation": "Bit Manipulation",
+                      "Greedy Algorithm": "Greedy",
+                      "Breadth First": "Breadth First",
+                      "Depth First": "Depth First",
+                    };
+                    const threeWordCombos: Record<string, string> = {
+                      "Breadth First Search": "Breadth First Search",
+                      "Depth First Search": "Depth First Search",
+                      "Divide And Conquer": "Divide and Conquer",
+                    };
+
+                    const normalizeSingle = (t: string): string => {
+                      const dict: Record<string, string> = {
+                        Array: "Array",
+                        String: "String",
+                        Strings: "String",
+                        Stack: "Stack",
+                        Queue: "Queue",
+                        Graph: "Graph",
+                        Tree: "Tree",
+                        Trees: "Tree",
+                        Trie: "Trie",
+                        Heaps: "Heap",
+                        Heap: "Heap",
+                        Math: "Math",
+                        Number: "Math",
+                        Greedy: "Greedy",
+                        DP: "Dynamic Programming",
+                        Bit: "Bit",
+                        Manipulation: "Manipulation",
+                        Binary: "Binary",
+                        Search: "Search",
+                        Sliding: "Sliding",
+                        Window: "Window",
+                        Two: "Two",
+                        Pointers: "Pointers",
+                        Linked: "Linked",
+                        List: "List",
+                        Dynamic: "Dynamic",
+                        Programming: "Programming",
+                        Breadth: "Breadth",
+                        Depth: "Depth",
+                        First: "First",
+                        Divide: "Divide",
+                        And: "And",
+                        Conquer: "Conquer",
+                      };
+                      return dict[t] || (t.length <= 3 ? t.toUpperCase() : (t[0].toUpperCase() + t.slice(1)));
+                    };
+
+                    const result: string[] = [];
+                    for (let i = 0; i < tokens.length; ) {
+                      // Try 3-token combos first
+                      if (i + 2 < tokens.length) {
+                        const tri = `${tokens[i]} ${tokens[i + 1]} ${tokens[i + 2]}`;
+                        if (threeWordCombos[tri]) {
+                          result.push(threeWordCombos[tri]);
+                          i += 3;
+                          continue;
+                        }
+                      }
+                      // Then try 2-token combos
+                      if (i + 1 < tokens.length) {
+                        const duo = `${tokens[i]} ${tokens[i + 1]}`;
+                        if (twoWordCombos[duo]) {
+                          result.push(twoWordCombos[duo]);
+                          i += 2;
+                          continue;
+                        }
+                      }
+                      // Fallback to normalized single token
+                      result.push(normalizeSingle(tokens[i]));
+                      i += 1;
+                    }
+                    return Array.from(new Set(result));
+                  };
+
+                  if (platform === "LeetCode") {
+                    const camelParts = tokenizeCapitalized(firstLine).filter(Boolean).map((t) => t.trim());
+                    tags = mapLeetCodeTokensToTags(camelParts);
+                  } else {
+                    // Simple tokenization for non-LeetCode platforms
+                    const words = firstLine.split(/\s+/).filter(Boolean);
+                    tags = words.slice(0, 5); // Limit to 5 tags
+                  }
+                }
+                // Remove the first line used for tags from the description so tags don't appear in description
+                if (tags.length > 0) {
+                  const lines = readme.split(/\n/);
+                  lines.shift();
+                  descriptionText = lines.join("\n").replace(/^\s*\n/, "");
+                }
+              }
+              // Cleanup and normalize tags (replace underscores/dashes, trim, and title-case).
+              tags = tags
+                .map((t) => t.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim())
+                .filter((t) => t.length > 0)
+                .map((t) => t.length <= 3 ? t.toUpperCase() : (t[0].toUpperCase() + t.slice(1)));
+              // Deduplicate and limit to top N to keep UI tidy.
+              tags = Array.from(new Set(tags)).slice(0, 8);
+            }
+            
+            // Build summary from cleaned description (fallback to title)
+            summary = (descriptionText || readme).slice(0, 220).replace(/\s+/g, " ").trim();
+            
+            return {
+              id: p.id || `${platform}-${idx}`,
+              title,
+              platform,
+              difficulty: normalizedDifficulty,
+              date: p.lastUpdated || new Date().toISOString(),
+              tags,
+              description: descriptionText,
+              code,
+              language: (p.language || "javascript").toString().toLowerCase(),
+              summary: summary || title,
+            } as Submission;
+          });
+          setDataSubmissions(mapped);
+        }
+      } catch (e) {
+        const hint = repo ? " Ensure the repo is public and contains 'dashboard.json' on main/master (root or data/)." : "";
+        setLoadError((e instanceof Error ? e.message : "Failed to load dashboard.json") + hint);
+      } finally {
+        setIsLoadingSubmissions(false);
+      }
+    };
+
+    fetchSubmissions();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -113,6 +348,8 @@ export default function TopicDetail() {
   }
 
   const getRelatedSubmissions = (topicName: string) => {
+    if (!dataSubmissions) return [];
+    
     const topicTagMap: { [key: string]: string[] } = {
       'Dynamic Programming': ['Dynamic Programming', 'DP', 'Memoization', 'Tabulation'],
       'Arrays': ['Arrays', 'Array'],
@@ -127,7 +364,7 @@ export default function TopicDetail() {
 
     const topicTags = topicTagMap[topicName] || [];
 
-    return submissions.filter(sub =>
+    return dataSubmissions.filter(sub =>
       sub.tags.some(tag =>
         topicTags.some(topicTag =>
           tag.toLowerCase().includes(topicTag.toLowerCase()) ||
@@ -349,7 +586,57 @@ export default function TopicDetail() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {relatedSubmissions.length > 0 ? (
+                  <div className="mb-4">
+                                          <p className="text-xs text-slate-700 dark:text-slate-400 flex items-center gap-2">
+                        <Code className="w-3.5 h-3.5" />
+                        {isLoadingSubmissions && (
+                          <span>Loading submissions...</span>
+                        )}
+                        {loadError && (
+                          <span className="text-rose-600 dark:text-rose-400">{loadError}</span>
+                        )}
+                        {!isLoadingSubmissions && !loadError && (
+                          <span>Showing {relatedSubmissions.length} related submissions</span>
+                        )}
+                      </p>
+                  </div>
+
+                  {isLoadingSubmissions && (
+                    <div className="text-center py-16">
+                      <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-purple-900/20 dark:to-pink-900/20 rounded-full flex items-center justify-center mx-auto mb-8 animate-pulse">
+                        <Code className="h-10 w-10 text-slate-500 dark:text-slate-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Loading submissions{repo ? ` from ${repo}` : ""}...
+                      </h3>
+                      <p className="text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
+                        Fetching your coding solutions from GitHub
+                      </p>
+                    </div>
+                  )}
+
+                  {loadError && (
+                    <div className="text-center py-16">
+                      <div className="w-20 h-20 bg-gradient-to-br from-rose-200 to-rose-300 dark:from-rose-900/20 dark:to-rose-800/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                        <Code className="h-10 w-10 text-rose-500 dark:text-rose-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-rose-700 dark:text-rose-300 mb-2">
+                        Failed to load submissions
+                      </h3>
+                      <p className="text-rose-600 dark:text-rose-400 mb-4 max-w-sm mx-auto">
+                        {loadError}
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => navigate('/profile')}
+                        className="bg-white/70 dark:bg-slate-700/50 border-slate-300/70 dark:border-slate-600/50 hover:bg-white/90 dark:hover:bg-slate-700/70"
+                      >
+                        Configure Repository
+                      </Button>
+                    </div>
+                  )}
+
+                  {!isLoadingSubmissions && !loadError && relatedSubmissions.length > 0 && (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                       {relatedSubmissions.map((sub) => (
                         <div
@@ -407,7 +694,9 @@ export default function TopicDetail() {
                         </div>
                       ))}
                     </div>
-                  ) : (
+                  )}
+
+                  {!isLoadingSubmissions && !loadError && relatedSubmissions.length === 0 && (
                     <div className="text-center py-16">
                       <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-purple-900/20 dark:to-pink-900/20 rounded-full flex items-center justify-center mx-auto mb-8">
                         <Code className="h-10 w-10 text-slate-500 dark:text-slate-400" />
