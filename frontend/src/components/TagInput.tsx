@@ -249,7 +249,7 @@ export const TagInput = ({
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
                 placeholder={placeholder}
-                className="flex-1 bg-background border-border focus:ring-[#4C1D95] focus:border-[#4C1D95] pr-10"
+                className="flex-1 bg-background border-border pr-10"
                 aria-label="Add new tag"
                 maxLength={maxTagLength}
                 disabled={disabled}
@@ -265,7 +265,6 @@ export const TagInput = ({
               type="submit"
               size="icon"
               disabled={!inputValue.trim() || disabled}
-              className="bg-[#4C1D95] hover:bg-[#4C1D95]/80 text-white disabled:bg-muted disabled:text-muted-foreground"
               aria-label="Add tag"
             >
               <Plus className="h-4 w-4" />

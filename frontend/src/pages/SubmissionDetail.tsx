@@ -33,7 +33,6 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("SubmissionDetail Error:", error, errorInfo);
   }
 
   render() {
@@ -411,7 +410,6 @@ const createPersistentStorage = () => {
         try {
           localStorage.setItem(key, JSON.stringify(value));
         } catch (error) {
-          console.warn('Failed to save to localStorage:', error);
         }
       }
     }
@@ -419,6 +417,98 @@ const createPersistentStorage = () => {
 };
 
 const persistentStorage = createPersistentStorage();
+
+// Split a concatenated/capitalized string into tokens (e.g., "ArrayHashTable" -> ["Array","Hash","Table"]).
+const tokenizeCapitalized = (text: string): string[] => {
+  return text.match(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])/g) || [];
+};
+
+// Recombine tokenized LeetCode topic words into known multi-word tags.
+const mapLeetCodeTokensToTags = (tokens: string[]): string[] => {
+  const twoWordCombos: Record<string, string> = {
+    "Hash Table": "Hash Table",
+    "Two Pointers": "Two Pointers",
+    "Binary Search": "Binary Search",
+    "Linked List": "Linked List",
+    "Sliding Window": "Sliding Window",
+    "Bit Manipulation": "Bit Manipulation",
+    "Depth First": "Depth First",
+    "Breadth First": "Breadth First",
+  };
+  const threeWordCombos: Record<string, string> = {
+    "Depth First Search": "Depth First Search",
+    "Breadth First Search": "Breadth First Search",
+    "Divide And Conquer": "Divide and Conquer",
+  };
+  const normalizeSingle = (t: string): string => {
+    return t.length <= 3 ? t.toUpperCase() : t[0].toUpperCase() + t.slice(1);
+  };
+  const result: string[] = [];
+  for (let i = 0; i < tokens.length; ) {
+    if (i + 2 < tokens.length) {
+      const tri = `${tokens[i]} ${tokens[i + 1]} ${tokens[i + 2]}`;
+      if (threeWordCombos[tri]) {
+        result.push(threeWordCombos[tri]);
+        i += 3;
+        continue;
+      }
+    }
+    if (i + 1 < tokens.length) {
+      const duo = `${tokens[i]} ${tokens[i + 1]}`;
+      if (twoWordCombos[duo]) {
+        result.push(twoWordCombos[duo]);
+        i += 2;
+        continue;
+      }
+    }
+    result.push(normalizeSingle(tokens[i]));
+    i += 1;
+  }
+  return Array.from(new Set(result));
+};
+
+// Normalize repo: accept either "owner/repo" or full GitHub URL and convert to "owner/repo".
+const getNormalizedRepoSlug = (): string | null => {
+  const configuredRepo = (localStorage.getItem("github-repo") || "").trim();
+  if (!configuredRepo) return null;
+  let repoSlug = configuredRepo;
+  const ghMatch = configuredRepo.match(/^https?:\/\/github\.com\/(?<owner>[^\/#\s]+)\/(?<name>[^\/#\s]+)(?:\.git)?\/?/i);
+  if (ghMatch && (ghMatch as any).groups) {
+    // @ts-ignore groups exists at runtime
+    repoSlug = `${(ghMatch as any).groups.owner}/${(ghMatch as any).groups.name.replace(/\.git$/i, "")}`;
+  }
+  repoSlug = repoSlug.replace(/^\/+|\/+$/g, "");
+  if (!/^[-A-Za-z0-9_.]+\/[-A-Za-z0-9_.]+$/.test(repoSlug)) return null;
+  return repoSlug;
+};
+
+// Fallback strategy: attempt common branches and locations for dashboard.json.
+const fetchDashboardData = async (): Promise<any | null> => {
+  const repoSlug = getNormalizedRepoSlug();
+  const cacheBuster = new Date().getTime();
+  const tried: string[] = [];
+  const branches = ["main", "master"];
+  const paths = ["dashboard.json", "data/dashboard.json"];
+  let data: any | null = null;
+  if (!repoSlug) return null;
+  for (const branch of branches) {
+    for (const path of paths) {
+      const url = `https://raw.githubusercontent.com/${repoSlug}/${branch}/${path}?_t=${cacheBuster}`;
+      tried.push(url);
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        data = await res.json();
+        if (data) break;
+      } catch (_) {
+      }
+    }
+    if (data) break;
+  }
+  if (!data) {
+  }
+  return data;
+};
 
 const useSubmissionData = (submissionId: string | undefined) => {
   const [notes, setNotes] = useState<string>("");
@@ -437,22 +527,22 @@ const useSubmissionData = (submissionId: string | undefined) => {
   const [sub, setSub] = useState<Submission | undefined>(
     submissionId ? submissions.find((s) => s.id === submissionId) : undefined
   );
+  const [isLoadingLookup, setIsLoadingLookup] = useState<boolean>(true);
 
   useEffect(() => {
     if (!submissionId) return;
+    setIsLoadingLookup(true);
     // Try local first
     const local = submissions.find((s) => s.id === submissionId);
     if (local) {
       setSub(local);
+      setIsLoadingLookup(false);
       return;
     }
     // Fallback: fetch from dashboard.json and map one item by id
     const fetchById = async () => {
       try {
-        const cacheBuster = new Date().getTime();
-        const res = await fetch(`https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`);
-        if (!res.ok) return;
-        const data = await res.json();
+        const data = await fetchDashboardData();
         if (!Array.isArray(data?.problems)) return;
         const mapProblemToSubmission = (p: any, idx: number): Submission => {
           const rawPlatform = (p.platform || "").toString();
@@ -465,15 +555,46 @@ const useSubmissionData = (submissionId: string | undefined) => {
           const title = p.problemName || p.id || `Problem ${idx + 1}`;
           const codeVal = p.files?.code || "";
           const readme = (p.files?.readme || "").toString();
-          const summary = readme.slice(0, 220).replace(/\s+/g, " ").trim() || title;
+          let descriptionText = readme;
+          // Extract tags
+          let tags: string[] = Array.isArray(p.tags) ? p.tags : [];
+          if (tags.length === 0 && readme) {
+            const firstBlock = readme.split(/\n\s*\n/)[0] || readme;
+            const firstLine = (firstBlock.split(/\n/)[0] || "").trim();
+            if (firstLine) {
+              if (firstLine.includes(",")) {
+                tags = firstLine.split(",").map((t: string) => t.trim()).filter(Boolean);
+              } else {
+                const camelParts = tokenizeCapitalized(firstLine).filter(Boolean).map((t) => t.trim());
+                if (platform === "LeetCode") {
+                  tags = mapLeetCodeTokensToTags(camelParts);
+                } else {
+                  tags = camelParts;
+                }
+              }
+              // remove tag line from description if tags were derived from it
+              if (tags.length > 0) {
+                const lines = readme.split(/\n/);
+                lines.shift();
+                descriptionText = lines.join("\n").replace(/^\s*\n/, "");
+              }
+            }
+            tags = Array.from(new Set(
+              tags
+                .map((t) => t.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim())
+                .filter((t) => t.length > 0)
+                .map((t) => (t.length <= 3 ? t.toUpperCase() : t[0].toUpperCase() + t.slice(1)))
+            )).slice(0, 8);
+          }
+          const summary = (descriptionText || readme).slice(0, 220).replace(/\s+/g, " ").trim() || title;
           return {
             id: p.id || `${platform}-${idx}`,
             title,
             platform,
             difficulty,
             date: p.lastUpdated || new Date().toISOString(),
-            tags: [],
-            description: readme,
+            tags,
+            description: descriptionText,
             code: codeVal,
             language: (p.language || "javascript").toString().toLowerCase(),
             summary,
@@ -484,6 +605,8 @@ const useSubmissionData = (submissionId: string | undefined) => {
         if (found) setSub(found);
       } catch {
         // silent fallback to not disturb UI
+      } finally {
+        setIsLoadingLookup(false);
       }
     };
     fetchById();
@@ -523,7 +646,6 @@ const useSubmissionData = (submissionId: string | undefined) => {
       setOriginalCode(code);
       setHasUnsavedCodeChanges(false);
     } catch (error) {
-      console.error("Failed to save code:", error);
     } finally {
       setIsSavingCode(false);
     }
@@ -540,7 +662,6 @@ const useSubmissionData = (submissionId: string | undefined) => {
         persistentStorage.set(`notes-${sub.id}`, notesToSave);
         persistentStorage.set(`tags-${sub.id}`, tagsToSave);
       } catch (error) {
-        console.error("Failed to save notes:", error);
       }
     },
     [sub, notes, tags]
@@ -563,7 +684,6 @@ const useSubmissionData = (submissionId: string | undefined) => {
         setOriginalTags(tagsToSave);
         setNotes(notesToSave); 
       } catch (error) {
-        console.error("Failed to save notes:", error);
       } finally {
         setIsSavingNotes(false);
       }
@@ -597,6 +717,7 @@ const useSubmissionData = (submissionId: string | undefined) => {
     saveNotesFinal,
     resetCode,
     resetCounter,
+    isLoadingLookup,
   };
 };
 
@@ -708,16 +829,7 @@ const AnalysisContent = ({ sub }: { sub: Submission }) => {
     setAnalysisError(null);
     
     try {
-      const cacheBuster = new Date().getTime();
-      const response = await fetch(
-        `https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`
-      );
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      const data = await fetchDashboardData();
       
       if (!data?.problems?.length) {
         setAnalysisError("No problems found in dashboard data.");
@@ -731,7 +843,9 @@ const AnalysisContent = ({ sub }: { sub: Submission }) => {
       const normalizedSubTitle = normalizeTitle(sub.title);
       
       // Find matching problem with multiple strategies
+      // Prefer id match; fallback to name/text heuristics
       const matchingProblem = data.problems.find((problem: any) => {
+        if (problem?.id && problem.id === sub.id) return true;
         if (!problem?.problemName) return false;
         
         const normalizedProblemName = normalizeTitle(problem.problemName);
@@ -757,7 +871,7 @@ const AnalysisContent = ({ sub }: { sub: Submission }) => {
         return;
       }
       
-      // Check for AI content - prioritize known structure
+      // AI content is retrieved from README notes field where available
       const contentFields = [
         { path: 'files.notes', getter: (obj: any) => obj.files?.notes },
         { path: 'notes', getter: (obj: any) => obj.notes },
@@ -950,6 +1064,7 @@ export default function SubmissionDetail() {
     saveNotesFinal,
     resetCode,
     resetCounter,
+    isLoadingLookup,
   } = useSubmissionData(id);
 
   const isLightMode = resolvedTheme === "light" || theme === "light";
@@ -983,6 +1098,14 @@ export default function SubmissionDetail() {
     },
     [sub]
   );
+
+  if (isLoadingLookup) {
+    return (
+      <main className="container py-12">
+        <div className="text-center text-muted-foreground">Loading submission…</div>
+      </main>
+    );
+  }
 
   if (!sub) {
     return (
