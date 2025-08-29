@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Authorize with GitHub</title>
   <style>
@@ -271,8 +272,102 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Platform Selection Styles */
+    .platform-selection {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .platform-card {
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .platform-card:hover {
+      transform: scale(1.1);
+    }
+
+    .platform-card img {
+      width: 50px;
+      height: 50px;
+    }
+
+    /* Platform Specific Syncing Styles */
+    .syncing-content {
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .platform-logo {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+    }
+
+    .platform-logo img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .back-btn {
+      background: #60a5fa;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .back-btn:hover {
+      background: #3b82f6;
+    }
+
+    /* Success Page Styles */
+    .success-content {
+      text-align: center;
+      max-width: 280px;
+    }
+
+    .success-icon {
+      font-size: 40px;
+      color: #22c55e;
+      margin-bottom: 20px;
+    }
+
+    .button-group {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      /* Adds space between buttons */
+    }
+
+    .back-btn {
+      /* We remove the old margin-top since the button-group handles it now */
+      margin-top: 0;
     }
   </style>
 </head>
@@ -281,7 +376,8 @@
   <!-- Theme toggle -->
   <button class="theme-toggle" id="themeToggle">
     <svg viewBox="0 0 24 24">
-      <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+      <path
+        d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
     </svg>
   </button>
 
@@ -290,19 +386,19 @@
     <div class="logo">
       <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Replace this SVG content with your custom logo -->
-        <circle cx="40" cy="40" r="40" fill="#374151"/>
-        <circle cx="40" cy="30" r="12" fill="#60a5fa"/>
-        <path d="M40 50 C 25 50 15 60 15 75 L 65 75 C 65 60 55 50 40 50 Z" fill="#60a5fa"/>
+        <circle cx="40" cy="40" r="40" fill="#374151" />
+        <circle cx="40" cy="30" r="12" fill="#60a5fa" />
+        <path d="M40 50 C 25 50 15 60 15 75 L 65 75 C 65 60 55 50 40 50 Z" fill="#60a5fa" />
       </svg>
     </div>
-    
+
     <h1 class="title">WELCOME !!</h1>
     <p class="description">Seamlessly sync your DSA Progress with GitHub</p>
-    
+
     <button class="github-btn" id="completeSetupBtn">
       Complete Setup
     </button>
-    
+
     <p class="support-link">Having issues? <a href="#" id="reportBug">Report Bug</a></p>
   </div>
 
@@ -311,22 +407,23 @@
     <div class="logo">
       <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Replace this SVG content with your custom logo -->
-        <circle cx="40" cy="40" r="40" fill="#374151"/>
-        <circle cx="40" cy="30" r="12" fill="#60a5fa"/>
-        <path d="M40 50 C 25 50 15 60 15 75 L 65 75 C 65 60 55 50 40 50 Z" fill="#60a5fa"/>
+        <circle cx="40" cy="40" r="40" fill="#374151" />
+        <circle cx="40" cy="30" r="12" fill="#60a5fa" />
+        <path d="M40 50 C 25 50 15 60 15 75 L 65 75 C 65 60 55 50 40 50 Z" fill="#60a5fa" />
       </svg>
     </div>
-    
+
     <h1 class="title">Authorize with GitHub</h1>
     <p class="description">Before we can push code to your selected repository, we need to get your GitHub account.</p>
-    
+
     <button class="github-btn" id="loginBtn">
       <svg class="github-icon" viewBox="0 0 24 24">
-        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+        <path
+          d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
       </svg>
       Login with GitHub
     </button>
-    
+
     <p class="info-text">You can revoke access at anytime</p>
     <p class="support-link">Having issues? <a href="#" id="reportBug">Report Bug</a></p>
   </div>
@@ -337,19 +434,64 @@
       <img id="userAvatar" class="user-avatar" src="" alt="User Avatar">
       <div class="username" id="username">Welcome!</div>
     </div>
-    
     <button class="logout-btn" id="logoutBtn">Logout</button>
-    
     <div class="repo-section">
       <div class="repo-title">Link Your GitHub Repository</div>
       <input type="text" id="repoUrl" class="repo-input" placeholder="https://github.com/user/repo">
-      <button class="repo-btn" id="linkBtn">Link Repository</button>
-      <button class="repo-btn danger" id="disconnectBtn" style="display: none;">Unlink</button>
+      <div>
+        <button class="repo-btn" id="linkBtn">Link Repository</button>
+        <button class="repo-btn danger" id="disconnectBtn" style="display: none;">Unlink</button>
+        <button class="repo-btn continue" id="continueToPlatformsBtn" style="display: none;">
+          Continue &#8594; </button>
+      </div>
       <div id="repoStatus" class="repo-status"></div>
     </div>
+  </div>
+
+  <!-- Platform Selection Page -->
+  <div id="platformSelectionContent" class="content fade-in" style="display: none;">
+    <h1 class="title">Select a Platform</h1>
+    <p class="description">Choose a platform to sync your solutions</p>
+    <div class="platform-selection">
+      <div class="platform-card" data-platform="leetcode">
+        <img src="images/Leetcode-logo.png" alt="LeetCode">
+      </div>
+      <div class="platform-card" data-platform="hackerrank">
+        <img src="images/HackerRank-logo.png" alt="HackerRank">
+      </div>
+      <div class="platform-card" data-platform="codechef">
+        <img src="images/codechef-logo.png" alt="CodeChef">
+      </div>
+      <div class="platform-card" data-platform="geeksforgeeks">
+        <img src="images/gfg-logo.png" alt="GeeksforGeeks">
+      </div>
+    </div>
+  </div>
+
+  <!-- Platform-Specific Syncing Page -->
+  <div id="syncingContent" class="syncing-content fade-in" style="display: none;">
+    <div class="user-info">
+      <img id="syncUserAvatar" class="user-avatar" src="" alt="User Avatar">
+      <div class="username" id="syncUsername">Username</div>
+    </div>
+    <div class="platform-logo" id="platformLogo"></div>
+    <p class="description" id="syncDescription">Ready to sync your solution to GitHub?</p>
+
+    <!-- <div class="button-group">
+      <button class="repo-btn" id="syncNowBtn">Sync Now</button>
+      <button class="back-btn" id="backBtn">Back</button>
+    </div> -->
+  </div>
+
+  <!-- Success Page -->
+  <div id="successContent" class="success-content fade-in" style="display: none;">
+    <h1 class="title">Sync Successful!</h1>
+    <p class="description">Your solution has been successfully synced to your GitHub repository.</p>
+    <button class="back-btn" id="successBackBtn">Back</button>
   </div>
 
   <script src="background.js"></script>
   <script src="popup.js"></script>
 </body>
+
 </html>

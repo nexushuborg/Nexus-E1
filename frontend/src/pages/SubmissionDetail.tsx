@@ -434,8 +434,60 @@ const useSubmissionData = (submissionId: string | undefined) => {
     null
   );
   const [resetCounter, setResetCounter] = useState(0);
+  const [sub, setSub] = useState<Submission | undefined>(
+    submissionId ? submissions.find((s) => s.id === submissionId) : undefined
+  );
 
-  const sub = submissions.find((s) => s.id === submissionId);
+  useEffect(() => {
+    if (!submissionId) return;
+    // Try local first
+    const local = submissions.find((s) => s.id === submissionId);
+    if (local) {
+      setSub(local);
+      return;
+    }
+    // Fallback: fetch from dashboard.json and map one item by id
+    const fetchById = async () => {
+      try {
+        const cacheBuster = new Date().getTime();
+        const res = await fetch(`https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data?.problems)) return;
+        const mapProblemToSubmission = (p: any, idx: number): Submission => {
+          const rawPlatform = (p.platform || "").toString();
+          const platform: Submission["platform"] =
+            rawPlatform.toLowerCase() === "leetcode" ? "LeetCode" :
+            rawPlatform.toLowerCase() === "gfg" ? "GFG" :
+            "CodeStudio";
+          const difficultyRaw = (p.difficulty || "").toString().toLowerCase();
+          const difficulty = difficultyRaw === "easy" ? "Easy" : difficultyRaw === "medium" ? "Medium" : "Hard";
+          const title = p.problemName || p.id || `Problem ${idx + 1}`;
+          const codeVal = p.files?.code || "";
+          const readme = (p.files?.readme || "").toString();
+          const summary = readme.slice(0, 220).replace(/\s+/g, " ").trim() || title;
+          return {
+            id: p.id || `${platform}-${idx}`,
+            title,
+            platform,
+            difficulty,
+            date: p.lastUpdated || new Date().toISOString(),
+            tags: [],
+            description: readme,
+            code: codeVal,
+            language: (p.language || "javascript").toString().toLowerCase(),
+            summary,
+          } as Submission;
+        };
+        const all: Submission[] = data.problems.map(mapProblemToSubmission);
+        const found = all.find((s) => s.id === submissionId);
+        if (found) setSub(found);
+      } catch {
+        // silent fallback to not disturb UI
+      }
+    };
+    fetchById();
+  }, [submissionId]);
 
   useEffect(() => {
     if (!sub || loadedSubmissionId === sub.id) return;
@@ -646,31 +698,143 @@ const NotesContent = ({
   </div>
 );
 
-const AnalysisContent = ({ sub }: { sub: Submission }) => (
-  <div className="space-y-4">
-    <div className="dark:bg-[#0D1117] dark:border-[#30363D] bg-white border-gray-200 rounded-lg border p-4">
-      <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
-        <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-        AI Analysis
-      </h3>
-      <p className="text-foreground leading-relaxed mb-4">
-        Get detailed AI-powered analysis of your code solution, including
-        time complexity, space complexity, and optimization suggestions.
-      </p>
-      <Button className="bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white transition-colors">
-        <AlertCircle className="w-4 h-4 mr-2" />
-        Analyze Code
-      </Button>
+const AnalysisContent = ({ sub }: { sub: Submission }) => {
+  const [aiAnalysis, setAiAnalysis] = useState<string>("");
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  const fetchAIAnalysis = async () => {
+    setIsLoadingAnalysis(true);
+    setAnalysisError(null);
+    
+    try {
+      const cacheBuster = new Date().getTime();
+      const response = await fetch(
+        `https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data?.problems?.length) {
+        setAnalysisError("No problems found in dashboard data.");
+        return;
+      }
+      
+      // Normalize title for comparison
+      const normalizeTitle = (title: string) => 
+        title.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+      
+      const normalizedSubTitle = normalizeTitle(sub.title);
+      
+      // Find matching problem with multiple strategies
+      const matchingProblem = data.problems.find((problem: any) => {
+        if (!problem?.problemName) return false;
+        
+        const normalizedProblemName = normalizeTitle(problem.problemName);
+        
+        // Strategy 1: Exact match
+        if (normalizedSubTitle === normalizedProblemName) return true;
+        
+        // Strategy 2: Partial match (bidirectional)
+        if (normalizedSubTitle.includes(normalizedProblemName) || 
+            normalizedProblemName.includes(normalizedSubTitle)) return true;
+        
+        // Strategy 3: Word-based matching
+        const subWords = normalizedSubTitle.split(/\s+/).filter(w => w.length > 2);
+        const problemWords = normalizedProblemName.split(/\s+/).filter(w => w.length > 2);
+        const commonWords = subWords.filter(word => problemWords.includes(word));
+        const minWordsNeeded = Math.min(2, Math.max(subWords.length, problemWords.length));
+        
+        return commonWords.length >= minWordsNeeded;
+      });
+      
+      if (!matchingProblem) {
+        setAnalysisError(`No matching problem found for "${sub.title}" in dashboard data.`);
+        return;
+      }
+      
+      // Check for AI content - prioritize known structure
+      const contentFields = [
+        { path: 'files.notes', getter: (obj: any) => obj.files?.notes },
+        { path: 'notes', getter: (obj: any) => obj.notes },
+        { path: 'files.summary', getter: (obj: any) => obj.files?.summary },
+      ];
+      
+      // Find the first field with valid content
+      const aiContentField = contentFields.find(field => {
+        const content = field.getter(matchingProblem);
+        return content && typeof content === 'string' && content.trim().length > 0;
+      });
+      
+      if (aiContentField) {
+        const aiContent = aiContentField.getter(matchingProblem);
+        setAiAnalysis(aiContent);
+      } else {
+        setAnalysisError(
+          `Found problem "${matchingProblem.problemName}" but no AI analysis content available.`
+        );
+      }
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setAnalysisError(`Failed to fetch AI analysis: ${errorMessage}`);
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="dark:bg-[#0D1117] dark:border-[#30363D] bg-white border-gray-200 rounded-lg border p-4">
+        <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+          AI Analysis
+        </h3>
+        <p className="text-foreground leading-relaxed mb-4">
+          Get detailed AI-powered analysis of your code solution from dashboard data,
+          including insights, patterns, and optimization suggestions.
+        </p>
+        <Button 
+          onClick={fetchAIAnalysis}
+          disabled={isLoadingAnalysis}
+          className="bg-slate-700 dark:bg-slate-600 hover:bg-slate-800 dark:hover:bg-slate-700 text-white transition-colors disabled:opacity-50"
+        >
+          <AlertCircle className="w-4 h-4 mr-2" />
+          {isLoadingAnalysis ? "Loading..." : "Analyze Code"}
+        </Button>
+      </div>
+      
+      <div className="dark:bg-[#0D1117] dark:border-[#30363D] bg-white border-gray-200 rounded-lg border p-4">
+        <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+          AI Summary
+        </h3>
+        {isLoadingAnalysis && (
+          <div className="text-foreground leading-relaxed animate-pulse">
+            Loading AI analysis...
+          </div>
+        )}
+        {analysisError && (
+          <div className="text-red-500 leading-relaxed">
+            {analysisError}
+          </div>
+        )}
+        {aiAnalysis && !isLoadingAnalysis && (
+          <div className="text-foreground leading-relaxed whitespace-pre-line">
+            {aiAnalysis}
+          </div>
+        )}
+        {!aiAnalysis && !isLoadingAnalysis && !analysisError && (
+          <p className="text-foreground leading-relaxed">Click Above to fetch AI insights</p>
+        )}
+      </div>
     </div>
-    <div className="dark:bg-[#0D1117] dark:border-[#30363D] bg-white border-gray-200 rounded-lg border p-4">
-      <h3 className="text-lg font-semibold mb-3 text-foreground flex items-center gap-2">
-        <AlertCircle className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-        AI Summary
-      </h3>
-      <p className="text-foreground leading-relaxed">{sub.summary}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 const CodeContent = ({ 
   sub, 
@@ -825,7 +989,7 @@ export default function SubmissionDetail() {
       <main className="container py-12">
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold mb-2">Submission not found</h1>
+          <h1 className="text-2xl font-semibold mb-2 text-foreground">Submission not found</h1>
           <p className="text-muted-foreground">
             The requested submission could not be loaded.
           </p>

@@ -10,8 +10,14 @@ export function Stats() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const repoUrl = localStorage.getItem("github-repo") || "";
+        if (!repoUrl) throw new Error("GitHub repo not set in localStorage");
+        const match = repoUrl.match(/https:\/\/github\.com\/([^/]+)\/([^/]+)/);
+        if (!match) throw new Error("Invalid GitHub repo URL");
+        const username = match[1];
+        const reponame = match[2];
         const response = await fetch(
-          "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+          `https://raw.githubusercontent.com/${username}/${reponame}/main/dashboard.json`
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");

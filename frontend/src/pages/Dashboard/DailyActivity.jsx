@@ -32,12 +32,17 @@ export function DailyActivity() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const repoUrl = localStorage.getItem("github-repo") || "";
+        if (!repoUrl) throw new Error("GitHub repo not set in localStorage");
+        const match = repoUrl.match(/https:\/\/github\.com\/([^/]+)\/([^/]+)/);
+        if (!match) throw new Error("Invalid GitHub repo URL");
+        const username = match[1];
+        const reponame = match[2];
         const cacheBuster = new Date().getTime();
-        const url = `https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json?_t=${cacheBuster}`;
+        const url = `https://raw.githubusercontent.com/${username}/${reponame}/main/dashboard.json?_t=${cacheBuster}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Network response was not ok");
         const jsonData = await response.json();
-
         const submissionsByDay = {};
         if (jsonData?.problems?.length > 0) {
           jsonData.problems.forEach((problem) => {
@@ -119,7 +124,7 @@ export function DailyActivity() {
           <CardTitle className="text-base">Daily Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12 text-red-500">
+          <div className="text-center py-12 text-foreground">
             Error fetching data. Check your console for details.
           </div>
         </CardContent>

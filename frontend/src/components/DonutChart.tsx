@@ -80,25 +80,27 @@ export function DonutChart({ data }: DonutChartProps) {
 }
 
 export default function DifficultyChartContainer() {
-  const [chartData, setChartData] = useState([]);
+  const [chartData, setChartData] = useState<
+    { name: string; value: number; color: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const repoUrl = localStorage.getItem("github-repo") || "";
+        if (!repoUrl) throw new Error("GitHub repo not set in localStorage");
+        const match = repoUrl.match(/https:\/\/github\.com\/([^/]+)\/([^/]+)/);
+        if (!match) throw new Error("Invalid GitHub repo URL");
+        const username = match[1];
+        const reponame = match[2];
         const response = await fetch(
-          "https://raw.githubusercontent.com/Always-Amulya7/DSA-Code-Tracker/main/dashboard.json"
+          `https://raw.githubusercontent.com/${username}/${reponame}/main/dashboard.json`
         );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network response was not ok");
         const jsonData = await response.json();
-        const difficultyTotals = {
-          Easy: 0,
-          Medium: 0,
-          Hard: 0,
-        };
+        const difficultyTotals = { Easy: 0, Medium: 0, Hard: 0 };
         if (jsonData.metadata && jsonData.metadata.breakdown) {
           Object.values(jsonData.metadata.breakdown).forEach((platform) => {
             const p = platform as {
@@ -112,36 +114,20 @@ export default function DifficultyChartContainer() {
           });
         }
         const data = [
-          {
-            name: "Easy",
-            value: difficultyTotals.Easy,
-            color: "#16a34a",
-          },
-          {
-            name: "Medium",
-            value: difficultyTotals.Medium,
-            color: "#f59e0b",
-          },
-          {
-            name: "Hard",
-            value: difficultyTotals.Hard,
-            color: "#ef4444",
-          },
+          { name: "Easy", value: difficultyTotals.Easy, color: "#16a34a" },
+          { name: "Medium", value: difficultyTotals.Medium, color: "#f59e0b" },
+          { name: "Hard", value: difficultyTotals.Hard, color: "#ef4444" },
         ].filter((d) => d.value > 0);
         setChartData(data);
       } catch (e) {
-        setError(e);
+        setError(e as Error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, []);
-  if (loading) {
-    return <div>Loading chart...</div>;
-  }
-  if (error) {
-    return <div>Error loading data.</div>;
-  }
+  if (loading) return <div>Loading chart...</div>;
+  if (error) return <div>Error loading data.</div>;
   return <DonutChart data={chartData} />;
 }

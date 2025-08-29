@@ -8,7 +8,9 @@
     "tabs",
     "webRequest",
     "identity",
-    "storage"
+    "storage",
+    "cookies",
+    "alarms"
   ],
   "host_permissions": [
     "https://*.geeksforgeeks.org/*",
