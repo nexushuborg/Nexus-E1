@@ -25,13 +25,13 @@ export function Footer() {
             <Linkedin className="h-4 w-4" />
             Nexus Hub
           </a>
-          <a href="https://github.com/CNxITER" target="_blank" rel="noopener noreferrer" className={linkStyle}>
+          <a href="https://github.com/nexushuborg" target="_blank" rel="noopener noreferrer" className={linkStyle}>
             <Github className="h-4 w-4" />
-            CNxITER
+            Nexus
           </a>
-          <a href="mailto:cn10xiter@gmail.com" className={linkStyle}>
+          <a href="mailto:nexus.hub.open+e1@gmail.com" className={linkStyle}>
             <Mail className="h-4 w-4" />
-            cnxiter.7008@gmail.com
+            nexus.hub.open+e1@gmail.com
           </a>
         </div>
 
