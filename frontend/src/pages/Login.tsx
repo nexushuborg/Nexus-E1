@@ -1,70 +1,87 @@
-import React, { useEffect } from "react";
+/**
+ * The `Login` component in TypeScript React handles user authentication with GitHub and displays a
+ * themed sign-in interface with a constellation animation and a footer.
+ * @returns The `Login` component is being returned. It contains JSX elements for a login page
+ * interface, including a title, description, GitHub sign-in button, and a footer. The component also
+ * includes conditional rendering based on the theme loading state and user authentication status.
+ */
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Github } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import ConstellationAnimation from "@/components/ui/ConstellationAnimation";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
-import { Footer } from "@/components/ui/Footer"
+import { Footer } from "@/components/ui/Footer";
 
-// --- Login Component ---
+// Login component for user authentication.
 export default function Login() {
   const { signInWithGitHub } = useAuth();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { resolvedTheme } = useTheme(); // actual theme
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
-  // Add useEffect for redirection
+  // Use useEffect to set mounted to true once the component has rendered on the client.
+  // This is a common pattern to avoid hydration mismatches with Next.js themes.
+  useEffect(() => setMounted(true), []);
+
+  // Use useEffect to check for user authentication status and redirect to the dashboard if logged in.
   useEffect(() => {
-    // When loading is finished and a user exists, redirect to dashboard
     if (!loading && user) {
       navigate("/dashboard");
     }
   }, [user, loading, navigate]);
 
-  // While checking for a user, we can show a blank page or a loader
-  if (loading || user) {
-    return <div className="h-full bg-background"></div>;
+  // Determine if the current theme is dark to apply appropriate styling.
+  const isDark = resolvedTheme === "dark";
+
+  // Render a fallback while the component is mounting, authentication is loading, or a user is already logged in.
+  if (!mounted || loading || user) {
+    return <div className="h-full min-h-screen bg-background" />;
   }
 
   return (
-    // Main container using flexbox to ensure the footer stays at the bottom
-    <div className="min-h-screen flex flex-col">
-      <div 
-        className="relative flex-grow flex items-center justify-center p-[125px]"
-        style={{
-          background: isDark 
-            ? 'linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%)' 
-            : 'linear-gradient(135deg, #f8fafc 0%, #f8fafc 50%, #f8fafc 100%)',
-        }}
-      >
-        {/* Sets the page title and meta description for SEO. */}
-        <Helmet>
-          <title>Sign In Algolog</title>
-          <meta name="description" content="Sign in to your DSA submissions account." />
-          <link rel="canonical" href="/login" />
-        </Helmet>
+    <div
+      className="min-h-screen flex flex-col"
+      style={{
+        // Apply a gradient background based on the current theme.
+        background: isDark
+          ? "linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%)"
+          : "linear-gradient(135deg, #f8fafc 0%, #f8fafc 50%, #f8fafc 100%)",
+      }}
+    >
+      {/* Helmet component for managing document head for SEO. */}
+      <Helmet>
+        <title>Sign In Algolog</title>
+        <meta
+          name="description"
+          content="Sign in to your DSA submissions account."
+        />
+        <link rel="canonical" href="/login" />
+      </Helmet>
 
-        {/* The main login card with a two-column layout on medium screens and up. */}
+      {/* Main container for the login card. */}
+      <div className="relative flex-grow flex items-center justify-center p-[125px]">
+        {/* The login card with a grid layout for two panels. */}
         <div
-          className={`
-            w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl 
-            transition-all duration-300
-            ${isDark ? 'bg-slate-800/60 border border-slate-700/50 backdrop-blur-lg' : 'bg-card border'}
-          `}
+          className={`w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 ${
+            isDark
+              ? "bg-slate-800/60 border border-slate-700/50 backdrop-blur-lg"
+              : "bg-card border"
+          }`}
         >
-          {/* Left Panel */}
+          {/* Left Panel: Login form content. */}
           <div className="p-8 md:p-12">
             <div className="flex items-center space-x-3 mb-8">
               <h1 className="text-2xl font-bold text-foreground">Algolog</h1>
             </div>
-
-            <h2 className="text-3xl font-bold mb-2 text-foreground">Your coding journey awaits</h2>
+            <h2 className="text-3xl font-bold mb-2 text-foreground">
+              Your coding journey awaits
+            </h2>
             <p className="text-muted-foreground mb-8">
               Connect your GitHub account to continue.
             </p>
-
             <div className="mt-6">
               <button
                 onClick={signInWithGitHub}
@@ -79,14 +96,14 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Right Panel - Animation */}
+          {/* Right Panel: Animation container, visible on medium screens and up. */}
           <div className="hidden md:block bg-card border-l">
             <ConstellationAnimation />
           </div>
         </div>
       </div>
-      
-      {/* Footer */}
+
+      {/* Footer component. */}
       <Footer />
     </div>
   );

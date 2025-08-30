@@ -1,3 +1,5 @@
+/* The above code is a React component that creates an Activity Calendar. Here's a summary of what the
+code does: */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,6 +8,7 @@ import { CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { format, getDay, isSameDay, isToday } from "date-fns";
 
+// A custom calendar component that displays a month view.
 const CustomCalendar = ({
   selectedDate,
   onDateChange,
@@ -13,6 +16,7 @@ const CustomCalendar = ({
   currentMonth,
   onMonthChange,
 }) => {
+  // Calculate the days to display for the current month.
   const startDay = new Date(
     currentMonth.getFullYear(),
     currentMonth.getMonth(),
@@ -25,21 +29,31 @@ const CustomCalendar = ({
   );
   const daysInMonth = [];
   const startDayOfWeek = getDay(startDay);
+  // Fill in null values for leading empty days.
   for (let i = 0; i < startDayOfWeek; i++) daysInMonth.push(null);
+  // Push all days of the month into the array.
   for (let i = 1; i <= endDay.getDate(); i++)
     daysInMonth.push(
       new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i)
     );
+
+  // Handle a day cell click event.
   const handleDayClick = (day) => {
     if (day) onDateChange(day);
   };
+
+  // Check if a given day is in the solvedDays array.
   const isSolved = (day) =>
     solvedDays.some((solvedDay) => isSameDay(solvedDay, day));
+
+  // Component for a single day cell in the calendar.
   const DayCell = ({ day }) => {
     if (!day) return <div className="h-8 w-8"></div>;
     const today = isToday(day);
     const solved = isSolved(day);
     const isSelected = selectedDate && isSameDay(selectedDate, day);
+
+    // Dynamic classes based on day state.
     let cellClasses =
       "h-8 w-8 flex items-center justify-center text-sm rounded-full duration-200 hover:text-foreground";
     if (isSelected) cellClasses += " text-foreground";
@@ -47,6 +61,7 @@ const CustomCalendar = ({
     else if (today) cellClasses += " text-accent-foreground";
     else cellClasses += " bg-transparent text-inherit";
     const noHoverFocus = "hover:bg-transparent focus:ring-0";
+
     return (
       <Button
         variant="ghost"
@@ -61,8 +76,10 @@ const CustomCalendar = ({
       </Button>
     );
   };
+
   return (
     <div className="w-full">
+      {/* Calendar header with month navigation. */}
       <div className="flex justify-between items-center relative px-4 sm:px-8 mb-2 mt-4">
         <Button
           variant="ghost"
@@ -98,6 +115,7 @@ const CustomCalendar = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+      {/* Weekday headers. */}
       <div className="grid grid-cols-7 place-items-center mt-4 mb-2">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
           <div
@@ -108,6 +126,7 @@ const CustomCalendar = ({
           </div>
         ))}
       </div>
+      {/* Grid for day cells. */}
       <div className="grid grid-cols-7 gap-2 justify-items-center">
         {daysInMonth.map((day, index) => (
           <DayCell key={index} day={day} />
@@ -117,6 +136,7 @@ const CustomCalendar = ({
   );
 };
 
+// Main component for the activity calendar dashboard card.
 export function ActivityCalendar() {
   const [date, setDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -125,6 +145,7 @@ export function ActivityCalendar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch solved problems data from a GitHub dashboard.json file.
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -150,6 +171,7 @@ export function ActivityCalendar() {
     fetchData();
   }, []);
 
+  // Set up a timer to countdown the time remaining until the end of the day.
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
@@ -170,6 +192,7 @@ export function ActivityCalendar() {
     return () => clearInterval(timer);
   }, []);
 
+  // Show a loading message while data is being fetched.
   if (loading)
     return (
       <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
@@ -178,6 +201,8 @@ export function ActivityCalendar() {
         </CardContent>
       </Card>
     );
+
+  // Show an error message if data fetching fails.
   if (error)
     return (
       <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
@@ -186,10 +211,12 @@ export function ActivityCalendar() {
         </CardContent>
       </Card>
     );
+
   const today = new Date();
 
   return (
     <Card className="rounded-2xl p-1 h-full relative overflow-hidden card dark:bg-slate-800/45">
+      {/* Hexagon-shaped date display for today, hidden on small screens. */}
       <div className="absolute top-4 right-4 z-10 hidden sm:block">
         <div className="relative w-16 h-20">
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 80 90">
@@ -208,6 +235,7 @@ export function ActivityCalendar() {
           </div>
         </div>
       </div>
+      {/* Card header with day and countdown information. */}
       <CardHeader className="pt-2 pb-2">
         <div className="flex items-center justify-between sm:justify-start gap-2">
           <div className="flex flex-col">
@@ -221,6 +249,7 @@ export function ActivityCalendar() {
           </div>
         </div>
       </CardHeader>
+      {/* Card content containing the custom calendar component. */}
       <CardContent className="p-4 pt-0 sm:p-4 sm:h-[345px]">
         <CustomCalendar
           selectedDate={date}
