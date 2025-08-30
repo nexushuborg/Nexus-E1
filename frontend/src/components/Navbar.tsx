@@ -5,11 +5,13 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, LogOut, LogIn, Menu } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 
+// --- Navbar Component ---
 export function Navbar() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
 
+  // A reusable component for the main desktop navigation links.
   const NavLinks = () => (
     <div className="hidden md:flex items-center gap-4 text-sm">
       <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-foreground hover:text-foreground/80" : "text-foreground/80 hover:text-foreground")}>Dashboard</NavLink>
@@ -31,6 +33,7 @@ export function Navbar() {
           {user && <NavLinks />}
         </div>
 
+        {/* Right side of the navbar */}
         <div className="flex items-center gap-2">
           {/* Mobile menu trigger */}
           <Sheet>
