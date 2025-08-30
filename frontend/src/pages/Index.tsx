@@ -9,7 +9,7 @@ import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext"; 
 import { Footer } from "@/components/ui/Footer";
 
-// Updated SpinningWire component to use the new blue color
+// 3D Background SpinningWire component to use the new blue color
 function SpinningWire({ isDark }: { isDark: boolean }) {
   const ref = useRef<any>();
   useFrame((_, delta) => {
@@ -26,6 +26,7 @@ function SpinningWire({ isDark }: { isDark: boolean }) {
   );
 }
 
+// An array of objects defining the content for the "Why you'll love it" section
 const features = [
   {
     title: "GitHub Integration",
@@ -85,6 +86,7 @@ const features = [
   }
 ];
 
+//Renders a tab-based interface to display the app's features
 const FeatureShowcase = () => {
     const [activeTab, setActiveTab] = useState(0);
 
@@ -127,12 +129,12 @@ const FeatureShowcase = () => {
     );
 };
 
-
+// --- Main Landing Page Component ---
 const Index = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  //Get user and loading status
+  //Get user and loading status from the AuthContext
   const { user, loading } = useAuth();
 
   //Add useEffect for redirection
@@ -155,6 +157,7 @@ const Index = () => {
   }
 
   return (
+    // The main container with a conditional background gradient for dark mode
     <main className={isDark ? 'dark-gradient-background' : ''}>
       <Helmet>
         <title>DSA Tracker – Your DSA Journey, Organized</title>
@@ -186,6 +189,7 @@ const Index = () => {
 
       <FeatureShowcase />
 
+      {/* "How it works" section with a simple 3-step guide. */}
       <section className="bg-secondary/50 py-16">
         <div className="container">
           <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-center text-foreground">How it works</h2>

@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "@/components/ui/Footer"
 
+// --- Login Component ---
 export default function Login() {
   const { signInWithGitHub } = useAuth();
   const { theme } = useTheme();
@@ -28,6 +29,7 @@ export default function Login() {
   }
 
   return (
+    // Main container using flexbox to ensure the footer stays at the bottom
     <div className="min-h-screen flex flex-col">
       <div 
         className="relative flex-grow flex items-center justify-center p-[125px]"
@@ -37,12 +39,14 @@ export default function Login() {
             : 'linear-gradient(135deg, #f8fafc 0%, #f8fafc 50%, #f8fafc 100%)',
         }}
       >
+        {/* Sets the page title and meta description for SEO. */}
         <Helmet>
           <title>Sign In Algolog</title>
           <meta name="description" content="Sign in to your DSA submissions account." />
           <link rel="canonical" href="/login" />
         </Helmet>
 
+        {/* The main login card with a two-column layout on medium screens and up. */}
         <div
           className={`
             w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl 

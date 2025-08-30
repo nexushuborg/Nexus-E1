@@ -34,7 +34,6 @@ export function Footer() {
             nexus.hub.open+e1@gmail.com
           </a>
         </div>
-
       </div>
     </footer>
   );
