@@ -212,6 +212,13 @@ body {
   transform: scale(0.98);
 }
 
+.form-input-profile{
+  color: black;
+}
+.dark .form-input-profile{
+  color: rgb(208, 208, 208);
+}
+
 .dark .form-input-profile:focus-visible {
   color: #ffffff !important;
 }

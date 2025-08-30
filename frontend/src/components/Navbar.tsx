@@ -41,13 +41,13 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="left" className="w-72">
               <nav className="mt-6 grid gap-4 text-sm">
-                <NavLink to="/" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Home</NavLink>
+                <NavLink to="/" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-white hover:text-[#5065bc]" : "hover:text-primary text-black")}>Home</NavLink>
                 {user && (
                   <>
-                    <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Dashboard</NavLink>
-                    <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>All Submissions</NavLink>
-                    <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Topics for Revision</NavLink>
-                    <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : "hover:text-foreground/80"}>Profile</NavLink>
+                    <NavLink to="/dashboard" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-white hover:text-[#5065bc]" : "hover:text-primary text-black")}>Dashboard</NavLink>
+                    <NavLink to="/submissions" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-white hover:text-[#5065bc]" : "hover:text-primary text-black")}>All Submissions</NavLink>
+                    <NavLink to="/topics" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-white hover:text-[#5065bc]" : "hover:text-primary text-black")}>Topics for Revision</NavLink>
+                    <NavLink to="/profile" className={({isActive}) => isActive ? (isDark ? "text-[#5065bc]" : "text-primary") : (isDark ? "text-white hover:text-[#5065bc]" : "hover:text-primary text-black")}>Profile</NavLink>
                   </>
                 )}
                 <div className="pt-2">
