@@ -369,6 +369,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         token: \${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0  # Fetch all history for all branches and tags
         
     - name: Setup Node.js
       uses: actions/setup-node@v3
@@ -384,7 +385,6 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add dashboard.json
         git diff --staged --quiet || (git commit -m "Update dashboard.json [skip ci]" && git push)`;
-
       let ymlSha = null;
 
       // to check if the file exists
@@ -433,11 +433,36 @@ jobs:
       const aggregatePath = `scripts/aggregate.js`
       const aggregateContent = `const fs = require('fs').promises;
 const path = require('path');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+
+const execAsync = promisify(exec);
 
 // Configuration - now case-insensitive
 const PLATFORMS = ['Codechef', 'Gfg', 'Leetcode', 'Hackerrank'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 const OUTPUT_FILE = 'dashboard.json';
+
+// Helper function to get the last Git commit date for a path
+async function getGitLastModified(filePath) {
+    try {
+        const { stdout } = await execAsync(
+            \`git log -1 --format=%cI -- "\${filePath}"\`,
+            { cwd: process.cwd() }
+        );
+        const dateStr = stdout.trim();
+        return dateStr ? new Date(dateStr) : new Date();
+    } catch (error) {
+        console.warn(\`Warning: Could not get git history for \${filePath}\`);
+        // Fallback to file system time
+        try {
+            const stats = await fs.stat(filePath);
+            return stats.mtime;
+        } catch {
+            return new Date();
+        }
+    }
+}
 
 // Helper function to find directories case-insensitively
 async function findDirectory(parentPath, targetName) {
@@ -529,6 +554,10 @@ async function aggregateData() {
                 
                 console.log(\`Processing: \${platform}/\${difficulty}/\${problemName}\`);
                 
+                // Get the last Git commit date for this problem directory
+                const lastModified = await getGitLastModified(problemPath);
+                console.log(\`Last modified: \${lastModified.toISOString()}\`);
+                
                 // Find the files - expanded patterns
                 const codeFile = await findFile(problemPath, [
                     '.js', '.py', '.java', '.cpp', '.c', '.go', '.rs', '.ts',
@@ -585,7 +614,7 @@ async function aggregateData() {
                     hasCode: !!codeContent,
                     hasReadme: !!readmeContent,
                     hasNotes: !!notesContent,
-                    lastUpdated: new Date().toISOString()
+                    lastUpdated: lastModified.toISOString()
                 };
                 
                 dashboard.push(problemData);
@@ -649,7 +678,8 @@ async function aggregateData() {
 aggregateData().catch(error => {
     console.error('Error during aggregation:', error);
     process.exit(1);
-});`;
+});
+`;
       let aggregateSha = null;
 
       // to check if the file exists
