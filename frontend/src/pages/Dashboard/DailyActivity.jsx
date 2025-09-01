@@ -1,3 +1,5 @@
+/* This code defines a React functional component called `DailyActivity`. Here's a breakdown of what
+the code does: */
 import React, { useState, useEffect } from "react";
 import {
   Card,
@@ -7,13 +9,15 @@ import {
 } from "../../components/ui/card";
 import { Skeleton } from "../../components/ui/skeleton";
 
+// Component to display a daily activity calendar similar to GitHub's contribution graph.
 export function DailyActivity() {
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Define levels and colors
+  // Define the number of contributions required for each color level.
   const levels = [0, 1, 3, 5, 8];
+  // Define the colors for each contribution level.
   const colors = [
     "bg-gray-300 dark:bg-gray-700",
     "bg-green-200 dark:bg-green-900",
@@ -22,6 +26,7 @@ export function DailyActivity() {
     "bg-green-600 dark:bg-green-400",
   ];
 
+  // Function to determine the color level based on the number of contributions.
   const getLevel = (count) => {
     for (let i = levels.length - 1; i >= 0; i--) {
       if (count >= levels[i]) return i;
@@ -29,6 +34,7 @@ export function DailyActivity() {
     return 0;
   };
 
+  // Fetch daily activity data from a GitHub dashboard.json file.
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -52,6 +58,7 @@ export function DailyActivity() {
             }
           });
         }
+        // Generate a data structure for the last 235 days.
         const totalDays = 235;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -77,12 +84,16 @@ export function DailyActivity() {
     };
     fetchData();
   }, []);
+
+  // Organize the daily data into an array of weeks for display.
   const weeks = [];
   let week = [];
   if (days.length > 0) {
+    // Add padding at the start of the first week if the first day is not Sunday.
     const startDay = new Date(days[0].date).getDay();
     for (let i = 0; i < startDay; i++)
       week.push({ date: `pad-${i}`, count: -1 });
+    // Push days into weeks, creating a new week every 7 days.
     days.forEach((day) => {
       week.push(day);
       if (week.length === 7) {
@@ -90,6 +101,7 @@ export function DailyActivity() {
         week = [];
       }
     });
+    // Add padding to the last week if it's not full.
     if (week.length) {
       while (week.length < 7)
         week.push({ date: `pad-${week.length}`, count: -1 });
@@ -97,6 +109,7 @@ export function DailyActivity() {
     }
   }
 
+  // Show a loading skeleton while data is being fetched.
   if (loading)
     return (
       <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
@@ -117,6 +130,7 @@ export function DailyActivity() {
       </Card>
     );
 
+  // Show an error message if data fetching fails.
   if (error)
     return (
       <Card className="rounded-2xl h-full card pb-3.5 dark:bg-slate-800/70">
@@ -144,11 +158,13 @@ export function DailyActivity() {
                 <div key={wi} className="grid grid-rows-7 gap-1">
                   {w.map((day, di) =>
                     day.count < 0 ? (
+                      // Render an empty, transparent div for padding days.
                       <div
                         key={di}
                         className="h-3 w-3 rounded-sm bg-transparent"
                       />
                     ) : (
+                      // Render a colored square based on contribution count.
                       <div
                         key={di}
                         title={`${day.count} contributions on ${new Date(
@@ -164,6 +180,7 @@ export function DailyActivity() {
               ))}
             </div>
           ) : (
+            // Show a message if there is no activity data.
             <div className="text-center py-12 text-muted-foreground">
               No activity to display.
             </div>

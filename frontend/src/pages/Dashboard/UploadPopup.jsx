@@ -1,3 +1,5 @@
+/* This code defines a React component called `UploadCodeDialog` that creates a dialog box for
+uploading and analyzing code snippets. Here's a breakdown of what the code does: At present it is not being used*/
 import React, { useState, useRef } from "react";
 import {
   Dialog,
@@ -13,6 +15,7 @@ import { Input } from "../../components/ui/input";
 import { UploadCloud, File, X, Loader2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
+// Component for a dialog that allows users to upload a code file for analysis.
 export function UploadCodeDialog() {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState(null);
@@ -20,21 +23,25 @@ export function UploadCodeDialog() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Handle file selection from the input.
   const handleFileChange = (event) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
     }
   };
 
+  // Simulate an analysis process.
   const handleAnalyze = async () => {
     if (!file) return;
     setIsAnalyzing(true);
+    // Simulate API call with a 2-second delay.
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsAnalyzing(false);
     setFile(null);
     setOpen(false);
   };
 
+  // Drag and drop event handlers.
   const handleDragEnter = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -61,6 +68,7 @@ export function UploadCodeDialog() {
     }
   };
 
+  // Programmatically trigger the hidden file input.
   const triggerFileSelect = () => {
     fileInputRef.current?.click();
   };
@@ -70,17 +78,21 @@ export function UploadCodeDialog() {
       open={open}
       onOpenChange={(isOpen) => {
         setOpen(isOpen);
+        // Reset state when the dialog is closed.
         if (!isOpen) {
           setFile(null);
           setIsAnalyzing(false);
         }
       }}
     >
+      {/* Button to open the dialog. */}
       <DialogTrigger asChild>
         <Button className="rounded-lg bg-purple-500 text-white border-purple-500 hover:cursor-pointer">
           Upload Code
         </Button>
       </DialogTrigger>
+
+      {/* Dialog content. */}
       <DialogContent className="w-[90vw] sm:w-max sm:max-w-[480px] bg-white dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-700">
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-gray-100">
@@ -91,7 +103,9 @@ export function UploadCodeDialog() {
             .java, .py, .html.
           </DialogDescription>
         </DialogHeader>
+
         <div className="py-4">
+          {/* Conditional rendering for drag-and-drop area or selected file display. */}
           {!file ? (
             <div
               className={cn(
@@ -117,6 +131,7 @@ export function UploadCodeDialog() {
                   JAVA, PYTHON, or HTML
                 </p>
               </div>
+              {/* Hidden file input. */}
               <Input
                 ref={fileInputRef}
                 id="file-upload"
@@ -127,6 +142,7 @@ export function UploadCodeDialog() {
               />
             </div>
           ) : (
+            // Display for the selected file.
             <div className="flex items-center justify-between p-4 border rounded-lg bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <File className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -134,6 +150,7 @@ export function UploadCodeDialog() {
                   {file.name}
                 </span>
               </div>
+              {/* Button to remove the selected file. */}
               <button
                 onClick={() => setFile(null)}
                 className="h-7 w-7 rounded-full p-0 flex items-center justify-center bg-popover dark:bg-gray-700 hover:bg-muted-foreground/10"
@@ -143,7 +160,9 @@ export function UploadCodeDialog() {
             </div>
           )}
         </div>
+
         <DialogFooter>
+          {/* "Analyze" button with a loading state. */}
           <Button
             type="button"
             onClick={handleAnalyze}
