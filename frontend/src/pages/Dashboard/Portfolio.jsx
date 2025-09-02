@@ -46,7 +46,7 @@ export default function Portfolio() {
 
         // Fetch data from both the user's dashboard.json file and the GitHub API in parallel.
         const [dashboardResponse, githubResponse] = await Promise.all([
-          fetch(`https://raw.githubusercontent.com/${username}/${reponame}/main/dashboard.json`),
+          fetch(`https://raw.githubusercontent.com/${username}/${reponame}/refs/heads/main/dashboard.json`),
           fetch(`https://api.github.com/users/${username}`),
         ]);
 
