@@ -890,7 +890,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     console.log("redirect url is " + redirectURL);
 
     chrome.identity.launchWebAuthFlow({
-      url: `https://github.com/login/oauth/authorize?client_id=Ov23liNzggKQgZVHA2AG&redirect_uri=${redirectURL}&state=${state}&scope=${encodeURIComponent("read:user repo workflow")}`,
+      url: `https://github.com/login/oauth/authorize?client_id=Ov23liQkk9w9DOJOxRN5&redirect_uri=${redirectURL}&state=${state}&scope=${encodeURIComponent("read:user repo workflow")}`,
       interactive: true
     }, async (responseUrl) => {
       if (chrome.runtime.lastError) {
@@ -1307,12 +1307,11 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendRes) => {
   }
 
 
-  setInterval(() => {
+  setTimeout(() => {
     isProcessing = false;
     console.log(isProcessing);
-    // clearInterval()
   },
-    5000
+    2000
   )
 
 });
