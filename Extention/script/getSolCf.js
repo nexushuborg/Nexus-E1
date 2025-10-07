@@ -7,7 +7,7 @@ if (!document.querySelector("._title_cl6lg_23")) {
   const ps = document.querySelector("#problem-statement").innerText;
   const solnLang = document.querySelector("#language-select").innerText;
   const title = document.querySelectorAll("#problem-statement h3")[0].innerText;
-  const diff = document.querySelector("._difficultyRatings__box_oqprl_154").textContent.match(/\d+/)[0];
+  const diff = document.querySelector("div._navigation-left-wrapper_1911m_15").textContent.match(/\d+/)[0];
   const tags = window.location.href.match('/course\/([^\/]+)/')[1];
   const psWithTags = tags + '\n\n' + ps;
   const difficultyRating = parseInt(diff);
