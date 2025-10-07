@@ -108,7 +108,7 @@ class GitHubRepositoryManager {
 
     for (const platform of platforms) {
       for (const difficulty of difficulties) {
-        const path = `${platform}/${difficulty}/.README.md`;
+        const path = `${platform}/${difficulty}/README.md`;
         const result = await this.createFileIfNotExists(owner, repo, path, '', token);
         results.push({
           path: `${platform}/${difficulty}`,
